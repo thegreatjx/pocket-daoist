@@ -1,0 +1,13 @@
+# Godot 4 缓存与导入产物（可由 godot --import 重新生成）
+.godot/
+*.import
+
+# 导出产物
+export/
+build/
+*.pck
+*.exe
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db

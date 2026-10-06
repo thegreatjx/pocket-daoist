@@ -1,0 +1,58 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui.gd" id="1_ui"]
+
+[node name="UI" type="CanvasLayer"]
+script = ExtResource("1_ui")
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RealmLabel" type="Label" parent="HUD"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 260.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 20
+text = "【境界】炼气前期 (Lv.1)"
+
+[node name="TimerLabel" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -60.0
+offset_top = 18.0
+offset_right = 60.0
+offset_bottom = 48.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="HPBar" type="ProgressBar" parent="HUD"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 50.0
+offset_right = 280.0
+offset_bottom = 70.0
+value = 100.0
+show_percentage = false
+
+[node name="ExpBar" type="ProgressBar" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = -12.0
+offset_bottom = 14.0
+grow_horizontal = 2
+show_percentage = false
