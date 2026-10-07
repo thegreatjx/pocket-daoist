@@ -36,7 +36,9 @@ var sword_pierce: int = 2
 var sword_fly_speed: float = 600.0
 var sword_base_damage: float = 35.0
 var is_wanjian_unlocked: bool = false
-var sword_scene = preload("res://scenes/sword.tscn")
+var sword_scene_path: String = "res://scenes/sword.tscn"
+# 同屏飞剑上限，防止连射叠加导致节点暴涨
+var max_active_swords: int = 120
 
 # 护体剑阵属性
 var orbit_sword_count: int = 2
@@ -45,18 +47,26 @@ var orbit_angle: float = 0.0
 var orbit_radius: float = 75.0
 var orbit_speed: float = 3.5
 var orbit_damage: float = 20.0
+var orbit_sword_scene_path: String = "res://scenes/orbit_sword.tscn"
 
 # 九天玄雷属性
 var thunder_interval: float = 3.0
 var thunder_timer: float = 0.0
 var thunder_damage: float = 60.0
 var thunder_radius: float = 65.0
-var thunder_scene = preload("res://scenes/thunder.tscn")
+var thunder_scene_path: String = "res://scenes/thunder.tscn"
 
-# 残影生成计时器
+# 残影
 var ghost_timer: float = 0.0
+var ghost_scene_path: String = "res://scenes/ghost_trail.tscn"
+
+# 震屏
+var shake_amount: float = 0.0
+var shake_decay: float = 14.0
 
 var _flash_tween: Tween = null
+
+@onready var camera: Camera2D = $Camera2D
 
 func _ready() -> void:
 	current_health = max_health
@@ -69,22 +79,24 @@ func refresh_orbit_swords() -> void:
 	_setup_orbit_swords()
 
 func _setup_orbit_swords() -> void:
-	# 清除现有环绕剑
+	# 清除现有环绕剑（归还到池）
 	for s in orbit_swords:
 		if is_instance_valid(s):
-			s.queue_free()
+			ObjectPools.release(s)
 	orbit_swords.clear()
 
-	var orbit_sword_res = preload("res://scenes/orbit_sword.tscn")
 	for i in range(orbit_sword_count):
-		var sw = orbit_sword_res.instantiate()
+		var sw = ObjectPools.acquire(orbit_sword_scene_path, self)
+		if sw == null:
+			continue
 		sw.damage = orbit_damage
-		add_child(sw)
 		orbit_swords.append(sw)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+
+	_update_shake(delta)
 
 	# 冷却时间递减
 	if dash_cooldown_timer > 0.0:
@@ -136,19 +148,33 @@ func _physics_process(delta: float) -> void:
 		thunder_timer = 0.0
 		_cast_thunder()
 
+func _update_shake(delta: float) -> void:
+	if shake_amount <= 0.0:
+		if camera != null:
+			camera.offset = Vector2.ZERO
+		return
+	shake_amount = maxf(0.0, shake_amount - shake_decay * delta * shake_amount)
+	if shake_amount < 0.05:
+		shake_amount = 0.0
+	if camera != null:
+		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake_amount
+
+func shake_camera(amount: float) -> void:
+	# 叠加但不无限放大，避免连续雷击把镜头甩飞
+	shake_amount = minf(22.0, shake_amount + amount)
+
 func _start_dash() -> void:
 	is_dashing = true
 	dash_timer = dash_duration
 	dash_cooldown_timer = dash_cooldown
 	ghost_timer = 0.0
 	_spawn_ghost_trail()
+	Sfx.play("dash", -8.0)
 
 func _spawn_ghost_trail() -> void:
-	var ghost = Node2D.new()
-	var ghost_script = preload("res://scripts/ghost_trail.gd")
-	ghost.set_script(ghost_script)
-	get_parent().add_child(ghost)
-	ghost.global_position = global_position
+	var ghost = ObjectPools.acquire(ghost_scene_path, get_parent(), 40)
+	if ghost != null:
+		ghost.global_position = global_position
 
 func _update_orbit_swords(delta: float) -> void:
 	orbit_angle += orbit_speed * delta
@@ -172,8 +198,10 @@ func _cast_flying_sword() -> void:
 	var base_angle = base_dir.angle()
 
 	for i in range(sword_count):
-		var sw = sword_scene.instantiate()
-		get_parent().add_child(sw)
+		# 池 + 上限双重限流：节点数不会随连射无限增长
+		var sw = ObjectPools.acquire(sword_scene_path, get_parent(), max_active_swords)
+		if sw == null:
+			break
 		sw.global_position = global_position
 		# 扇形展开或微散开
 		var offset_angle = (i - (sword_count - 1) / 2.0) * 0.18
@@ -181,6 +209,7 @@ func _cast_flying_sword() -> void:
 		sw.setup(final_dir, sword_base_damage, sword_fly_speed, sword_pierce)
 		if is_wanjian_unlocked:
 			sw.modulate = Color(1.2, 1.5, 0.4, 1.0) # 万剑归宗金色华彩
+	Sfx.play_varied("sword_cast", -12.0)
 
 func _cast_thunder() -> void:
 	# 只在玩家附近（屏幕范围内）选目标，避免劈到地图外敌人掉落无法拾取的灵气珠
@@ -193,10 +222,11 @@ func _cast_thunder() -> void:
 	if candidates.size() == 0:
 		return
 	var rand_target = candidates[randi() % candidates.size()]
-	var th = thunder_scene.instantiate()
+	var th = ObjectPools.acquire(thunder_scene_path, get_parent())
+	if th == null:
+		return
 	th.damage = thunder_damage
 	th.radius = thunder_radius
-	get_parent().add_child(th)
 	th.global_position = rand_target.global_position
 
 func _find_nearest_enemy() -> Node2D:
@@ -222,6 +252,9 @@ func take_damage(amount: float) -> void:
 		_flash_tween.kill()
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.15)
+	# 受击反馈：音效 + 轻微震屏
+	Sfx.play_varied("player_hurt", -8.0)
+	shake_camera(4.0)
 	if current_health <= 0:
 		_die()
 
@@ -239,4 +272,5 @@ func _die() -> void:
 		return
 	is_dead = true
 	velocity = Vector2.ZERO
+	shake_camera(12.0)
 	emit_signal("died")

@@ -7,11 +7,19 @@ var fly_speed: float = 40.0
 var is_attracted: bool = false
 var lifetime: float = 45.0
 
+func pool_acquire() -> void:
+	exp_value = 6.0
+	target = null
+	fly_speed = 40.0
+	is_attracted = false
+	lifetime = 45.0
+	visible = true
+
 func _physics_process(delta: float) -> void:
-	# 超时自毁，防止屏幕外灵气珠无限堆积
+	# 超时自毁（归还到池），防止屏幕外灵气珠无限堆积
 	lifetime -= delta
 	if lifetime <= 0.0:
-		queue_free()
+		ObjectPools.release(self)
 		return
 
 	if target == null or not is_instance_valid(target):
@@ -32,7 +40,8 @@ func _physics_process(delta: float) -> void:
 		if global_position.distance_to(target.global_position) <= 16.0:
 			if target.has_method("gain_exp"):
 				target.gain_exp(exp_value)
-			queue_free()
+			Sfx.play("gem_pickup", -14.0)
+			ObjectPools.release(self)
 
 func _draw() -> void:
 	# 绘制天地灵气光斑（翠玉微芒）

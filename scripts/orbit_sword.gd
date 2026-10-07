@@ -3,9 +3,14 @@ class_name OrbitSword
 
 var damage: float = 20.0
 var hit_cooldown: Dictionary = {}
+var knockback: float = 90.0
 
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
+
+func pool_acquire() -> void:
+	hit_cooldown.clear()
+	visible = true
 
 func _physics_process(delta: float) -> void:
 	# 刷新击中冷却
@@ -32,8 +37,14 @@ func _draw() -> void:
 
 func _on_area_entered(area: Area2D) -> void:
 	var enemy = area.get_parent()
-	if enemy and enemy.has_method("take_damage") and not enemy.is_dead:
-		var id = enemy.get_instance_id()
-		if not hit_cooldown.has(id):
-			enemy.take_damage(damage)
-			hit_cooldown[id] = 0.45
+	if enemy == null or not enemy.has_method("take_damage") or enemy.is_dead:
+		return
+	var id = enemy.get_instance_id()
+	if hit_cooldown.has(id):
+		return
+	hit_cooldown[id] = 0.45
+	enemy.take_damage(damage)
+	Sfx.play_varied("sword_hit", -16.0)
+	if enemy.has_method("apply_knockback"):
+		var away = (enemy.global_position - global_position).normalized()
+		enemy.apply_knockback(away * knockback)

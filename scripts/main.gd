@@ -29,6 +29,7 @@ func on_enemy_killed() -> void:
 
 func _on_player_leveled_up(_new_lvl: int) -> void:
 	# 连升多级时排队，逐次弹出机缘选择，不再互相覆盖
+	Sfx.play("level_up", -4.0)
 	pending_level_ups += 1
 	_show_next_upgrade_choice()
 
@@ -60,6 +61,15 @@ func _on_player_died() -> void:
 		game_over_ui.show_summary(ui.game_time, player.level, kill_count)
 
 func _on_restart_requested() -> void:
+	_prepare_restart()
+	_reload_scene()
+
+# 重启前置：解除暂停 + 清空对象池，防止池持有已随场景销毁的实例。
+# 拆成独立函数，便于测试验证副作用而不触发场景重载。
+func _prepare_restart() -> void:
 	get_tree().paused = false
+	ObjectPools.clear()
+
+func _reload_scene() -> void:
 	if get_tree().current_scene != null:
 		get_tree().reload_current_scene()

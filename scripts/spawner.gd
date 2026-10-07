@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var enemy_scene: PackedScene = preload("res://scenes/enemy.tscn")
+@export var enemy_scene_path: String = "res://scenes/enemy.tscn"
 @export var base_spawn_interval: float = 0.8
 @export var min_spawn_interval: float = 0.25
 @export var max_enemies: int = 250
@@ -42,11 +42,14 @@ func _spawn_enemy() -> void:
 	var distance = randf_range(650.0, 850.0)
 	var spawn_pos = player.global_position + Vector2(cos(angle), sin(angle)) * distance
 
-	var enemy = enemy_scene.instantiate()
+	# 走对象池复用敌人，避免长时间运行后频繁分配/释放
+	var enemy = ObjectPools.acquire(enemy_scene_path, get_parent(), max_enemies)
+	if enemy == null:
+		return
 	enemy.global_position = spawn_pos
 	# 敌人血量随存活时间成长（每分钟 +50%）
 	enemy.max_health *= 1.0 + elapsed / 120.0
-	get_parent().add_child(enemy)
+	enemy.current_health = enemy.max_health
 
 func _cleanup_far_enemies() -> void:
 	if player == null or not is_instance_valid(player):

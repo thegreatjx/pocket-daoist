@@ -18,8 +18,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 if ($Test) {
-    Write-Host "[2/2] 运行集成测试..." -ForegroundColor Cyan
-    $testOut = & godot --headless --path $PSScriptRoot --script res://_test_integration.gd 2>&1 | Out-String
+    Write-Host "[2/2] 运行集成测试（场景模式，autoload 可用）..." -ForegroundColor Cyan
+    $testOut = & godot --headless --path $PSScriptRoot res://tests/integration.tscn 2>&1 | Out-String
     Write-Host $testOut
     $code = $LASTEXITCODE
     if ($testOut -match 'passes=(d+) fails=(d+)') {

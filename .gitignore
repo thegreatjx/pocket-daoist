@@ -1,6 +1,5 @@
-# Godot 4 缓存与导入产物（可由 godot --import 重新生成）
+# Godot 4 缓存（可由 godot --import 重新生成）
 .godot/
-*.import
 
 # 导出产物
 export/
@@ -11,3 +10,6 @@ build/
 # 编辑器 / 系统
 .DS_Store
 Thumbs.db
+
+# 临时探针与基准脚本
+_*.gd.uid
