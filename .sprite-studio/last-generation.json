@@ -1,0 +1,31 @@
+{
+  "name": "demon_wolf",
+  "category": "characters",
+  "fps": 8,
+  "files": [
+    "assets\\characters\\demon_wolf_01.png",
+    "assets\\characters\\demon_wolf_02.png",
+    "assets\\characters\\demon_wolf_03.png",
+    "assets\\characters\\demon_wolf_04.png",
+    "assets\\characters\\demon_wolf_05.png",
+    "assets\\characters\\demon_wolf_06.png"
+  ],
+  "rig": ".sprite-studio\\rigs\\demon_wolf.json",
+  "masterHash": "f7524bfadc06826feb6b33d887726b066144f44bffb3e3c80acb6755549f963e",
+  "rigHash": "3564cf9cd4b17139f289ba8b0fa8218253fc6b3766bc12744c57f236a8701188",
+  "rigVersion": 2,
+  "quality": {
+    "uniqueRenderedFrames": 6,
+    "renderedFrameHashes": [
+      "c8ce4f2a6019ccc30a7b1dd5041f18f5148e43aa5bbf6dfef72396682989f893",
+      "31d090899175255ca403c78daca10ea48f20ceaea8fe29a0be9433fee0b98e20",
+      "be40168935836da7d6ac3498498eda6400725bffcc00f7b98801e72c42e82c5d",
+      "f22fc5f93178745c9df1cc6ff5d44a62e625b85d4596fafb284ef74f5cd5dc6b",
+      "95bacce68e8e80cebc948be22ecc0d475c8e74aef23f3ec55d3c344fb0226da7",
+      "716799154d6c89353c867bf8c732c5a42f01c6b59972cc043e9ae1478c1d9470"
+    ],
+    "mechanics": "passed"
+  },
+  "planningMode": "ai-rig-deterministic-render",
+  "generatedAt": "2026-10-07T10:36:45.425059+00:00"
+}

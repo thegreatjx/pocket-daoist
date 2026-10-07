@@ -4,6 +4,7 @@ class_name GameOverUI
 signal restart_requested
 signal title_requested
 
+@onready var title_label: Label = $PanelContainer/VBox/TitleLabel
 @onready var stats_label: Label = $PanelContainer/VBox/StatsLabel
 @onready var record_label: Label = $PanelContainer/VBox/RecordLabel
 @onready var best_label: Label = $PanelContainer/VBox/BestLabel
@@ -15,10 +16,19 @@ func _ready() -> void:
 	restart_btn.pressed.connect(func(): emit_signal("restart_requested"))
 	title_btn.pressed.connect(func(): emit_signal("title_requested"))
 
-# 暂停由 GameFlow.game_over() 统一施加，本面板只呈现数据。
-# is_record 由 Stats.record_run() 返回：必须在写入战绩前判定，
-# 事后比较历史最佳会恒等，无法区分是否刷新纪录。
 func show_summary(survive_time: float, level: int, kills: int, is_record: bool = false) -> void:
+	if title_label != null:
+		title_label.text = "身死道消"
+		title_label.modulate = Color.WHITE
+	_render_data(survive_time, level, kills, is_record)
+
+func show_victory(survive_time: float, level: int, kills: int, is_record: bool = false) -> void:
+	if title_label != null:
+		title_label.text = "✦ 斩妖证道·大捷 ✦"
+		title_label.modulate = Color(1.0, 0.88, 0.25, 1.0)
+	_render_data(survive_time, level, kills, is_record)
+
+func _render_data(survive_time: float, level: int, kills: int, is_record: bool = false) -> void:
 	stats_label.text = "修行时长：%s\n最终境界：Lv.%d\n诛灭妖魔：%d" % [Stats.format_time(survive_time), level, kills]
 	record_label.visible = is_record
 	best_label.text = Stats.summary_text()

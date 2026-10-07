@@ -13,3 +13,6 @@ Thumbs.db
 
 # 临时探针与基准脚本
 _*.gd.uid
+
+# 启动器运行日志
+play_log.txt

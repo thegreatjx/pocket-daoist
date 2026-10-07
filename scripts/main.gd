@@ -35,6 +35,23 @@ func _ready() -> void:
 func on_enemy_killed() -> void:
 	kill_count += 1
 
+func update_boss_hp(curr: float, max_h: float) -> void:
+	if ui != null and ui.has_method("update_boss_hp"):
+		ui.update_boss_hp(curr, max_h)
+
+func on_boss_killed() -> void:
+	if is_game_over:
+		return
+	is_game_over = true
+	pending_level_ups = 0
+	if upgrade_ui:
+		upgrade_ui.hide_panel()
+	Sfx.play("level_up", 0.0)
+	var is_record = Stats.record_run(ui.game_time, player.level, kill_count)
+	GameFlow.game_over()
+	if game_over_ui:
+		game_over_ui.show_victory(ui.game_time, player.level, kill_count, is_record)
+
 func _on_player_leveled_up(_new_lvl: int) -> void:
 	# 连升多级时排队，逐次弹出机缘选择，不再互相覆盖
 	Sfx.play("level_up", -4.0)

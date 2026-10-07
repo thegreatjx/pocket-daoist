@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "sessions": [
+    {
+      "sessionId": "01bbbd5c-de86-47ad-851d-aabdd1af8dd7",
+      "worktreeId": "c6cbab28-3e67-42c1-b2ce-518d5c66328c",
+      "kind": "generation",
+      "manifestPath": ".sprite-studio/last-generation.json",
+      "thumbnailPath": "assets\\characters\\demon_wolf_01.png",
+      "createdAt": "2026-10-07T10:37:44.568024700+00:00"
+    }
+  ]
+}

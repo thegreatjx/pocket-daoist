@@ -1,0 +1,98 @@
+{
+  "id": "aea9b4be-682f-424e-a9af-25a2d6e947d9",
+  "workspaceId": "a9ba59bc-cd18-4c19-9266-043214e5c1f5",
+  "worktreeId": "c6cbab28-3e67-42c1-b2ce-518d5c66328c",
+  "name": "demon_wolf",
+  "fps": 8.0,
+  "looping": true,
+  "frames": [
+    {
+      "assetId": "e5eda27f-7b1a-40ed-b5b7-5b8d281860c6",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "assetId": "fa4e274d-442f-48ab-9709-ad0528e3afbd",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "assetId": "0a61f2df-346b-4a89-923b-4dd9b2b515fb",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "assetId": "5916ccba-2965-4301-b04d-587337e14cda",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "assetId": "de4d425f-5a59-4e4a-baaa-48788ffe9f55",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    {
+      "assetId": "26048810-1ea3-43c9-bd85-510ff6a2a24d",
+      "durationMs": null,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  ],
+  "motionPlan": {
+    "frameMode": "fixed",
+    "selectedFrameCount": 6,
+    "minimumFrameCount": 6,
+    "maximumFrameCount": 6,
+    "fps": 8,
+    "looping": false,
+    "allowInterpolation": true,
+    "allowAutoAdjust": true,
+    "explanation": "Exactly 6 frames will be used and the motion phases will be fitted to that limit.",
+    "phases": [
+      {
+        "name": "Start",
+        "description": "Establish the initial silhouette",
+        "frameCount": 1,
+        "timingWeight": 1.0
+      },
+      {
+        "name": "Anticipation",
+        "description": "Prepare the primary change",
+        "frameCount": 1,
+        "timingWeight": 0.9
+      },
+      {
+        "name": "Action",
+        "description": "Perform the main movement",
+        "frameCount": 1,
+        "timingWeight": 0.8
+      },
+      {
+        "name": "Peak",
+        "description": "Show the clearest extreme pose",
+        "frameCount": 1,
+        "timingWeight": 1.0
+      },
+      {
+        "name": "Recovery",
+        "description": "Resolve the movement",
+        "frameCount": 1,
+        "timingWeight": 0.9
+      },
+      {
+        "name": "Settle",
+        "description": "Reach the final or looping pose",
+        "frameCount": 1,
+        "timingWeight": 1.0
+      }
+    ]
+  },
+  "reviewStatus": "draft",
+  "createdAt": "2026-10-07T10:37:44.638005100+00:00",
+  "updatedAt": "2026-10-07T10:37:44.638005100+00:00"
+}

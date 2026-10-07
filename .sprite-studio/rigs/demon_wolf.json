@@ -1,0 +1,1020 @@
+{
+  "rigVersion": 2,
+  "name": "demon_wolf",
+  "category": "characters",
+  "source": ".sprite-studio/imagegen-sources/demon-wolf/master.png",
+  "fps": 8,
+  "rootMotion": "in-place",
+  "baseZ": 0,
+  "proposal": {
+    "morphologyTag": "quadruped",
+    "motionIntent": "walking loop"
+  },
+  "parts": [
+    {
+      "name": "tail",
+      "role": "tail",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "tail_root",
+        "selfAnchor": "root"
+      },
+      "mask": {
+        "rect": [
+          4,
+          14,
+          12,
+          22
+        ]
+      },
+      "pivot": [
+        16.0,
+        26.0
+      ],
+      "anchors": {
+        "root": [
+          16.0,
+          26.0
+        ],
+        "tip": [
+          8.0,
+          18.0
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "body",
+      "role": "torso",
+      "mask": {
+        "rect": [
+          16,
+          14,
+          24,
+          22
+        ]
+      },
+      "pivot": [
+        27.0,
+        28.0
+      ],
+      "anchors": {
+        "neck": [
+          39.0,
+          26.0
+        ],
+        "tail_root": [
+          16.0,
+          26.0
+        ],
+        "pelvis_root": [
+          18.0,
+          35.0
+        ],
+        "near_hind_hip": [
+          16.0,
+          36.0
+        ],
+        "far_hind_hip": [
+          24.0,
+          36.0
+        ],
+        "near_fore_shoulder": [
+          32.0,
+          36.0
+        ],
+        "far_fore_shoulder": [
+          39.0,
+          36.0
+        ]
+      },
+      "z": 2,
+      "parent": null
+    },
+    {
+      "name": "pelvis",
+      "role": "pelvis",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "pelvis_root",
+        "selfAnchor": "root"
+      },
+      "mask": {
+        "rect": [
+          16,
+          36,
+          6,
+          8
+        ]
+      },
+      "pivot": [
+        18.0,
+        36.0
+      ],
+      "anchors": {
+        "root": [
+          18.0,
+          35.0
+        ],
+        "base": [
+          18.0,
+          42.0
+        ]
+      },
+      "z": 2
+    },
+    {
+      "name": "head",
+      "role": "head",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "neck",
+        "selfAnchor": "neck"
+      },
+      "mask": {
+        "rect": [
+          40,
+          14,
+          20,
+          22
+        ]
+      },
+      "pivot": [
+        40.0,
+        26.0
+      ],
+      "anchors": {
+        "neck": [
+          39.0,
+          26.0
+        ],
+        "snout": [
+          58.0,
+          32.0
+        ]
+      },
+      "z": 4
+    },
+    {
+      "name": "near_hind_thigh",
+      "role": "near_hind_upper_leg",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "near_hind_hip",
+        "selfAnchor": "hip"
+      },
+      "mask": {
+        "rect": [
+          10,
+          36,
+          6,
+          8
+        ]
+      },
+      "pivot": [
+        16.0,
+        36.0
+      ],
+      "anchors": {
+        "hip": [
+          16.0,
+          36.0
+        ],
+        "knee": [
+          13.0,
+          44.0
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "near_hind_shin",
+      "role": "near_hind_lower_leg",
+      "parent": "near_hind_thigh",
+      "attach": {
+        "parentAnchor": "knee",
+        "selfAnchor": "knee"
+      },
+      "mask": {
+        "rect": [
+          10,
+          44,
+          6,
+          6
+        ]
+      },
+      "pivot": [
+        13.0,
+        44.0
+      ],
+      "anchors": {
+        "knee": [
+          13.0,
+          44.0
+        ],
+        "ankle": [
+          12.0,
+          50.0
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "near_hind_paw",
+      "role": "near_hind_paw",
+      "parent": "near_hind_shin",
+      "attach": {
+        "parentAnchor": "ankle",
+        "selfAnchor": "ankle"
+      },
+      "mask": {
+        "rect": [
+          8,
+          50,
+          9,
+          8
+        ]
+      },
+      "pivot": [
+        12.0,
+        50.0
+      ],
+      "anchors": {
+        "ankle": [
+          12.0,
+          50.0
+        ],
+        "paw": [
+          12.0,
+          53.0
+        ]
+      },
+      "mesh": {
+        "vertices": [
+          [
+            8.0,
+            50.0
+          ],
+          [
+            17.0,
+            50.0
+          ],
+          [
+            17.0,
+            58.0
+          ],
+          [
+            8.0,
+            58.0
+          ]
+        ],
+        "triangles": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        "weights": [
+          [
+            {
+              "bone": "near_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_hind_paw",
+              "weight": 1.0
+            }
+          ]
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "far_hind_thigh",
+      "role": "far_hind_upper_leg",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "far_hind_hip",
+        "selfAnchor": "hip"
+      },
+      "mask": {
+        "rect": [
+          22,
+          36,
+          6,
+          6
+        ]
+      },
+      "pivot": [
+        24.0,
+        36.0
+      ],
+      "anchors": {
+        "hip": [
+          24.0,
+          36.0
+        ],
+        "knee": [
+          25.0,
+          42.0
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "far_hind_shin",
+      "role": "far_hind_lower_leg",
+      "parent": "far_hind_thigh",
+      "attach": {
+        "parentAnchor": "knee",
+        "selfAnchor": "knee"
+      },
+      "mask": {
+        "rect": [
+          22,
+          42,
+          6,
+          5
+        ]
+      },
+      "pivot": [
+        25.0,
+        42.0
+      ],
+      "anchors": {
+        "knee": [
+          25.0,
+          42.0
+        ],
+        "ankle": [
+          25.0,
+          47.0
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "far_hind_paw",
+      "role": "far_hind_paw",
+      "parent": "far_hind_shin",
+      "attach": {
+        "parentAnchor": "ankle",
+        "selfAnchor": "ankle"
+      },
+      "mask": {
+        "rect": [
+          22,
+          47,
+          6,
+          5
+        ]
+      },
+      "pivot": [
+        25.0,
+        47.0
+      ],
+      "anchors": {
+        "ankle": [
+          25.0,
+          47.0
+        ],
+        "paw": [
+          26.0,
+          50.0
+        ]
+      },
+      "mesh": {
+        "vertices": [
+          [
+            22.0,
+            47.0
+          ],
+          [
+            28.0,
+            47.0
+          ],
+          [
+            28.0,
+            52.0
+          ],
+          [
+            22.0,
+            52.0
+          ]
+        ],
+        "triangles": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        "weights": [
+          [
+            {
+              "bone": "far_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_hind_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_hind_paw",
+              "weight": 1.0
+            }
+          ]
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "near_fore_thigh",
+      "role": "near_fore_upper_leg",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "near_fore_shoulder",
+        "selfAnchor": "shoulder"
+      },
+      "mask": {
+        "rect": [
+          28,
+          36,
+          12,
+          8
+        ]
+      },
+      "pivot": [
+        32.0,
+        36.0
+      ],
+      "anchors": {
+        "shoulder": [
+          32.0,
+          36.0
+        ],
+        "elbow": [
+          33.0,
+          44.0
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "near_fore_shin",
+      "role": "near_fore_lower_leg",
+      "parent": "near_fore_thigh",
+      "attach": {
+        "parentAnchor": "elbow",
+        "selfAnchor": "elbow"
+      },
+      "mask": {
+        "rect": [
+          28,
+          44,
+          12,
+          8
+        ]
+      },
+      "pivot": [
+        33.0,
+        44.0
+      ],
+      "anchors": {
+        "elbow": [
+          33.0,
+          44.0
+        ],
+        "wrist": [
+          34.0,
+          52.0
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "near_fore_paw",
+      "role": "near_fore_paw",
+      "parent": "near_fore_shin",
+      "attach": {
+        "parentAnchor": "wrist",
+        "selfAnchor": "wrist"
+      },
+      "mask": {
+        "rect": [
+          28,
+          52,
+          16,
+          10
+        ]
+      },
+      "pivot": [
+        34.0,
+        52.0
+      ],
+      "anchors": {
+        "wrist": [
+          34.0,
+          52.0
+        ],
+        "paw": [
+          35.0,
+          61.0
+        ]
+      },
+      "mesh": {
+        "vertices": [
+          [
+            28.0,
+            52.0
+          ],
+          [
+            44.0,
+            52.0
+          ],
+          [
+            44.0,
+            62.0
+          ],
+          [
+            28.0,
+            62.0
+          ]
+        ],
+        "triangles": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        "weights": [
+          [
+            {
+              "bone": "near_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "near_fore_paw",
+              "weight": 1.0
+            }
+          ]
+        ]
+      },
+      "z": 3
+    },
+    {
+      "name": "far_fore_thigh",
+      "role": "far_fore_upper_leg",
+      "parent": "body",
+      "attach": {
+        "parentAnchor": "far_fore_shoulder",
+        "selfAnchor": "shoulder"
+      },
+      "mask": {
+        "rect": [
+          40,
+          36,
+          20,
+          8
+        ]
+      },
+      "pivot": [
+        42.0,
+        36.0
+      ],
+      "anchors": {
+        "shoulder": [
+          39.0,
+          36.0
+        ],
+        "elbow": [
+          46.0,
+          44.0
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "far_fore_shin",
+      "role": "far_fore_lower_leg",
+      "parent": "far_fore_thigh",
+      "attach": {
+        "parentAnchor": "elbow",
+        "selfAnchor": "elbow"
+      },
+      "mask": {
+        "rect": [
+          40,
+          44,
+          20,
+          8
+        ]
+      },
+      "pivot": [
+        46.0,
+        44.0
+      ],
+      "anchors": {
+        "elbow": [
+          46.0,
+          44.0
+        ],
+        "wrist": [
+          48.0,
+          52.0
+        ]
+      },
+      "z": 1
+    },
+    {
+      "name": "far_fore_paw",
+      "role": "far_fore_paw",
+      "parent": "far_fore_shin",
+      "attach": {
+        "parentAnchor": "wrist",
+        "selfAnchor": "wrist"
+      },
+      "mask": {
+        "rect": [
+          44,
+          52,
+          16,
+          10
+        ]
+      },
+      "pivot": [
+        48.0,
+        52.0
+      ],
+      "anchors": {
+        "wrist": [
+          48.0,
+          52.0
+        ],
+        "paw": [
+          54.0,
+          56.0
+        ]
+      },
+      "mesh": {
+        "vertices": [
+          [
+            44.0,
+            52.0
+          ],
+          [
+            60.0,
+            52.0
+          ],
+          [
+            60.0,
+            62.0
+          ],
+          [
+            44.0,
+            62.0
+          ]
+        ],
+        "triangles": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        "weights": [
+          [
+            {
+              "bone": "far_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_fore_paw",
+              "weight": 1.0
+            }
+          ],
+          [
+            {
+              "bone": "far_fore_paw",
+              "weight": 1.0
+            }
+          ]
+        ]
+      },
+      "z": 1
+    }
+  ],
+  "frames": [
+    {
+      "phase": "hind_contact",
+      "contacts": [
+        {
+          "part": "near_hind_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 0
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": 4
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    },
+    {
+      "phase": "hind_passing",
+      "contacts": [
+        {
+          "part": "far_fore_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 0.8
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": 2
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    },
+    {
+      "phase": "fore_contact",
+      "contacts": [
+        {
+          "part": "near_fore_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 1.6
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": -2
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    },
+    {
+      "phase": "fore_passing",
+      "contacts": [
+        {
+          "part": "far_hind_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 2.0
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": -4
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    },
+    {
+      "phase": "contact_recovery",
+      "contacts": [
+        {
+          "part": "far_fore_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 1.2
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": -1
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    },
+    {
+      "phase": "passing_recovery",
+      "contacts": [
+        {
+          "part": "near_fore_paw",
+          "anchor": "paw",
+          "state": "planted"
+        }
+      ],
+      "root": {
+        "dx": 0,
+        "dy": 0
+      },
+      "transforms": {
+        "body": {
+          "rotate": 0,
+          "dy": 0.4
+        },
+        "head": {
+          "rotate": 0
+        },
+        "tail": {
+          "rotate": 1
+        },
+        "near_hind_thigh": {
+          "rotate": 0
+        },
+        "far_hind_thigh": {
+          "rotate": 0
+        },
+        "near_fore_thigh": {
+          "rotate": 0
+        },
+        "far_fore_thigh": {
+          "rotate": 0
+        }
+      },
+      "zOverrides": {},
+      "ik": []
+    }
+  ],
+  "palette": {},
+  "planningMode": "ai-rig-deterministic-render",
+  "masterHash": "f7524bfadc06826feb6b33d887726b066144f44bffb3e3c80acb6755549f963e"
+}
