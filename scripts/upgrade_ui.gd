@@ -8,6 +8,7 @@ var is_showing: bool = false
 @onready var container: HBoxContainer = $Panel/CardContainer
 @onready var title_label: Label = $Panel/TitleLabel
 
+# 暂停状态由 GameFlow 独占管理，本面板只负责显示与收集选择。
 func show_choices(choices: Array, remaining_after: int = 0) -> void:
 	# 清空旧卡片：先脱离容器，再延迟释放。
 	# 不能用 free()：卡片按钮正在发射 pressed 信号时对象被锁定，free() 会报错。
@@ -22,7 +23,6 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 
 	visible = true
 	is_showing = true
-	get_tree().paused = true
 
 	for item in choices:
 		var btn = Button.new()
@@ -76,12 +76,9 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 		container.add_child(btn)
 
 func _on_card_pressed(uid: String) -> void:
-	visible = false
-	is_showing = false
-	get_tree().paused = false
+	hide_panel()
 	emit_signal("upgrade_selected", uid)
 
-func hide_and_unpause() -> void:
+func hide_panel() -> void:
 	visible = false
 	is_showing = false
-	get_tree().paused = false

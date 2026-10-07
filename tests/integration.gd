@@ -53,7 +53,15 @@ const TESTS := [
 	"test_upgrade_weight_and_prereq",
 	"test_font_cjk",
 	"test_audio_assets",
+	"test_game_flow_state_machine",
 	"test_escape_handling",
+	"test_pause_menu_settings",
+	"test_settings_persistence",
+	"test_accessibility_effects",
+	"test_music_control",
+	"test_stats_record",
+	"test_title_scene",
+	"test_run_isolation",
 	"test_smoke_long_run",
 ]
 
@@ -374,15 +382,39 @@ func test_gem_lifetime() -> void:
 	holder.free()
 	ObjectPools.clear()
 
+# ---- 战绩快照：测试会写入战绩，必须还原玩家真实数据 ----
+func _snapshot_stats() -> Dictionary:
+	return { "t": Stats.best_time, "l": Stats.best_level, "k": Stats.best_kills, "r": Stats.total_runs }
+
+func _restore_stats(s: Dictionary) -> void:
+	Stats.best_time = s["t"]
+	Stats.best_level = s["l"]
+	Stats.best_kills = s["k"]
+	Stats.total_runs = s["r"]
+	Stats.save_stats()
+
+# ---- 设置快照：同上，避免测试覆盖玩家偏好 ----
+func _snapshot_settings() -> Dictionary:
+	return Settings.values.duplicate(true)
+
+func _restore_settings(s: Dictionary) -> void:
+	Settings.values = s
+	Settings.apply_all()
+	Settings.save_settings()
+
 # ---- 死亡结算 + 重开清池 ----
 func test_game_over_flow() -> void:
+	var stats_snap = _snapshot_stats()
 	var m = await _load_main()
 	var p = m.get_node("Player")
 	var gov = m.get_node("GameOverUI")
 	var sfx_before = Sfx.play_count
+	var runs_before = Stats.total_runs
 	p.take_damage(99999.0)
 	await get_tree().process_frame
 	check("death_shows_summary", gov.visible and get_tree().paused, "visible=%s paused=%s" % [str(gov.visible), str(get_tree().paused)])
+	check("death_state_game_over", GameFlow.state == GameFlow.State.GAME_OVER, "state=%s" % GameFlow.state_name())
+	check("death_records_run", Stats.total_runs == runs_before + 1, "runs %d -> %d" % [runs_before, Stats.total_runs])
 	check("death_sfx_played", Sfx.play_count > sfx_before, "no hurt sfx on death")
 	check("death_shakes", p.shake_amount > 0.0, "no camera shake on death")
 	var stats = gov.get_node("PanelContainer/VBox/StatsLabel").text
@@ -399,12 +431,17 @@ func test_game_over_flow() -> void:
 	# 它内部的 reload_current_scene() 会重载测试场景自身，导致测试无限重跑（实测挂死）。
 	m._prepare_restart()
 	await get_tree().process_frame
-	check("restart_unpauses", not get_tree().paused, "still paused after restart")
 	check("restart_clears_pools", ObjectPools.free_count("res://scenes/exp_gem.tscn") == 0, "pool not cleared on restart, free=%d" % ObjectPools.free_count("res://scenes/exp_gem.tscn"))
 	check("restart_prepare_no_reload", get_tree().current_scene == self, "current_scene changed — reload leaked into test")
+	# 解除暂停现在由 GameFlow._enter_run() 负责（状态迁移与场景切换已分离）
+	GameFlow._enter_run()
+	await get_tree().process_frame
+	check("enter_run_unpauses", not get_tree().paused, "still paused after _enter_run")
+	check("enter_run_state_playing", GameFlow.state == GameFlow.State.PLAYING, "state=%s" % GameFlow.state_name())
 	m.queue_free()
 	await _frame()
 	ObjectPools.clear()
+	_restore_stats(stats_snap)
 
 # ---- 升级加权抽取 + 进化前置 ----
 func test_upgrade_weight_and_prereq() -> void:
@@ -466,36 +503,387 @@ func test_audio_assets() -> void:
 	Sfx.play("nonexistent_sound")
 	check("sfx_play_counter", Sfx.play_count == before + 2, "counter %d -> %d expect +2" % [before, Sfx.play_count])
 
-# ---- ESC 退出判定：边缘检测 + 启动保护 + 暂停保护 ----
-# 只测无副作用的判定函数。真按 ESC 会调 get_tree().quit()，把测试套件一起关掉。
+# ---- GameFlow 状态机：暂停权独占、非法迁移被拒 ----
+func test_game_flow_state_machine() -> void:
+	var G = GameFlow
+	var log_before = G.transition_log.size()
+
+	# 暂停映射必须与状态一致：只有 TITLE / PLAYING 不冻结
+	for s in [G.State.TITLE, G.State.PLAYING, G.State.PAUSED, G.State.UPGRADE, G.State.GAME_OVER]:
+		var expect = (s == G.State.PAUSED or s == G.State.UPGRADE or s == G.State.GAME_OVER)
+		check("paused_map_%s" % G.state_name(s), G._state_pauses(s) == expect, "pause mapping wrong for %s" % G.state_name(s))
+
+	# 进入战斗态：解除暂停
+	G._enter_run()
+	await _frame()
+	check("enter_run_unpauses", not get_tree().paused, "paused after _enter_run")
+	check("enter_run_state", G.state == G.State.PLAYING, "state=%s" % G.state_name())
+
+	# 暂停 / 恢复
+	G.pause()
+	await _frame()
+	check("pause_sets_paused", get_tree().paused, "tree not paused")
+	check("pause_state", G.state == G.State.PAUSED, "state=%s" % G.state_name())
+	G.resume()
+	await _frame()
+	check("resume_clears_paused", not get_tree().paused, "tree still paused after resume")
+	check("resume_state", G.state == G.State.PLAYING, "state=%s" % G.state_name())
+
+	# 暂停态下不能开选卡（非法迁移必须被拒）
+	G.pause()
+	check("pause_rejects_upgrade", not G.request_upgrade(), "upgrade opened while paused")
+	check("pause_state_unchanged", G.state == G.State.PAUSED, "state corrupted: %s" % G.state_name())
+	G.resume()
+
+	# 选卡态：树暂停，且 pause/resume 均不得覆盖它
+	check("upgrade_request_ok", G.request_upgrade(), "upgrade request rejected while playing")
+	await _frame()
+	check("upgrade_pauses_tree", get_tree().paused, "tree not paused during upgrade")
+	check("upgrade_state", G.state == G.State.UPGRADE, "state=%s" % G.state_name())
+	G.pause()
+	check("pause_rejected_during_upgrade", G.state == G.State.UPGRADE, "pause overrode upgrade: %s" % G.state_name())
+	G.resume()
+	check("resume_rejected_during_upgrade", G.state == G.State.UPGRADE, "resume overrode upgrade: %s" % G.state_name())
+	G.finish_upgrade()
+	await _frame()
+	check("finish_upgrade_resumes", not get_tree().paused and G.state == G.State.PLAYING, "state=%s paused=%s" % [G.state_name(), str(get_tree().paused)])
+
+	# 死亡：从选卡态强制进入结算（极端情况）
+	G.request_upgrade()
+	G.game_over()
+	await _frame()
+	check("game_over_from_upgrade", G.state == G.State.GAME_OVER, "state=%s" % G.state_name())
+	check("game_over_pauses", get_tree().paused, "tree not paused at game over")
+	G.game_over()
+	check("game_over_idempotent", G.state == G.State.GAME_OVER, "state=%s" % G.state_name())
+	# 死亡后到达的升级请求必须丢弃，否则结算面板会被顶掉
+	check("upgrade_rejected_after_death", not G.request_upgrade(), "upgrade opened after game over")
+	check("state_still_game_over", G.state == G.State.GAME_OVER, "state=%s" % G.state_name())
+	check("transitions_logged", G.transition_log.size() > log_before, "no transition logged")
+
+	# 复原到战斗态，避免影响后续测试
+	G._enter_run()
+	await _frame()
+
+# ---- ESC 决策：按状态映射到暂停/恢复/退出，含启动保护 ----
+# 只测纯函数 escape_action()。若测 on_escape()，TITLE 态会真的退出进程，
+# 把整个测试套件一起关掉。
 func test_escape_handling() -> void:
+	var G = GameFlow
+	check("esc_title_quits", G.escape_action(G.State.TITLE, 5.0) == G.EscapeAction.QUIT, "title ESC should quit")
+	# 启动保护：窗口刚获焦时手上若正按着 ESC，会被误判成操作意图
+	check("esc_guard_blocks_early", G.escape_action(G.State.PLAYING, 0.0) == G.EscapeAction.NONE, "acted during guard window")
+	check("esc_guard_boundary", G.escape_action(G.State.PLAYING, G.ESC_GUARD_SECONDS - 0.01) == G.EscapeAction.NONE, "acted right before guard ends")
+	# 保护期后 ESC 打开暂停菜单，而不是直接退出（防误触丢进度）
+	check("esc_playing_pauses", G.escape_action(G.State.PLAYING, 5.0) == G.EscapeAction.PAUSE, "ESC should pause after guard")
+	check("esc_playing_not_quit", G.escape_action(G.State.PLAYING, 5.0) != G.EscapeAction.QUIT, "ESC must not quit during play")
+	check("esc_paused_resumes", G.escape_action(G.State.PAUSED, 5.0) == G.EscapeAction.RESUME, "ESC should resume from pause")
+	# 选卡与结算期间不响应 ESC
+	check("esc_upgrade_ignored", G.escape_action(G.State.UPGRADE, 5.0) == G.EscapeAction.NONE, "ESC acted during upgrade choice")
+	check("esc_gameover_ignored", G.escape_action(G.State.GAME_OVER, 5.0) == G.EscapeAction.NONE, "ESC acted during game over")
+
+# ---- 暂停菜单：随状态显示/隐藏，设置面板可开关 ----
+func test_pause_menu_settings() -> void:
 	var m = await _load_main()
-	var ui = m.get_node("UI")
+	var menu = m.get_node("PauseMenu")
+	check("menu_hidden_while_playing", not menu.visible, "pause menu visible during play")
 
-	# 边缘检测：按住期间只触发一次，松手后再按才触发第二次
-	check("esc_edge_first_press", ui._consume_escape_edge(true), "first press not detected")
-	check("esc_edge_held_no_repeat", not ui._consume_escape_edge(true), "held key repeated edge")
-	check("esc_edge_held_still_no_repeat", not ui._consume_escape_edge(true), "held key repeated edge")
-	ui._consume_escape_edge(false)
-	check("esc_edge_after_release", ui._consume_escape_edge(true), "press after release not detected")
-	ui._consume_escape_edge(false)
+	GameFlow.pause()
+	await _frame()
+	check("menu_shown_when_paused", menu.visible, "pause menu not shown after pause")
+	check("menu_root_visible", menu.get_node("Root").visible, "menu root not visible")
 
-	# 启动保护期：窗口刚获焦时手上若正按着 ESC，不应退出
-	check("esc_guard_blocks_early", not ui._should_quit_on_escape(true, 0.2, false), "would quit during guard window")
-	check("esc_guard_boundary", not ui._should_quit_on_escape(true, ui.ESC_GUARD_SECONDS - 0.01, false), "would quit right before guard ends")
+	# 打开设置面板
+	menu.get_node("Root/Panel/VBox/SettingsButton").emit_signal("pressed")
+	await _frame()
+	check("settings_panel_opened", menu._is_settings_open(), "settings panel not created")
+	check("settings_panel_parented", menu.settings_panel.get_parent() == menu.get_node("SettingsLayer"), "panel in wrong layer")
 
-	# 保护期后正常按下应退出
-	check("esc_quits_after_guard", ui._should_quit_on_escape(true, 5.0, false), "ESC ignored after guard window")
+	# 设置面板打开时按 ESC 应只关面板，不恢复游戏
+	var ev = InputEventKey.new()
+	ev.keycode = KEY_ESCAPE
+	ev.pressed = true
+	menu._input(ev)
+	await _frame()
+	check("esc_closes_settings_first", not menu._is_settings_open(), "settings panel survived ESC")
+	check("esc_keeps_paused", GameFlow.state == GameFlow.State.PAUSED, "game resumed when only settings should close: %s" % GameFlow.state_name())
+	check("menu_still_shown", menu.visible, "menu hidden after closing settings")
 
-	# 升级面板暂停时不应退出，避免误触丢进度
-	check("esc_paused_no_quit", not ui._should_quit_on_escape(true, 5.0, true), "would quit while upgrade panel open")
+	# 恢复后菜单应隐藏
+	GameFlow.resume()
+	await _frame()
+	check("menu_hidden_after_resume", not menu.visible, "menu still visible after resume")
 
-	# 没有新按下时不退出
-	check("esc_no_press_no_quit", not ui._should_quit_on_escape(false, 5.0, false), "quit without key press")
+	# 暂停菜单必须能在树暂停时继续运行，否则按不了按钮
+	check("menu_process_always", menu.process_mode == Node.PROCESS_MODE_ALWAYS, "process_mode=%d, would freeze while paused" % menu.process_mode)
 
 	m.queue_free()
 	await _frame()
 	ObjectPools.clear()
+
+# ---- 设置：立即生效、落盘持久化、默认值还原 ----
+func test_settings_persistence() -> void:
+	var snap = _snapshot_settings()
+	var music_bus = AudioServer.get_bus_index("Music")
+	var sfx_bus = AudioServer.get_bus_index("SFX")
+	var master_bus = AudioServer.get_bus_index("Master")
+	check("buses_exist", music_bus >= 0 and sfx_bus >= 0 and master_bus >= 0, "audio buses missing")
+
+	# 音量变更应立即作用于对应总线
+	var saves_before = Settings.save_count
+	Settings.set_value("audio/music_volume_db", -18.0)
+	check("music_bus_applied", is_equal_approx(AudioServer.get_bus_volume_db(music_bus), -18.0), "bus db=%.1f" % AudioServer.get_bus_volume_db(music_bus))
+	check("settings_saved_to_disk", Settings.save_count == saves_before + 1, "save_count %d -> %d" % [saves_before, Settings.save_count])
+
+	# 重新加载应从磁盘恢复
+	Settings.load_settings()
+	check("settings_persisted", is_equal_approx(Settings.get_float("audio/music_volume_db"), -18.0), "reloaded value=%.1f" % Settings.get_float("audio/music_volume_db"))
+
+	# 静音阈值：低于 -60 dB 应静音总线
+	Settings.set_value("audio/sfx_volume_db", -60.0)
+	Settings.apply("audio/sfx_volume_db")
+	check("sfx_muted_at_floor", AudioServer.is_bus_mute(sfx_bus), "bus not muted at -60 dB")
+	Settings.set_value("audio/sfx_volume_db", -3.0)
+	Settings.apply("audio/sfx_volume_db")
+	check("sfx_unmuted_above_floor", not AudioServer.is_bus_mute(sfx_bus), "bus still muted above floor")
+
+	# 无障碍开关应可切换并持久化
+	Settings.set_value("video/screen_shake", false)
+	check("shake_off_persisted", Settings.get_bool("video/screen_shake") == false, "shake flag not stored")
+	Settings.set_value("video/hit_flash", false)
+	check("flash_off_persisted", Settings.get_bool("video/hit_flash") == false, "flash flag not stored")
+
+	# stage_value 只生效不落盘（滑条拖动中避免每帧写磁盘）
+	var saves_mid = Settings.save_count
+	Settings.stage_value("audio/master_volume_db", -12.0)
+	check("stage_applies_bus", is_equal_approx(AudioServer.get_bus_volume_db(master_bus), -12.0), "staged value not applied")
+	check("stage_does_not_save", Settings.save_count == saves_mid, "stage_value wrote to disk")
+
+	# 未知键必须被拒绝，不能污染存档
+	Settings.set_value("nope/bogus", 1.0)
+	check("unknown_key_rejected", Settings.get_value("nope/bogus") == null, "unknown key was stored")
+
+	# 线性/分贝互转应可逆
+	var db = Settings.linear_to_db(0.5)
+	check("db_roundtrip", absf(Settings.db_to_linear(db) - 0.5) < 0.001, "roundtrip=%.4f" % Settings.db_to_linear(db))
+	check("db_floor_is_silence", Settings.linear_to_db(0.0) <= -60.0, "zero volume -> %.1f dB" % Settings.linear_to_db(0.0))
+
+	# 恢复默认应回到出厂值
+	Settings.reset_to_defaults()
+	check("reset_restores_defaults", is_equal_approx(Settings.get_float("audio/music_volume_db"), Settings.DEFAULTS["audio/music_volume_db"]), "reset did not restore defaults")
+	check("reset_restores_toggles", Settings.get_bool("video/screen_shake") == true, "shake default should be on")
+
+	_restore_settings(snap)
+
+# ---- 无障碍开关必须真实影响游戏表现 ----
+func test_accessibility_effects() -> void:
+	var snap = _snapshot_settings()
+	var m = await _load_main()
+	var p = m.get_node("Player")
+
+	# 关闭震屏后 shake_camera 不应产生偏移
+	Settings.set_value("video/screen_shake", false)
+	p.shake_amount = 0.0
+	p.shake_camera(10.0)
+	check("shake_disabled_ignored", p.shake_amount == 0.0, "shake applied while disabled")
+	Settings.set_value("video/screen_shake", true)
+	p.shake_camera(10.0)
+	check("shake_enabled_works", p.shake_amount > 0.0, "shake not applied while enabled")
+
+	# 关闭受击闪白后 modulate 不应变红
+	Settings.set_value("video/hit_flash", false)
+	p.modulate = Color.WHITE
+	p.take_damage(1.0)
+	check("flash_disabled_keeps_white", p.modulate == Color.WHITE, "modulate=%s while flash disabled" % str(p.modulate))
+	Settings.set_value("video/hit_flash", true)
+	p.modulate = Color.WHITE
+	p.take_damage(1.0)
+	check("flash_enabled_tints", p.modulate != Color.WHITE, "no flash while enabled")
+
+	m.queue_free()
+	await _frame()
+	ObjectPools.clear()
+	_restore_settings(snap)
+
+# ---- 背景音乐：切曲、同曲不打断、循环、停止 ----
+func test_music_control() -> void:
+	var snap = _snapshot_settings()
+	check("music_has_title", Music.has_track("title"), "title track missing")
+	check("music_has_battle", Music.has_track("battle"), "battle track missing")
+	check("music_missing_track", not Music.has_track("nonexistent"), "phantom track reported")
+	check("music_bus_assigned", Music._player.bus == "Music", "player on bus %s" % Music._player.bus)
+
+	Music.stop_music(0.0)
+	await _frame()
+	Music.play_track("title", 0.0)
+	await _frame()
+	check("music_plays_title", Music.current_track == "title", "track=%s" % Music.current_track)
+	check("music_player_playing", Music._player.playing, "player not playing")
+
+	# 同曲重复调用不应重头播放（场景内多次触发时会跳音）
+	var stream_id = Music._player.stream.get_instance_id()
+	Music.play_track("title", 0.0)
+	await _frame()
+	check("music_same_track_no_restart", Music._player.stream.get_instance_id() == stream_id, "track restarted")
+
+	# 切曲应换流
+	Music.play_track("battle", 0.0)
+	await _frame()
+	check("music_switches_track", Music.current_track == "battle", "track=%s" % Music.current_track)
+
+	# 循环：自然播完后应重播同一曲
+	var loops = Music.loop_count
+	Music._on_track_finished()
+	await _frame()
+	check("music_loops_on_finish", Music.loop_count == loops + 1, "loop_count %d -> %d" % [loops, Music.loop_count])
+	check("music_loop_keeps_track", Music.current_track == "battle", "track changed on loop: %s" % Music.current_track)
+
+	Music.stop_music(0.0)
+	await _frame()
+	check("music_stopped", Music.current_track == "", "track=%s after stop" % Music.current_track)
+	# 停止后收到 finished 不应复活播放
+	var loops2 = Music.loop_count
+	Music._on_track_finished()
+	check("music_no_revive_after_stop", Music.loop_count == loops2 and Music.current_track == "", "music revived after stop")
+
+	# 缺失曲目应安全忽略
+	Music.play_track("nonexistent")
+	check("music_missing_ignored", Music.current_track == "", "track set to missing resource")
+	_restore_settings(snap)
+
+# ---- 战绩：记录、刷新判定、持久化、格式化 ----
+func test_stats_record() -> void:
+	var snap = _snapshot_stats()
+	# 干净起点
+	Stats.best_time = 0.0
+	Stats.best_level = 0
+	Stats.best_kills = 0
+	Stats.total_runs = 0
+	check("stats_empty_initially", not Stats.has_history(), "has_history true with zero runs")
+	check("stats_summary_empty", Stats.summary_text() == "", "summary not empty for new player")
+
+	# 第一局必然刷新纪录
+	check("first_run_is_record", Stats.record_run(120.0, 5, 40), "first run not flagged as record")
+	check("stats_run_counted", Stats.total_runs == 1, "runs=%d" % Stats.total_runs)
+	check("stats_history_now", Stats.has_history(), "no history after first run")
+	check("stats_best_time", is_equal_approx(Stats.best_time, 120.0), "best_time=%.1f" % Stats.best_time)
+	check("stats_best_level", Stats.best_level == 5, "best_level=%d" % Stats.best_level)
+	check("stats_best_kills", Stats.best_kills == 40, "best_kills=%d" % Stats.best_kills)
+
+	# 更差的一局不应刷新纪录，但各项最佳必须保留
+	check("worse_run_not_record", not Stats.record_run(60.0, 3, 10), "worse run flagged as record")
+	check("best_preserved_time", is_equal_approx(Stats.best_time, 120.0), "best_time overwritten: %.1f" % Stats.best_time)
+	check("best_preserved_kills", Stats.best_kills == 40, "best_kills overwritten: %d" % Stats.best_kills)
+	check("runs_incremented", Stats.total_runs == 2, "runs=%d" % Stats.total_runs)
+
+	# 单项突破应刷新纪录
+	check("partial_record_kills", Stats.record_run(30.0, 2, 999), "kill-only record not flagged")
+	check("kills_updated", Stats.best_kills == 999, "best_kills=%d" % Stats.best_kills)
+	check("time_not_regressed", is_equal_approx(Stats.best_time, 120.0), "best_time regressed to %.1f" % Stats.best_time)
+
+	# 持久化：重新加载应保留
+	Stats.load_stats()
+	check("stats_persisted_time", is_equal_approx(Stats.best_time, 120.0), "reloaded time=%.1f" % Stats.best_time)
+	check("stats_persisted_runs", Stats.total_runs == 3, "reloaded runs=%d" % Stats.total_runs)
+
+	check("stats_format_time", Stats.format_time(125.0) == "02:05", "format=%s" % Stats.format_time(125.0))
+	check("stats_summary_has_content", Stats.summary_text().contains("最长修行"), "summary=%s" % Stats.summary_text())
+
+	_restore_stats(snap)
+
+# ---- 标题界面：入口、设置面板、战绩显示 ----
+func test_title_scene() -> void:
+	var snap = _snapshot_stats()
+	Stats.best_time = 300.0
+	Stats.best_level = 9
+	Stats.best_kills = 250
+	Stats.total_runs = 4
+
+	var t = (load("res://scenes/title.tscn") as PackedScene).instantiate()
+	get_tree().root.add_child(t)
+	await _frame()
+	await _frame()
+
+	check("title_in_tree", t.is_inside_tree(), "title not in tree")
+	check("title_state", GameFlow.state == GameFlow.State.TITLE, "state=%s" % GameFlow.state_name())
+	check("title_not_paused", not get_tree().paused, "tree paused at title — game would freeze")
+	check("title_music", Music.current_track == "title", "track=%s" % Music.current_track)
+
+	# 战绩应显示
+	var best = t.get_node("Center/VBox/BestLabel")
+	check("title_best_visible", best.visible, "best label hidden despite history")
+	check("title_best_text", best.text.contains("05:00"), "best text=%s" % best.text)
+
+	# 必需按钮存在
+	for btn_path in ["Center/VBox/StartButton", "Center/VBox/SettingsButton", "Center/VBox/QuitButton"]:
+		check("title_button_%s" % btn_path.split("/")[2], t.get_node_or_null(btn_path) != null, "missing %s" % btn_path)
+
+	# 设置面板开关
+	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	await _frame()
+	check("title_settings_opened", t.settings_panel != null and is_instance_valid(t.settings_panel), "settings panel not created")
+	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	await _frame()
+	check("title_settings_toggled_off", t.settings_panel == null, "settings panel not closed by toggle")
+
+	# 设置面板本体：控件齐全，滑条与开关反映当前设置
+	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	await _frame()
+	var panel = t.settings_panel
+	check("panel_has_sliders", panel._sliders.size() == 3, "sliders=%d expect 3" % panel._sliders.size())
+	check("panel_has_toggles", panel._toggles.size() == 3, "toggles=%d expect 3" % panel._toggles.size())
+	check("panel_slider_synced", absf(panel._sliders["audio/music_volume_db"].value - Settings.db_to_linear(Settings.get_float("audio/music_volume_db"))) < 0.02, "slider out of sync")
+	check("panel_toggle_synced", panel._toggles["video/screen_shake"].button_pressed == Settings.get_bool("video/screen_shake"), "toggle out of sync")
+
+	# 拖动滑条应实时生效但不落盘
+	var saves = Settings.save_count
+	panel._on_slider_dragged("audio/sfx_volume_db", 0.25)
+	check("panel_drag_applies", is_equal_approx(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("SFX")), Settings.linear_to_db(0.25)), "drag did not apply to bus")
+	check("panel_drag_no_save", Settings.save_count == saves, "drag wrote to disk")
+	panel._on_slider_released("audio/sfx_volume_db")
+	check("panel_release_saves", Settings.save_count == saves + 1, "release did not persist")
+
+	# 开关切换应落盘
+	saves = Settings.save_count
+	panel._on_toggle_changed("video/screen_shake", false)
+	check("panel_toggle_saves", Settings.save_count == saves + 1, "toggle did not persist")
+	check("panel_toggle_stored", Settings.get_bool("video/screen_shake") == false, "toggle value not stored")
+
+	# 返回按钮应关闭面板
+	panel.emit_signal("closed")
+	await _frame()
+	check("panel_closed_by_back", t.settings_panel == null, "panel survived closed signal")
+
+	t.queue_free()
+	await _frame()
+	Settings.reset_to_defaults()
+	_restore_stats(snap)
+
+# ---- 新局开始不应残留上一局的击杀数与升级进度 ----
+func test_run_isolation() -> void:
+	var snap = _snapshot_stats()
+	var m = await _load_main()
+	m.kill_count = 42
+	m.pending_level_ups = 3
+	var mgr = m.get_node("UpgradeManager")
+	for id in mgr.upgrades.keys():
+		mgr.upgrades[id]["level"] = 2
+	check("run_dirty_before", m.kill_count == 42 and mgr.upgrades["sword_amount"]["level"] == 2, "setup failed")
+
+	# 重新加载 main 场景模拟"重开本局"：UpgradeManager 是新实例，等级应归零
+	var m2 = await _load_main()
+	check("new_run_kills_zero", m2.kill_count == 0, "kills carried over: %d" % m2.kill_count)
+	check("new_run_pending_zero", m2.pending_level_ups == 0, "pending level ups carried over")
+	var mgr2 = m2.get_node("UpgradeManager")
+	check("new_run_upgrades_reset", mgr2.upgrades["sword_amount"]["level"] == 0, "upgrade level carried over: %d" % mgr2.upgrades["sword_amount"]["level"])
+	check("new_run_state_playing", GameFlow.state == GameFlow.State.PLAYING, "state=%s" % GameFlow.state_name())
+	check("new_run_not_paused", not get_tree().paused, "new run started paused")
+
+	m.queue_free()
+	m2.queue_free()
+	await _frame()
+	ObjectPools.clear()
+	_restore_stats(snap)
 
 # ---- 60 秒长跑冒烟：敌人受控、池不泄漏、无节点暴涨 ----
 func test_smoke_long_run() -> void:

@@ -160,6 +160,9 @@ func _update_shake(delta: float) -> void:
 		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake_amount
 
 func shake_camera(amount: float) -> void:
+	# 无障碍：设置中可关闭震屏（光敏/晕动症保护）
+	if not Settings.get_bool("video/screen_shake"):
+		return
 	# 叠加但不无限放大，避免连续雷击把镜头甩飞
 	shake_amount = minf(22.0, shake_amount + amount)
 
@@ -246,12 +249,13 @@ func take_damage(amount: float) -> void:
 		return # 死亡或身法无敌帧
 	current_health = max(0.0, current_health - amount)
 	emit_signal("health_changed", current_health, max_health)
-	# 受击微红闪烁（打断上一次闪烁补间，避免叠加）
-	modulate = Color(1.5, 0.5, 0.5, 1.0)
-	if _flash_tween != null and _flash_tween.is_valid():
-		_flash_tween.kill()
-	_flash_tween = create_tween()
-	_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.15)
+	# 受击微红闪烁（无障碍开关可关闭；打断上一次补间避免叠加）
+	if Settings.get_bool("video/hit_flash"):
+		modulate = Color(1.5, 0.5, 0.5, 1.0)
+		if _flash_tween != null and _flash_tween.is_valid():
+			_flash_tween.kill()
+		_flash_tween = create_tween()
+		_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.15)
 	# 受击反馈：音效 + 轻微震屏
 	Sfx.play_varied("player_hurt", -8.0)
 	shake_camera(4.0)

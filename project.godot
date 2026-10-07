@@ -9,14 +9,22 @@ config_version=5
 config/name="大荒诛魔录"
 config/description="修仙肉鸽割草游戏"
 config/version="0.1.0"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.svg"
 
 [autoload]
 
+; 顺序有依赖：Settings 必须先于 Music（Music 读取音乐音量设置），
+; GameFlow 必须先于场景脚本（各界面调用它变更流程状态）。
+; project.godot 只认 ";" 作为注释符，用 "#" 会被当成语法错误并破坏本段解析。
 CombatGrid="*res://scripts/autoload/combat_grid.gd"
 ObjectPools="*res://scripts/autoload/object_pools.gd"
+Settings="*res://scripts/autoload/settings.gd"
+Stats="*res://scripts/autoload/stats.gd"
 Sfx="*res://scripts/autoload/sfx.gd"
+Music="*res://scripts/autoload/music.gd"
+GameFlow="*res://scripts/autoload/game_flow.gd"
 
 [display]
 

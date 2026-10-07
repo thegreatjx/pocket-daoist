@@ -5,23 +5,25 @@ extends CanvasLayer
 @onready var realm_label: Label = $HUD/RealmLabel
 @onready var timer_label: Label = $HUD/TimerLabel
 @onready var hint_label: Label = $HUD/HintLabel
+@onready var kill_label: Label = $HUD/KillLabel
 
 # 操作提示停留时长，之后淡出，不干扰战斗视野
 const HINT_VISIBLE_SECONDS := 9.0
 const HINT_FADE_SECONDS := 2.0
-# 启动后这段时间内忽略 ESC：窗口刚获得焦点时若玩家手上正按着 ESC，
-# 会被判成退出意图，游戏瞬间关闭。
-const ESC_GUARD_SECONDS := 1.0
 
 var game_time: float = 0.0
-var kill_count_shown: int = 0
-var _esc_held_last_frame: bool = false
+var kill_count_shown: int = -1
 
 func _ready() -> void:
-	_schedule_hint_fade()
+	# ESC 已由 GameFlow 统一处理（本节点在树暂停时会被冻结，无法自行响应按键）。
+	# 这里只负责计时、状态显示与提示淡出。
+	_setup_hint()
 
-func _schedule_hint_fade() -> void:
+func _setup_hint() -> void:
 	if hint_label == null:
+		return
+	if not Settings.get_bool("ui/hint_enabled"):
+		hint_label.visible = false
 		return
 	var t = create_tween()
 	t.tween_interval(HINT_VISIBLE_SECONDS)
@@ -32,33 +34,19 @@ func _process(delta: float) -> void:
 	var minutes = int(game_time) / 60
 	var seconds = int(game_time) % 60
 	timer_label.text = "%02d:%02d" % [minutes, seconds]
+	_update_kill_count()
 
-	_handle_escape()
-
-# 边缘检测：本帧是否出现 ESC 的新按下（松手后再按才算一次）
-func _consume_escape_edge(held: bool) -> bool:
-	var just_pressed = held and not _esc_held_last_frame
-	_esc_held_last_frame = held
-	return just_pressed
-
-# ESC 退出判定。拆成无副作用的纯函数便于测试：
-# 测试若直接触发 quit()，会把整个测试套件一起关掉。
-func _should_quit_on_escape(just_pressed: bool, time_now: float, paused: bool) -> bool:
-	if not just_pressed:
-		return false
-	# 启动保护期内忽略：窗口刚获焦时手上若正按着 ESC，会被误判成退出意图
-	if time_now < ESC_GUARD_SECONDS:
-		return false
-	# 升级面板打开时不退出，避免误触丢进度
-	if paused:
-		return false
-	return true
-
-func _handle_escape() -> void:
-	var just_pressed = _consume_escape_edge(Input.is_key_pressed(KEY_ESCAPE))
-	if _should_quit_on_escape(just_pressed, game_time, get_tree().paused):
-		Sfx.stop_all()
-		get_tree().quit()
+func _update_kill_count() -> void:
+	if kill_label == null:
+		return
+	# 向 game_manager 拉取击杀数，变化时才更新文本，避免每帧重排 Label
+	var mgrs = get_tree().get_nodes_in_group("game_manager")
+	if mgrs.size() == 0:
+		return
+	var kills = mgrs[0].kill_count
+	if kills != kill_count_shown:
+		kill_count_shown = kills
+		kill_label.text = "诛魔 %d" % kills
 
 func update_health(curr: float, max_h: float) -> void:
 	hp_bar.max_value = max_h

@@ -93,12 +93,13 @@ func take_damage(amount: float) -> void:
 	if is_dead:
 		return
 	current_health -= amount
-	# 受击微光闪白（先打断上一次闪烁，避免补间叠加）
-	modulate = Color(2.0, 1.5, 1.5, 1.0)
-	if _flash_tween != null and _flash_tween.is_valid():
-		_flash_tween.kill()
-	_flash_tween = create_tween()
-	_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+	# 受击微光闪白（无障碍开关可关闭；先打断上一次补间避免叠加）
+	if Settings.get_bool("video/hit_flash"):
+		modulate = Color(2.0, 1.5, 1.5, 1.0)
+		if _flash_tween != null and _flash_tween.is_valid():
+			_flash_tween.kill()
+		_flash_tween = create_tween()
+		_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.1)
 
 	if current_health <= 0:
 		die()

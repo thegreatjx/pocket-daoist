@@ -30,8 +30,12 @@ func _ready() -> void:
 			_streams[key] = s
 		else:
 			push_error("Sfx: 音效加载失败 %s" % SOUNDS[key])
+	# 路由到 SFX 总线，与背景音乐分开调节音量
+	var bus = AudioServer.get_bus_index("SFX")
+	var bus_name = "SFX" if bus >= 0 else "Master"
 	for i in range(PLAYER_COUNT):
 		var p = AudioStreamPlayer.new()
+		p.bus = bus_name
 		# 播放结束即释放 stream，空闲播放器不持有 WAV 资源引用，
 		# 避免进程退出时音频服务器报 AudioStreamWAV 泄漏（实测可降到接近 0）。
 		p.finished.connect(_on_player_finished.bind(p))
