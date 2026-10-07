@@ -53,6 +53,7 @@ const TESTS := [
 	"test_upgrade_weight_and_prereq",
 	"test_font_cjk",
 	"test_audio_assets",
+	"test_escape_handling",
 	"test_smoke_long_run",
 ]
 
@@ -464,6 +465,37 @@ func test_audio_assets() -> void:
 	Sfx.play_varied("sword_hit", -10.0)
 	Sfx.play("nonexistent_sound")
 	check("sfx_play_counter", Sfx.play_count == before + 2, "counter %d -> %d expect +2" % [before, Sfx.play_count])
+
+# ---- ESC 退出判定：边缘检测 + 启动保护 + 暂停保护 ----
+# 只测无副作用的判定函数。真按 ESC 会调 get_tree().quit()，把测试套件一起关掉。
+func test_escape_handling() -> void:
+	var m = await _load_main()
+	var ui = m.get_node("UI")
+
+	# 边缘检测：按住期间只触发一次，松手后再按才触发第二次
+	check("esc_edge_first_press", ui._consume_escape_edge(true), "first press not detected")
+	check("esc_edge_held_no_repeat", not ui._consume_escape_edge(true), "held key repeated edge")
+	check("esc_edge_held_still_no_repeat", not ui._consume_escape_edge(true), "held key repeated edge")
+	ui._consume_escape_edge(false)
+	check("esc_edge_after_release", ui._consume_escape_edge(true), "press after release not detected")
+	ui._consume_escape_edge(false)
+
+	# 启动保护期：窗口刚获焦时手上若正按着 ESC，不应退出
+	check("esc_guard_blocks_early", not ui._should_quit_on_escape(true, 0.2, false), "would quit during guard window")
+	check("esc_guard_boundary", not ui._should_quit_on_escape(true, ui.ESC_GUARD_SECONDS - 0.01, false), "would quit right before guard ends")
+
+	# 保护期后正常按下应退出
+	check("esc_quits_after_guard", ui._should_quit_on_escape(true, 5.0, false), "ESC ignored after guard window")
+
+	# 升级面板暂停时不应退出，避免误触丢进度
+	check("esc_paused_no_quit", not ui._should_quit_on_escape(true, 5.0, true), "would quit while upgrade panel open")
+
+	# 没有新按下时不退出
+	check("esc_no_press_no_quit", not ui._should_quit_on_escape(false, 5.0, false), "quit without key press")
+
+	m.queue_free()
+	await _frame()
+	ObjectPools.clear()
 
 # ---- 60 秒长跑冒烟：敌人受控、池不泄漏、无节点暴涨 ----
 func test_smoke_long_run() -> void:

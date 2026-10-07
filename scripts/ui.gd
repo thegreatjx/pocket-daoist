@@ -9,9 +9,13 @@ extends CanvasLayer
 # 操作提示停留时长，之后淡出，不干扰战斗视野
 const HINT_VISIBLE_SECONDS := 9.0
 const HINT_FADE_SECONDS := 2.0
+# 启动后这段时间内忽略 ESC：窗口刚获得焦点时若玩家手上正按着 ESC，
+# 会被判成退出意图，游戏瞬间关闭。
+const ESC_GUARD_SECONDS := 1.0
 
 var game_time: float = 0.0
 var kill_count_shown: int = 0
+var _esc_held_last_frame: bool = false
 
 func _ready() -> void:
 	_schedule_hint_fade()
@@ -29,12 +33,32 @@ func _process(delta: float) -> void:
 	var seconds = int(game_time) % 60
 	timer_label.text = "%02d:%02d" % [minutes, seconds]
 
-	# ESC 退出：窗口模式下的常规预期操作
-	if Input.is_key_pressed(KEY_ESCAPE):
-		# 升级面板打开时 ESC 不做退出，避免误触丢进度
-		if not get_tree().paused:
-			Sfx.stop_all()
-			get_tree().quit()
+	_handle_escape()
+
+# 边缘检测：本帧是否出现 ESC 的新按下（松手后再按才算一次）
+func _consume_escape_edge(held: bool) -> bool:
+	var just_pressed = held and not _esc_held_last_frame
+	_esc_held_last_frame = held
+	return just_pressed
+
+# ESC 退出判定。拆成无副作用的纯函数便于测试：
+# 测试若直接触发 quit()，会把整个测试套件一起关掉。
+func _should_quit_on_escape(just_pressed: bool, time_now: float, paused: bool) -> bool:
+	if not just_pressed:
+		return false
+	# 启动保护期内忽略：窗口刚获焦时手上若正按着 ESC，会被误判成退出意图
+	if time_now < ESC_GUARD_SECONDS:
+		return false
+	# 升级面板打开时不退出，避免误触丢进度
+	if paused:
+		return false
+	return true
+
+func _handle_escape() -> void:
+	var just_pressed = _consume_escape_edge(Input.is_key_pressed(KEY_ESCAPE))
+	if _should_quit_on_escape(just_pressed, game_time, get_tree().paused):
+		Sfx.stop_all()
+		get_tree().quit()
 
 func update_health(curr: float, max_h: float) -> void:
 	hp_bar.max_value = max_h
