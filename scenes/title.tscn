@@ -34,14 +34,14 @@ theme_override_constants/separation = 18
 
 [node name="TitleLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 72
 theme_override_colors/font_color = Color(0.55, 0.88, 1, 1)
 text = "大荒诛魔录"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 modulate = Color(1, 1, 1, 0.55)
 text = "修仙肉鸽割草"
 horizontal_alignment = 1
@@ -53,19 +53,19 @@ custom_minimum_size = Vector2(0, 26)
 [node name="StartButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(320, 58)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "开始修行"
 
 [node name="SettingsButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(320, 48)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "设置"
 
 [node name="QuitButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(320, 48)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "退出"
 
 [node name="Spacer2" type="Control" parent="Center/VBox"]
@@ -74,14 +74,14 @@ custom_minimum_size = Vector2(0, 14)
 
 [node name="BestLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 modulate = Color(1, 0.92, 0.6, 0.85)
 text = ""
 horizontal_alignment = 1
 
 [node name="HintLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 21
 modulate = Color(1, 1, 1, 0.35)
 text = "ESC 退出 · 战斗中按 ESC 打开暂停菜单"
 horizontal_alignment = 1

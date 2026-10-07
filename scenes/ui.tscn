@@ -20,7 +20,7 @@ offset_left = 24.0
 offset_top = 18.0
 offset_right = 260.0
 offset_bottom = 44.0
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 text = "【境界】炼气前期 (Lv.1)"
 
 [node name="TimerLabel" type="Label" parent="HUD"]
@@ -33,7 +33,7 @@ offset_top = 18.0
 offset_right = 60.0
 offset_bottom = 48.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "00:00"
 horizontal_alignment = 1
 
@@ -47,7 +47,7 @@ offset_top = 18.0
 offset_right = -24.0
 offset_bottom = 44.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 modulate = Color(1, 0.85, 0.7, 0.9)
 text = "诛魔 0"
 horizontal_alignment = 2
@@ -83,6 +83,6 @@ offset_right = 420.0
 offset_bottom = -22.0
 grow_vertical = 0
 modulate = Color(1, 1, 1, 0.85)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 text = "WASD / 方向键  移动\n空格  踏云步（冲刺期间无敌）\n飞剑 · 护体剑阵 · 九天玄雷  自动施展\nESC  退出"
 vertical_alignment = 2

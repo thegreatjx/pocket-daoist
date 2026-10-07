@@ -26,7 +26,7 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 
 	for item in choices:
 		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(250, 320)
+		btn.custom_minimum_size = Vector2(290, 380)
 		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 		var vbox = VBoxContainer.new()
@@ -37,6 +37,7 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 		# 顶部标签
 		var tag_lbl = Label.new()
 		tag_lbl.text = "\n" + item["tag"]
+		tag_lbl.add_theme_font_size_override("font_size", 22)
 		tag_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		tag_lbl.modulate = Color(0.4, 0.9, 1.0)
 		vbox.add_child(tag_lbl)
@@ -45,7 +46,7 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 		var name_lbl = Label.new()
 		name_lbl.text = item["title"]
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_lbl.add_theme_font_size_override("font_size", 22)
+		name_lbl.add_theme_font_size_override("font_size", 28)
 		if item.get("is_evo", false):
 			name_lbl.modulate = Color(1.0, 0.85, 0.2)
 		vbox.add_child(name_lbl)
@@ -57,6 +58,7 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 		# 等级显示
 		var lvl_lbl = Label.new()
 		lvl_lbl.text = "修习进度: %d / %d" % [item["level"], item["max_level"]]
+		lvl_lbl.add_theme_font_size_override("font_size", 22)
 		lvl_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lvl_lbl.modulate = Color(0.7, 0.7, 0.7)
 		vbox.add_child(lvl_lbl)
@@ -64,6 +66,7 @@ func show_choices(choices: Array, remaining_after: int = 0) -> void:
 		# 描述
 		var desc_lbl = Label.new()
 		desc_lbl.text = "\n" + item["desc"]
+		desc_lbl.add_theme_font_size_override("font_size", 21)
 		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		vbox.add_child(desc_lbl)

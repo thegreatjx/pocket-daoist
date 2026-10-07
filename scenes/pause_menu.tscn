@@ -46,7 +46,7 @@ theme_override_constants/separation = 12
 
 [node name="TitleLabel" type="Label" parent="Root/Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 36
 text = "修行暂歇"
 horizontal_alignment = 1
 
@@ -56,30 +56,30 @@ layout_mode = 2
 [node name="ResumeButton" type="Button" parent="Root/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(300, 46)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "继续修行"
 
 [node name="SettingsButton" type="Button" parent="Root/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(300, 46)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "设置"
 
 [node name="RestartButton" type="Button" parent="Root/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(300, 46)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "重开本局"
 
 [node name="TitleButton" type="Button" parent="Root/Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(300, 46)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "回到标题"
 
 [node name="StatusLabel" type="Label" parent="Root/Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 20
 modulate = Color(1, 0.92, 0.6, 0.7)
 text = ""
 horizontal_alignment = 1

@@ -59,8 +59,8 @@ func _on_settings_pressed() -> void:
 		return
 	settings_panel = SettingsPanel.new()
 	settings_panel.closed.connect(_close_settings)
+	# 面板自带全屏遮罩与居中，挂上即可铺满父容器
 	settings_layer.add_child(settings_panel)
-	settings_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 
 func _close_settings() -> void:
 	if _is_settings_open():
