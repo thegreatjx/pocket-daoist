@@ -25,9 +25,14 @@ const EXIT_LOG := "user://exit_log.txt"
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	# 记录退出原因：一闪而过时能直接判断是 ESC、关窗还是崩溃
-	get_tree().set_auto_accept_quit(false)
-	get_tree().root.wm_close_request.connect(func(): log_exit("wm_close_request"), CONNECT_ONE_SHOT)
+	# 记录退出原因：一闪而过时能直接判断是 ESC、关窗还是崩溃。
+	# 注意：Godot 4 的窗口关闭信号是 Window.close_requested（Godot 3 叫 wm_close_request）。
+	# 不要调用 set_auto_accept_quit(false)：那会关闭"点 X 自动退出"，
+	# 若自身又没接管关窗，游戏将无法用鼠标关闭。
+	get_tree().root.close_requested.connect(_on_window_close_requested, CONNECT_ONE_SHOT)
+
+func _on_window_close_requested() -> void:
+	log_exit("window_close_button")
 
 func log_exit(reason: String) -> void:
 	var f = FileAccess.open(EXIT_LOG, FileAccess.WRITE)
