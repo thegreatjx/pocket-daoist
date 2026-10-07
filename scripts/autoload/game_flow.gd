@@ -21,8 +21,21 @@ var state: int = State.TITLE
 var state_seconds: float = 0.0   # 当前状态已持续时间，用于启动保护
 var transition_log: Array = []  # 供测试与调试断言
 
+const EXIT_LOG := "user://exit_log.txt"
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# 记录退出原因：一闪而过时能直接判断是 ESC、关窗还是崩溃
+	get_tree().set_auto_accept_quit(false)
+	get_tree().root.wm_close_request.connect(func(): log_exit("wm_close_request"), CONNECT_ONE_SHOT)
+
+func log_exit(reason: String) -> void:
+	var f = FileAccess.open(EXIT_LOG, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_line("reason=%s state=%s uptime=%.1fs transitions=%s" % [
+		reason, state_name(), state_seconds, str(transition_log)])
+	f.close()
 
 func _process(delta: float) -> void:
 	state_seconds += delta
@@ -55,6 +68,10 @@ enum EscapeAction { NONE, QUIT, PAUSE, RESUME }
 func escape_action(current_state: int, seconds_in_state: float) -> int:
 	match current_state:
 		State.TITLE:
+			# 标题界面同样需要启动保护：窗口刚获焦时手上若正按着 ESC，
+			# 会被判成退出意图，游戏一闪而过。
+			if seconds_in_state < ESC_GUARD_SECONDS:
+				return EscapeAction.NONE
 			return EscapeAction.QUIT
 		State.PLAYING:
 			# 启动保护：窗口刚获焦时手上若正按着 ESC，会被误判成退出意图
@@ -71,13 +88,14 @@ func escape_action(current_state: int, seconds_in_state: float) -> int:
 func on_escape() -> void:
 	match escape_action(state, state_seconds):
 		EscapeAction.QUIT:
-			quit_game()
+			quit_game("esc_at_" + state_name())
 		EscapeAction.PAUSE:
 			pause()
 		EscapeAction.RESUME:
 			resume()
 
-func quit_game() -> void:
+func quit_game(reason: String = "quit_game") -> void:
+	log_exit(reason)
 	Music.stop_music()
 	Sfx.stop_all()
 	get_tree().quit()
