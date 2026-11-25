@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百宝小道修 · Studio Hub</title>
+<style>
+  :root {
+    --bg: #EEF4F1;
+    --bg-rail: #E2ECE7;
+    --surface: #FFFFFF;
+    --surface-well: #F2F7F4;
+    --surface-hover: #F7FAF8;
+    --border: #C9DDD4;
+    --border-strong: #AECAC0;
+    --ink: #132C26;
+    --ink-muted: #426158;
+    --jade: #1B7562;
+    --jade-hover: #145B4C;
+    --jade-soft: #DDF2EB;
+    --jade-border: #8ECCBA;
+    --gold: #9E6D14;
+    --gold-line: #D4AA4A;
+    --gold-soft: #FCF3DA;
+    --cinnabar: #B8382A;
+    --cinnabar-soft: #FDECE9;
+    --cinnabar-border: #EEB4AC;
+    --amber: #9E5E0E;
+    --amber-soft: #FEF5DF;
+    --amber-border: #E5C172;
+    --info: #245B87;
+    --info-soft: #E6F1FA;
+    --info-border: #B0CFE8;
+    --shadow-sm: 0 2px 8px rgba(19, 44, 38, 0.06);
+    --shadow-md: 0 10px 28px rgba(19, 44, 38, 0.12);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+    scrollbar-color: var(--border-strong) var(--bg);
+    scrollbar-width: thin;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  ::selection { background: var(--jade-soft); color: var(--jade-hover); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    caret-color: var(--jade);
+  }
+
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+  code, pre, .mono { font-family: var(--mono); }
+  .mono { font-size: 12px; }
+  .muted { color: var(--ink-muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+
+  .app { display: grid; grid-template-columns: 244px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--bg-rail);
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--gold-line);
+    box-shadow: var(--shadow-sm);
+  }
+  .brand-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: var(--surface-well);
+    border: 1px solid var(--border);
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .brand h1 { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+  .brand .sub { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+
+  .nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-muted);
+    text-align: left;
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+  .nav-btn-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn:hover { background: rgba(255, 253, 248, 0.65); color: var(--ink); }
+  .nav-btn.active {
+    background: var(--surface);
+    border-color: var(--gold-line);
+    color: var(--jade-hover);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--surface-well);
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border);
+  }
+  .badge.err { background: var(--cinnabar-soft); color: var(--cinnabar); border-color: var(--cinnabar-border); }
+  .badge.gap { background: var(--amber-soft); color: var(--amber); border-color: var(--amber-border); }
+  .badge.ok { background: var(--jade-soft); color: var(--jade-hover); border-color: var(--jade-border); }
+
+  .sidebar-foot {
+    font-size: 11px;
+    color: var(--ink-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  /* Main & Topbar */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(238, 244, 241, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+  }
+  .search-wrap { position: relative; flex: 1; max-width: 440px; }
+  .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    stroke: var(--ink-muted);
+    fill: none;
+    stroke-width: 1.75;
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 7px 12px 7px 33px;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .search-input::placeholder { color: var(--ink-muted); opacity: 0.78; }
+  .search-input:focus { border-color: var(--jade); box-shadow: 0 0 0 3px var(--jade-soft); }
+  .top-actions { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 500;
+    transition: background-color 140ms ease, border-color 140ms ease, transform 100ms ease;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--jade); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--jade);
+    border-color: var(--jade-hover);
+    color: #FFFDF8;
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--jade-hover); border-color: var(--jade-hover); }
+  .btn-gold {
+    background: var(--gold-soft);
+    border-color: var(--gold-line);
+    color: #7D5308;
+    font-weight: 600;
+  }
+  .btn-gold:hover:not(:disabled) { background: #FAEBC4; border-color: var(--gold); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .content { padding: 20px 22px 32px; display: flex; flex-direction: column; gap: 18px; }
+
+  /* Sunlit Banner & Unified Health Strip */
+  .hero-scroll {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--gold-line);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .hero-art-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center 45%;
+    opacity: 0.24;
+    pointer-events: none;
+  }
+  .hero-scrim {
+    position: relative;
+    padding: 18px 20px;
+    background: linear-gradient(90deg, rgba(255, 253, 248, 0.96) 0%, rgba(255, 253, 248, 0.86) 58%, rgba(253, 244, 220, 0.72) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .hero-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--ink); }
+  .hero-desc { margin: 4px 0 0; font-size: 13px; color: var(--ink-muted); max-width: 68ch; }
+
+  .health-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .metric-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .metric-cell:last-child { border-right: none; }
+  .metric-lbl { font-size: 12px; color: var(--ink-muted); }
+  .metric-val { font-size: 24px; font-weight: 700; font-family: var(--mono); font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .metric-sub { font-size: 11px; color: var(--ink-muted); }
+  .usage-bar { height: 5px; border-radius: 999px; background: var(--surface-well); overflow: hidden; margin-top: 4px; }
+  .usage-fill { height: 100%; background: var(--jade); border-radius: 999px; }
+
+  /* Panels & Pills */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .panel-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-well);
+    color: var(--ink-muted);
+    font-size: 12px;
+    transition: 140ms ease;
+  }
+  .pill:hover { border-color: var(--jade); color: var(--ink); }
+  .pill.active { background: var(--jade); border-color: var(--jade-hover); color: #FFFDF8; font-weight: 600; }
+
+  /* Issue rows (no heavy border-left stripe) */
+  .issue-list { display: flex; flex-direction: column; gap: 8px; }
+  .issue-row {
+    display: grid;
+    grid-template-columns: 78px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 14px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: background-color 140ms ease, border-color 140ms ease;
+  }
+  .issue-row:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+  .sev-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid;
+  }
+  .sev-tag.error { background: var(--cinnabar-soft); color: var(--cinnabar); border-color: var(--cinnabar-border); }
+  .sev-tag.gap { background: var(--amber-soft); color: var(--amber); border-color: var(--amber-border); }
+  .sev-tag.warning { background: var(--info-soft); color: var(--info); border-color: var(--info-border); }
+
+  /* Progression Matrix */
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold-line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stage-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .stage-cols { display: grid; grid-template-columns: 156px 1.2fr 1.2fr 1.2fr 205px; gap: 12px; align-items: start; }
+  .sub-box { background: var(--surface-well); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 12px; }
+  .sub-box h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--ink-muted); font-weight: 600; }
+  .missing-slot {
+    border: 1px dashed var(--amber-border);
+    background: var(--amber-soft);
+    border-radius: 8px;
+    padding: 10px;
+    color: #7B4907;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .thumb-sq { width: 54px; height: 54px; object-fit: contain; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); image-rendering: pixelated; }
+  .mini-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; font-size: 11px; color: var(--ink); }
+  .chip img { width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated; }
+
+  .entity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .entity-card { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; background: var(--surface-well); border: 1px solid var(--border); }
+  .entity-card.missing { border-style: dashed; border-color: var(--amber-border); background: #FFFBF0; }
+  .entity-card img { width: 38px; height: 38px; object-fit: contain; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); flex-shrink: 0; }
+  .no-icon { width: 38px; height: 38px; border-radius: 6px; border: 1px dashed var(--amber-border); background: var(--amber-soft); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--amber); font-weight: 600; flex-shrink: 0; }
+
+  /* Asset Gallery */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 12px; }
+  .asset-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .asset-card.orphan { border-color: var(--amber-border); }
+  .preview-box { height: 128px; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
+  .bg-checker-light {
+    background-image: linear-gradient(45deg, #E8DFCA 25%, transparent 25%), linear-gradient(-45deg, #E8DFCA 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #E8DFCA 75%), linear-gradient(-45deg, transparent 75%, #E8DFCA 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    background-color: #FAF6EA;
+  }
+  .bg-paper { background: #FFFDF8; }
+  .bg-grass { background: #5B7B65; }
+  .bg-dark { background: #14221E; }
+  .preview-box img { max-width: 92%; max-height: 92%; object-fit: contain; }
+  .pixelated img { image-rendering: pixelated; }
+  .tag-row { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .mini-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--surface-well); color: var(--ink-muted); font-family: var(--mono); border: 1px solid var(--border); }
+  .mini-tag.used { background: var(--jade-soft); color: var(--jade-hover); border-color: var(--jade-border); }
+  .mini-tag.orphan { background: var(--amber-soft); color: var(--amber); border-color: var(--amber-border); }
+  .mini-tag.sheet { background: var(--gold-soft); color: #7D5308; border-color: var(--gold-line); }
+
+  /* UI Kit */
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; }
+  .swatch { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 140ms ease; }
+  .swatch:hover { border-color: var(--jade); }
+  .swatch-col { height: 46px; border-bottom: 1px solid var(--border); }
+  .swatch-info { padding: 8px 10px; font-size: 11px; }
+  .ui-demo-stage {
+    background: var(--surface-well);
+    border: 1px solid var(--gold-line);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .btn-showcase { display: flex; gap: 12px; flex-wrap: wrap; }
+  .xx-btn { padding: 10px 18px; border-radius: 8px; border: 2px solid; font-weight: 600; box-shadow: 0 2px 6px rgba(16, 40, 34, 0.16); }
+  .xx-scroll { background: rgba(245, 237, 217, 0.98); color: #1A3830; border: 3px solid #D8B052; border-radius: 12px; padding: 16px; max-width: 460px; box-shadow: 0 6px 18px rgba(16, 40, 34, 0.14); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-well); color: var(--ink-muted); font-weight: 600; position: sticky; top: 0; }
+  tr:hover td { background: var(--surface-hover); }
+
+  /* Architecture */
+  .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .flow-chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .flow-node { padding: 7px 11px; border-radius: 8px; background: var(--surface-well); border: 1px solid var(--gold-line); font-size: 12px; }
+  .svg-wrap { overflow-x: auto; background: #FFFDF7; border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+
+  /* Native Dialogs */
+  dialog {
+    margin: auto;
+    border: 1px solid var(--gold-line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-md);
+    max-width: 780px;
+    width: calc(100% - 32px);
+    max-height: 90vh;
+    padding: 0;
+  }
+  dialog:modal { overscroll-behavior: contain; }
+  dialog::backdrop {
+    background: rgba(23, 48, 42, 0.36);
+    backdrop-filter: blur(3px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  .dialog-inner { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .anim-canvas-wrap { display: flex; align-items: center; justify-content: center; min-height: 240px; border-radius: 10px; border: 1px solid var(--border); padding: 12px; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--ink);
+    border: 1px solid var(--gold-line);
+    color: #FFFDF8;
+    padding: 9px 14px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    z-index: 90;
+    display: none;
+    font-size: 12px;
+  }
+
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .stage-cols { grid-template-columns: 1fr; }
+    .health-strip { grid-template-columns: repeat(2, 1fr); }
+    .metric-cell { border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-avatar" id="brand-avatar" src="../../assets/v2/heroes/hero_whisk_immortal.png" alt="百宝小道修">
+      <div>
+        <h1 id="brand-name">百宝小道修 · Studio</h1>
+        <div class="sub">架构与美术资源台账</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav" aria-label="主视图导航"></nav>
+    <div class="sidebar-foot" id="sidebar-foot"></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
+        <input id="global-search" class="search-input" type="search" placeholder="搜索素材路径、中文名、ID、脚本 (按 / 聚焦)...">
+      </div>
+      <div class="top-actions">
+        <span class="mono muted" id="gen-time"></span>
+        <button class="btn" id="rescan-btn" title="需通过 .\studio.ps1 -Serve 启动本地服务才可网页内实时重扫">重新扫描</button>
+        <button class="btn btn-primary" id="open-brief-btn">AI 任务单 (<span id="brief-count">0</span>)</button>
+      </div>
+    </header>
+    <section class="content" id="view-root"></section>
+  </main>
+</div>
+
+<dialog id="anim-modal" closedby="any" aria-labelledby="anim-title">
+  <div class="dialog-inner">
+    <div class="panel-head" style="margin-bottom:0;">
+      <h2 class="panel-title" id="anim-title">雪碧图帧动画预览</h2>
+      <button class="btn" id="anim-close" type="button">关闭</button>
+    </div>
+    <div class="anim-canvas-wrap bg-checker-light" id="anim-stage">
+      <canvas id="anim-canvas" width="256" height="256"></canvas>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-primary" id="anim-play-btn" type="button">暂停</button>
+      <button class="btn" id="anim-prev-btn" type="button">上一帧</button>
+      <button class="btn" id="anim-next-btn" type="button">下一帧</button>
+      <label class="mono">FPS <input id="anim-fps" type="range" min="2" max="24" value="10" style="vertical-align:middle"> <span id="anim-fps-val">10</span></label>
+      <label class="mono">帧数 <input id="anim-frames" type="number" min="1" max="32" value="8" style="width:54px;background:var(--surface-well);border:1px solid var(--border);padding:2px 6px;border-radius:4px;"></label>
+      <label class="mono">行数 <input id="anim-rows" type="number" min="1" max="16" value="1" style="width:54px;background:var(--surface-well);border:1px solid var(--border);padding:2px 6px;border-radius:4px;"></label>
+      <label class="mono">行号 <input id="anim-row-idx" type="number" min="0" max="15" value="0" style="width:54px;background:var(--surface-well);border:1px solid var(--border);padding:2px 6px;border-radius:4px;"></label>
+      <label class="mono">缩放 <select id="anim-zoom" style="background:var(--surface-well);border:1px solid var(--border);padding:3px 6px;border-radius:4px;"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option><option value="4">4x</option></select></label>
+    </div>
+    <div class="mono muted" id="anim-info"></div>
+  </div>
+</dialog>
+
+<dialog id="detail-modal" closedby="any" aria-labelledby="detail-title">
+  <div class="dialog-inner">
+    <div class="panel-head" style="margin-bottom:0;">
+      <h2 class="panel-title" id="detail-title">素材详情</h2>
+      <button class="btn" id="detail-close" type="button">关闭</button>
+    </div>
+    <div id="detail-body"></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+window.__MANIFEST__ = /*__MANIFEST_PLACEHOLDER__*/null;
+</script>
+<script>
+(function () {
+  let M = window.__MANIFEST__;
+  if (!M) {
+    document.getElementById("view-root").innerHTML = '<div class="panel">未加载到 manifest 数据，请先运行 <code>python tools/studio_audit.py</code>。</div>';
+    return;
+  }
+
+  const ICONS = {
+    overview: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+    progression: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>',
+    assets: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    uikit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    arch: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.5 7.5L11 15.5"/><path d="M15.5 7.5L13 15.5"/></svg>',
+    brief: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
+  };
+
+  const state = {
+    tab: "overview",
+    search: "",
+    issueFilter: "all",
+    assetCat: "all",
+    assetStatus: "all",
+    previewBg: "bg-checker-light",
+    pixelated: true,
+    selectedGraphNode: null,
+    briefQueue: JSON.parse(localStorage.getItem("daoist_studio_brief") || "[]"),
+  };
+
+  const TABS = [
+    { id: "overview", label: "健康总览与告警" },
+    { id: "progression", label: "推图与内容矩阵" },
+    { id: "assets", label: "全量素材画廊" },
+    { id: "uikit", label: "UI 规范与合规" },
+    { id: "arch", label: "系统架构与关系图" },
+    { id: "brief", label: "AI 任务单导出" },
+  ];
+
+  const CAT_LABELS = {
+    all: "全部",
+    heroes: "英雄",
+    weapons: "法宝/超武",
+    enemies: "怪物/精灵表",
+    terrain_maps: "地图与地标",
+    icons_pickups: "图标与掉落",
+    vfx_particles: "特效与粒子",
+    art_story: "剧情插画",
+    audio_bgm: "音乐 BGM",
+    audio_sfx: "音效 SFX",
+    fonts_other: "字体/其它",
+    legacy_unused: "历史归档",
+  };
+
+  function esc(s) {
+    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function mediaUrl(relPath) {
+    if (!relPath) return "";
+    const clean = relPath.replace(/^res:\/\//, "");
+    return location.protocol === "file:" ? "../../" + clean : "/" + clean;
+  }
+
+  function fmtBytes(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / (1024 * 1024)).toFixed(2) + " MB";
+  }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { el.style.display = "none"; }, 2200);
+  }
+
+  function copyText(txt, label) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(() => toast("已复制: " + (label || txt)));
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      toast("已复制: " + (label || txt));
+    }
+  }
+
+  function saveBrief() {
+    localStorage.setItem("daoist_studio_brief", JSON.stringify(state.briefQueue));
+    document.getElementById("brief-count").textContent = state.briefQueue.length;
+    renderNav();
+  }
+
+  function addToBrief(item) {
+    if (state.briefQueue.some(x => x.id === item.id)) {
+      toast("已在任务单中");
+      return;
+    }
+    state.briefQueue.push(item);
+    saveBrief();
+    toast("已加入 AI 任务单：" + item.title);
+  }
+
+  function renderNav() {
+    const s = M.summary;
+    const nav = document.getElementById("nav");
+    nav.innerHTML = TABS.map(t => {
+      let badge = "";
+      if (t.id === "overview") badge = `<span class="badge err">${s.error_count}E / ${s.gap_count}G</span>`;
+      else if (t.id === "progression") badge = `<span class="badge gap">${M.progression_stages.length}关</span>`;
+      else if (t.id === "assets") badge = `<span class="badge ok">${s.active_media_count}</span>`;
+      else if (t.id === "uikit") badge = `<span class="badge ${s.ui_bypass_files ? 'gap' : 'ok'}">${s.ui_bypass_files}绕过</span>`;
+      else if (t.id === "brief") badge = `<span class="badge">${state.briefQueue.length}</span>`;
+      return `<button class="nav-btn ${state.tab === t.id ? 'active' : ''}" data-tab="${t.id}" type="button"><span class="nav-btn-left">${ICONS[t.id] || ""}<span>${t.label}</span></span>${badge}</button>`;
+    }).join("");
+    nav.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.onclick = () => { state.tab = btn.dataset.tab; render(); };
+    });
+
+    document.getElementById("brand-name").textContent = M.project.name || "百宝小道修";
+    document.getElementById("brand-avatar").src = mediaUrl("assets/v2/heroes/hero_whisk_immortal.png");
+    document.getElementById("gen-time").textContent = "扫描: " + s.generated_at;
+    document.getElementById("brief-count").textContent = state.briefQueue.length;
+    document.getElementById("sidebar-foot").innerHTML = `
+      <div>引擎版本: Godot 4.7 (${esc(M.project.version || "0.1.0")})</div>
+      <div>基准画幅: ${M.project.viewport.width}×${M.project.viewport.height}</div>
+      <div>资源引用率: <strong style="color:var(--jade-hover)">${s.usage_rate_pct}%</strong> (${s.used_media_count}/${s.active_media_count})</div>
+    `;
+  }
+
+  function matchesQuery(text) {
+    if (!state.search.trim()) return true;
+    return String(text || "").toLowerCase().includes(state.search.trim().toLowerCase());
+  }
+
+  function renderOverview() {
+    const s = M.summary;
+    const list = M.issues.filter(i => {
+      if (state.issueFilter !== "all" && i.severity !== state.issueFilter) return false;
+      return matchesQuery(i.title + " " + i.detail + " " + i.file + " " + i.code);
+    });
+    const bannerBg = mediaUrl("assets/art/title_bg.png");
+    return `
+      <div class="hero-scroll">
+        <div class="hero-art-bg" style="background-image:url('${esc(bannerBg)}')"></div>
+        <div class="hero-scrim">
+          <div>
+            <h2 class="hero-title">${esc(M.project.name || "百宝小道修")} · 资产与推图生产台账</h2>
+            <p class="hero-desc">从真实仓库数据编译生成的总控台。直接排查断链外键、第 2~5 关推图空缺、孤儿重复资源与 UI 主题绕过，并一键生成 AI 协作任务单。</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-gold" data-goto="progression" type="button">查看推图矩阵</button>
+            <button class="btn btn-primary" data-goto="assets" type="button">浏览全量素材</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="health-strip">
+        <div class="metric-cell">
+          <span class="metric-lbl">活跃媒体引用率</span>
+          <span class="metric-val" style="color:var(--jade)">${s.usage_rate_pct}%</span>
+          <div class="usage-bar"><div class="usage-fill" style="width:${Math.min(100, s.usage_rate_pct)}%"></div></div>
+          <span class="metric-sub">${s.used_media_count} / ${s.active_media_count} 已接入 · 归档 ${s.legacy_count}</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">严重错误 (断链/外键)</span>
+          <span class="metric-val" style="color:${s.error_count ? 'var(--cinnabar)' : 'var(--jade)'}">${s.error_count}</span>
+          <span class="metric-sub">运行 --strict 时将拦截提交</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">内容与美术空缺</span>
+          <span class="metric-val" style="color:var(--amber)">${s.gap_count}</span>
+          <span class="metric-sub">缺图标、2~5关缺地标、撞皮怪</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">孤儿与规范警告</span>
+          <span class="metric-val" style="color:var(--info)">${s.warning_count}</span>
+          <span class="metric-sub">${s.orphan_media_count} 个孤儿 · ${s.ui_bypass_files} 个绕过主题</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">体检告警与空缺清单 (${list.length})</h2>
+          <div class="pills">
+            ${[["all","全部"],["error","严重错误"],["gap","空缺槽位"],["warning","警告/孤儿"]].map(([k,l]) =>
+              `<button class="pill ${state.issueFilter === k ? 'active' : ''}" data-if="${k}" type="button">${l}</button>`
+            ).join("")}
+          </div>
+        </div>
+        <div class="issue-list">
+          ${list.map((i, idx) => `
+            <div class="issue-row">
+              <span class="sev-tag ${i.severity}">${i.severity.toUpperCase()}</span>
+              <div>
+                <div><strong>${esc(i.title)}</strong> <span class="mono muted">· ${esc(i.code)}</span></div>
+                <div class="muted" style="font-size:12px;margin-top:2px;">${esc(i.detail)}</div>
+                <div class="mono muted" style="font-size:11px;margin-top:2px;">${esc(i.file)}</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="btn" data-goto="${esc(i.tab)}" type="button">定位查看</button>
+                <button class="btn btn-gold" data-add-issue="${idx}" type="button">+ 任务单</button>
+              </div>
+            </div>
+          `).join("") || '<div class="muted">当前筛选下无问题。</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderProgression() {
+    const E = M.entities;
+    const stagesHtml = M.progression_stages.filter(st => matchesQuery(st.name + st.boss_name + st.subtitle)).map(st => {
+      const tileUrl = mediaUrl(st.floor_tile);
+      const bossUrl = mediaUrl(st.boss_sprite);
+      const artUrl = mediaUrl(st.story.chapter_art);
+      const mapBox = st.map_arena.configured ? `
+        <div class="sub-box">
+          <h4>地图锚点与 4 地标</h4>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+            <img class="thumb-sq" style="width:34px;height:34px" src="${esc(mediaUrl(st.map_arena.center_anchor))}" alt="中心锚点">
+            <span>中心锚点 · 掩体×${st.map_arena.cover_count}</span>
+          </div>
+          <div class="mini-chips">
+            ${st.map_arena.landmarks.map(lm => `<span class="chip"><img src="${esc(mediaUrl(lm.texture))}" alt="">${esc(lm.name)}</span>`).join("")}
+          </div>
+        </div>
+      ` : `
+        <div class="missing-slot">
+          <strong>缺 map_arena_v2 配置</strong>
+          <span>第 ${st.id} 关暂无中心锚点、掩体柱与 4 个交互地标。</span>
+          <button class="btn btn-gold" data-brief-stage="${st.id}" type="button">+ 加入任务单</button>
+        </div>
+      `;
+      return `
+        <div class="stage-card">
+          <div class="stage-head">
+            <div>
+              <strong style="font-size:16px;color:var(--ink);">第 ${st.id} 关 · ${esc(st.name)}</strong>
+              <span class="muted" style="margin-left:8px;">${esc(st.subtitle)} · ${esc(st.difficulty)} · ${st.wave_count} 波 / ${st.events_count} 事件</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="mono muted">地砖配色</span>
+              <span style="width:16px;height:16px;border-radius:4px;background:${esc(st.palette.ground || '#444')};border:1px solid var(--border-strong)"></span>
+              <span style="width:16px;height:16px;border-radius:4px;background:${esc(st.palette.tint || '#3db')};border:1px solid var(--border-strong)"></span>
+            </div>
+          </div>
+          <div class="stage-cols">
+            <div class="sub-box">
+              <h4>地砖与章图</h4>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <img class="thumb-sq" src="${esc(tileUrl)}" title="${esc(st.floor_tile)}" alt="地砖">
+                <img class="thumb-sq" src="${esc(artUrl)}" title="${esc(st.story.chapter_art)} (未引用)" style="opacity:0.55" alt="章节插画">
+              </div>
+              <div class="mono muted" style="font-size:10px;margin-top:6px;word-break:break-all;">${esc(st.floor_tile)}</div>
+            </div>
+            <div class="sub-box">
+              <h4>story.gd 剧情对齐</h4>
+              ${st.story.intro.length ? `<div>${st.story.intro.map(l => esc(l)).join("<br>")}</div>` : '<span class="muted">缺开场引子</span>'}
+              <div class="muted" style="margin-top:6px;border-top:1px solid var(--border);padding-top:4px;">结语：${esc(st.story.outro || "无")}</div>
+            </div>
+            ${mapBox}
+            <div class="sub-box">
+              <h4>出怪池 (${st.enemies.length} 类)</h4>
+              <div class="mini-chips">
+                ${st.enemies.map(e => `<span class="chip" title="${esc(e.id)} (species=${e.species})"><img src="${esc(mediaUrl(e.sprite))}" alt="">${esc(e.name)}</span>`).join("")}
+              </div>
+            </div>
+            <div class="sub-box">
+              <h4>守关 Boss & 产出</h4>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <img class="thumb-sq" src="${esc(bossUrl)}" alt="Boss">
+                <div>
+                  <div><strong>${esc(st.boss_name)}</strong></div>
+                  <div class="mono muted">type=${esc(st.boss_type)} · HP ${st.boss_hp}</div>
+                </div>
+              </div>
+              <div style="margin-top:6px;">
+                ${st.achievements.map(a => `<div class="mini-tag used" style="margin-top:3px;">${esc(a.name)}: ${esc(a.reward_desc)}</div>`).join("") || '<span class="muted">无专属通关成就</span>'}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const renderGroup = (title, items, getImg, kind) => `
+      <div class="panel">
+        <div class="panel-head">
+          <h3 class="panel-title">${title} (${items.length})</h3>
+          ${kind ? `<button class="btn btn-gold" data-batch-brief="${kind}" type="button">+ 整组缺口加入任务单</button>` : ""}
+        </div>
+        <div class="entity-grid">
+          ${items.filter(x => matchesQuery((x.name || "") + " " + (x.id || ""))).map(x => {
+            const img = getImg(x);
+            return `
+              <div class="entity-card ${img ? '' : 'missing'}">
+                ${img ? `<img src="${esc(mediaUrl(img))}" alt="${esc(x.name || x.id)}">` : `<div class="no-icon">缺图</div>`}
+                <div style="min-width:0;">
+                  <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(x.name || x.id)}</div>
+                  <div class="mono muted" style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(x.id)}</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="panel" style="background:var(--amber-soft);border-color:var(--amber-border);color:#7B4907;">
+        <strong>推图体系现状：</strong>关卡表已升级为 <strong>5 关</strong>，但 <code>story.gd</code> 仍保留 <strong>6 章</strong>旧文案（第2关《落霞花溪》与赤砂文案错位），<code>map_arena_v2.json</code> 仅第 1 关有地标，第 2~5 关为空槽位。
+      </div>
+      ${stagesHtml}
+      ${renderGroup("法宝与合体超武（3 合体当前复用基础图标）", [...E.weapons, ...E.fusions], x => x.icon, "fusion_icons")}
+      ${renderGroup("商店宝物（0/16 配置 icon）", E.items, x => x.icon, "item_icons")}
+      ${renderGroup("天道道韵（0/8 配置 icon）", E.arcanas, x => x.icon, "arcana_icons")}
+      ${renderGroup("可操控角色（8/8 齐备）", E.characters, x => x.sprite, "")}
+      ${renderGroup("局内掉落物（0/6 在 JSON 登记贴图）", E.pickups, x => x.icon || x.sprite, "")}
+    `;
+  }
+
+  function renderAssets() {
+    const counts = { all: M.assets.length };
+    M.assets.forEach(a => { counts[a.category] = (counts[a.category] || 0) + 1; });
+    const filtered = M.assets.filter(a => {
+      if (state.assetCat !== "all" && a.category !== state.assetCat) return false;
+      if (state.assetStatus === "used" && a.status !== "used") return false;
+      if (state.assetStatus === "orphan" && a.status !== "orphan") return false;
+      return matchesQuery(a.path + " " + a.name + " " + a.used_by.join(" "));
+    });
+
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div class="pills">
+            ${Object.entries(CAT_LABELS).filter(([k]) => k === "all" || counts[k]).map(([k, l]) =>
+              `<button class="pill ${state.assetCat === k ? 'active' : ''}" data-cat="${k}" type="button">${l} (${counts[k] || 0})</button>`
+            ).join("")}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select id="asset-status-sel" class="btn" aria-label="引用状态筛选">
+              <option value="all" ${state.assetStatus==='all'?'selected':''}>全部状态</option>
+              <option value="used" ${state.assetStatus==='used'?'selected':''}>仅已引用</option>
+              <option value="orphan" ${state.assetStatus==='orphan'?'selected':''}>仅孤儿未引用</option>
+            </select>
+            <select id="bg-sel" class="btn" aria-label="画布底色">
+              <option value="bg-checker-light" ${state.previewBg==='bg-checker-light'?'selected':''}>浅色棋盘</option>
+              <option value="bg-paper" ${state.previewBg==='bg-paper'?'selected':''}>纯白宣纸</option>
+              <option value="bg-grass" ${state.previewBg==='bg-grass'?'selected':''}>草地实景底</option>
+              <option value="bg-dark" ${state.previewBg==='bg-dark'?'selected':''}>深墨验边</option>
+            </select>
+            <label class="btn"><input id="px-toggle" type="checkbox" ${state.pixelated?'checked':''} style="vertical-align:middle"> 像素锐化</label>
+          </div>
+        </div>
+        <div class="muted" style="font-size:12px;">显示 ${filtered.length} / ${M.assets.length} 个资产。默认采用明亮宣纸底方便看清轮廓，如需检验白边可右上角切换“深墨验边”。</div>
+      </div>
+      <div class="gallery-grid ${state.pixelated ? 'pixelated' : ''}">
+        ${filtered.map(a => {
+          const url = mediaUrl(a.path);
+          let preview = `<span class="mono muted">${esc(a.ext)}</span>`;
+          if (a.is_image) preview = `<img loading="lazy" src="${esc(url)}" alt="${esc(a.name)}">`;
+          else if (a.is_audio) preview = `<audio controls preload="none" src="${esc(url)}" style="width:92%;height:34px;"></audio>`;
+          const dimText = a.width ? `${a.width}×${a.height}` : (a.duration_sec ? `${a.duration_sec}s` : "");
+          return `
+            <div class="asset-card ${a.status}">
+              <div class="preview-box ${state.previewBg}">${preview}</div>
+              <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(a.path)}">${esc(a.name)}</div>
+              <div class="tag-row">
+                ${a.status === 'used' ? `<span class="mini-tag used">引用 ${a.used_by.length}</span>` : (a.status === 'orphan' ? `<span class="mini-tag orphan">孤儿未用</span>` : `<span class="mini-tag">${esc(a.status)}</span>`)}
+                ${dimText ? `<span class="mini-tag">${dimText}</span>` : ""}
+                <span class="mini-tag">${fmtBytes(a.size_bytes)}</span>
+                ${a.spritesheet ? `<span class="mini-tag sheet">${a.spritesheet.frames}帧${a.spritesheet.rows>1?`×${a.spritesheet.rows}向`:''}</span>` : ""}
+              </div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;">
+                <button class="btn" data-copy-res="${esc(a.res_path)}" type="button">复制路径</button>
+                <button class="btn" data-detail-asset="${esc(a.path)}" type="button">详情</button>
+                ${a.spritesheet ? `<button class="btn btn-gold" data-anim-asset="${esc(a.path)}" type="button">播动画</button>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderUIKit() {
+    const t = M.ui_theme;
+    const rows = M.ui_compliance.filter(r => matchesQuery(r.file + r.status));
+    const statusLabel = {
+      theme_source: '<span class="mini-tag used">唯一主题源</span>',
+      compliant: '<span class="mini-tag used">完全合规</span>',
+      partial_bypass: '<span class="mini-tag orphan">混合绕过</span>',
+      full_bypass: '<span class="mini-tag" style="background:var(--cinnabar-soft);color:var(--cinnabar);border-color:var(--cinnabar-border);">完全绕过</span>',
+    };
+    return `
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">XianxiaUITheme 官方色板（点击色块复制 Hex）</h2></div>
+        <div class="swatch-grid">
+          ${t.tokens.map(c => `
+            <div class="swatch" data-copy-col="${esc(c.hex)}" role="button" tabindex="0">
+              <div class="swatch-col" style="background:${esc(c.css)}"></div>
+              <div class="swatch-info">
+                <div class="mono"><strong>${esc(c.name)}</strong></div>
+                <div class="mono muted">${esc(c.hex)} · α=${c.alpha}</div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+      <div class="ui-demo-stage">
+        <h3 class="panel-title">官方控件标准件（禁止 AI 再造第二套按钮与弹窗）</h3>
+        <div class="btn-showcase">
+          ${t.variants.map(v => `<button class="xx-btn" type="button" style="background:${v.bg};border-color:${v.border};color:${v.text};">${esc(v.label)}</button>`).join("")}
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+          <div class="xx-scroll">
+            <div style="font-weight:700;font-size:15px;margin-bottom:6px;">make_scroll_panel() · 宣纸卷轴面板</div>
+            <div style="font-size:12px;color:#476157;">所有升级、图鉴、商店、设置大弹窗均应使用此底板并挂载 <code>attach_ornaments()</code> 回字纹金角饰。</div>
+          </div>
+          <div style="background:rgba(18,41,36,0.94);border:2px solid #E0B24C;border-radius:8px;padding:12px 16px;min-width:260px;">
+            <div style="font-weight:700;color:#FFF2D1;margin-bottom:6px;">make_hud_plate() · 战斗 HUD 暗底金框</div>
+            <div style="height:10px;background:#1A2B27;border:1px solid #E0B24C;border-radius:4px;overflow:hidden;margin-bottom:6px;"><div style="width:74%;height:100%;background:#D6302B;"></div></div>
+            <div style="height:8px;background:#1A2B27;border:1px solid #E0B24C;border-radius:4px;overflow:hidden;"><div style="width:52%;height:100%;background:#2EC294;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">UI 脚本样式合规审计表</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>脚本文件</th><th>XianxiaUITheme 调用</th><th>私写 StyleBoxFlat.new()</th><th>合规状态</th></tr></thead>
+            <tbody>
+              ${rows.map(r => `<tr><td class="mono">${esc(r.file)}</td><td class="mono">${r.theme_calls}</td><td class="mono" style="color:${r.stylebox_new && r.status!=='theme_source' ? 'var(--cinnabar)' : 'inherit'};font-weight:${r.stylebox_new && r.status!=='theme_source' ? '700' : '400'}">${r.stylebox_new}</td><td>${statusLabel[r.status] || r.status}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderArch() {
+    const arch = M.architecture;
+    const g = arch.data_graph;
+    const nodeMap = Object.fromEntries(g.nodes.map(n => [n.id, n]));
+    const groupColors = { progression: "#1F7361", combat: "#A97719", meta: "#3B6291", economy: "#B37417", code: "#4A635B" };
+    const svgEdges = g.edges.map(e => {
+      const a = nodeMap[e.from], b = nodeMap[e.to];
+      if (!a || !b) return "";
+      const x1 = a.x + 88, y1 = a.y + 22, x2 = b.x + 88, y2 = b.y + 22;
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 20;
+      const col = e.valid ? "#1F7361" : "#B8382A";
+      return `
+        <path d="M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}" fill="none" stroke="${col}" stroke-width="${e.valid ? 1.8 : 2.5}" stroke-dasharray="${e.valid ? '' : '6 4'}" marker-end="url(#${e.valid ? 'arrow-ok' : 'arrow-bad'})"/>
+        <rect x="${mx - 48}" y="${my - 8}" width="96" height="16" rx="4" fill="#FFFDF7" fill-opacity="0.92"/>
+        <text x="${mx}" y="${my + 3}" fill="${col}" font-size="10" text-anchor="middle" font-family="monospace" font-weight="600">${esc(e.label)}</text>
+      `;
+    }).join("");
+    const svgNodes = g.nodes.map(n => `
+      <g class="graph-node" data-node="${esc(n.id)}" style="cursor:pointer;">
+        <rect x="${n.x}" y="${n.y}" width="176" height="44" rx="8" fill="#FFFDF8" stroke="${groupColors[n.group] || '#8C7E65'}" stroke-width="${state.selectedGraphNode === n.id ? 2.8 : 1.5}"/>
+        <text x="${n.x + 10}" y="${n.y + 19}" fill="#17302A" font-size="12" font-weight="700" font-family="monospace">${esc(n.label)}</text>
+        <text x="${n.x + 10}" y="${n.y + 35}" fill="#4A635B" font-size="10">条目/章节: ${n.count}</text>
+      </g>
+    `).join("");
+
+    const selEdges = state.selectedGraphNode ? g.edges.filter(e => e.from === state.selectedGraphNode || e.to === state.selectedGraphNode) : g.edges.filter(e => !e.valid);
+
+    return `
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">1. 运行时启动链 (project.godot Autoload 顺序)</h2></div>
+        <div class="flow-chain">
+          ${arch.autoloads.map((a, idx) => `${idx ? '<span class="muted">→</span>' : ''}<div class="flow-node"><strong>${esc(a.name)}</strong><div class="mono muted" style="font-size:10px;">${esc(a.path)}</div></div>`).join("")}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">2. 数据真相源外键关系图（青绿正常 · 朱红虚线断链，点击节点聚焦）</h2></div>
+        <div class="svg-wrap">
+          <svg width="1060" height="400" viewBox="0 0 1060 400">
+            <defs>
+              <marker id="arrow-ok" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#1F7361"/></marker>
+              <marker id="arrow-bad" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#B8382A"/></marker>
+            </defs>
+            ${svgEdges}
+            ${svgNodes}
+          </svg>
+        </div>
+        <div style="margin-top:10px;" class="issue-list">
+          ${selEdges.map(e => `
+            <div class="issue-row" style="grid-template-columns:200px 1fr;">
+              <span class="mono"><strong>${esc(e.from)} → ${esc(e.to)}</strong></span>
+              <div>${e.valid ? '<span style="color:var(--jade-hover);font-weight:600;">外键连线正常</span>' : '<span style="color:var(--cinnabar);font-weight:600;">' + esc(e.notes.join("；")) + '</span>'}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+      <div class="arch-grid">
+        <div class="panel">
+          <h3 class="panel-title" style="margin-bottom:8px;">场景列表 (${arch.scenes.length})</h3>
+          ${arch.scenes.map(sc => `<div class="mono" style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">${esc(sc.path)} <span class="muted">(${sc.role})</span></div>`).join("")}
+        </div>
+        <div class="panel">
+          <h3 class="panel-title" style="margin-bottom:8px;">V2 核心脚本 (${arch.v2_scripts.length}) & Shader (${arch.shaders.length})</h3>
+          ${[...arch.v2_scripts, ...arch.shaders].map(p => `<div class="mono" style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">${esc(p)}</div>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildBriefText() {
+    if (!state.briefQueue.length) {
+      return "# 暂无待派发任务\n\n请在【健康总览】或【推图与内容矩阵】点击「+ 加入任务单」，或使用上方快捷预设按钮。";
+    }
+    const lines = [
+      "# 《百宝小道修》AI 美术与数据协同任务单",
+      "",
+      "## 必读约束（执行前先查）",
+      "1. 先读取 `docs/AI_ASSET_GUIDE.md` 与 `scripts/ui/xianxia_ui_theme.gd`，复用现有色板、画风与按钮规范。",
+      "2. 禁止在业务 UI 脚本中手写新的 `StyleBoxFlat.new()`；禁止生成与现有资产重复的版本。",
+      "3. 所有新增文件路径必须同步登记进对应 `data/v2/*.json`。",
+      "",
+      "## 本次待完成清单",
+    ];
+    state.briefQueue.forEach((it, idx) => {
+      lines.push(`\n### ${idx + 1}. ${it.title}`);
+      if (it.spec) lines.push(`- 规格与参考：${it.spec}`);
+      if (it.targets && it.targets.length) {
+        lines.push("- 目标输出：");
+        it.targets.forEach(t => lines.push(`  - \`${t}\``));
+      }
+    });
+    lines.push("", "## 完成验收命令", "```powershell", "python tools/studio_audit.py", "python tools/studio_audit.py --strict", "```");
+    return lines.join("\n");
+  }
+
+  function renderBrief() {
+    const text = buildBriefText();
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">AI 派活任务单生成器（发给 Codex / Claude / Antigravity）</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" data-preset="stage_maps" type="button">+ 第2~5关缺失地标</button>
+            <button class="btn" data-preset="item_icons" type="button">+ 16件商店宝物图标</button>
+            <button class="btn" data-preset="arcana_icons" type="button">+ 8张道韵图标</button>
+            <button class="btn" data-preset="fusion_icons" type="button">+ 3件超武独立图标</button>
+            <button class="btn" id="clear-brief-btn" type="button">清空</button>
+            <button class="btn btn-primary" id="copy-brief-btn" type="button">复制任务单 Markdown</button>
+          </div>
+        </div>
+        <div class="pills" style="margin-bottom:12px;">
+          ${state.briefQueue.map((it, idx) => `<span class="pill active">${esc(it.title)} <button type="button" data-rm-brief="${idx}" aria-label="移除" style="background:none;border:none;color:inherit;margin-left:4px;padding:0 2px;">×</button></span>`).join("") || '<span class="muted">任务队列为空</span>'}
+        </div>
+        <textarea readonly aria-label="AI 任务单 Markdown 文本" style="width:100%;min-height:420px;background:#FAF6EA;border:1px solid var(--border-strong);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--ink);">${esc(text)}</textarea>
+      </div>
+    `;
+  }
+
+  // Sprite Animator
+  const anim = { img: null, playing: true, frame: 0, timer: null };
+  const animDialog = document.getElementById("anim-modal");
+  const detailDialog = document.getElementById("detail-modal");
+
+  function enableDialogLightDismissFallback(dialog) {
+    if ("closedBy" in HTMLDialogElement.prototype) return;
+    dialog.addEventListener("click", (event) => {
+      if (event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      const inside = rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                     rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
+      if (!inside) dialog.close();
+    });
+  }
+  enableDialogLightDismissFallback(animDialog);
+  enableDialogLightDismissFallback(detailDialog);
+  animDialog.addEventListener("close", () => clearInterval(anim.timer));
+
+  function openAnimModal(asset) {
+    anim.img = new Image();
+    anim.img.onload = () => drawAnimFrame();
+    anim.img.src = mediaUrl(asset.path);
+    const sh = asset.spritesheet || { frames: 8, rows: 1 };
+    document.getElementById("anim-title").textContent = "帧动画预览 · " + asset.name;
+    document.getElementById("anim-frames").value = sh.frames || 8;
+    document.getElementById("anim-rows").value = sh.rows || 1;
+    document.getElementById("anim-row-idx").value = 0;
+    document.getElementById("anim-info").textContent = `${asset.res_path} · 原图 ${asset.width}×${asset.height}`;
+    anim.frame = 0;
+    anim.playing = true;
+    document.getElementById("anim-play-btn").textContent = "暂停";
+    animDialog.showModal();
+    restartAnimTimer();
+  }
+  function drawAnimFrame() {
+    if (!anim.img || !anim.img.complete || !anim.img.naturalWidth) return;
+    const frames = Math.max(1, parseInt(document.getElementById("anim-frames").value || "1", 10));
+    const rows = Math.max(1, parseInt(document.getElementById("anim-rows").value || "1", 10));
+    const rowIdx = Math.max(0, Math.min(rows - 1, parseInt(document.getElementById("anim-row-idx").value || "0", 10)));
+    const zoom = parseInt(document.getElementById("anim-zoom").value || "2", 10);
+    const fw = anim.img.naturalWidth / frames;
+    const fh = anim.img.naturalHeight / rows;
+    const cv = document.getElementById("anim-canvas");
+    cv.width = Math.max(64, Math.round(fw * zoom));
+    cv.height = Math.max(64, Math.round(fh * zoom));
+    const ctx = cv.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const f = ((anim.frame % frames) + frames) % frames;
+    ctx.drawImage(anim.img, f * fw, rowIdx * fh, fw, fh, 0, 0, cv.width, cv.height);
+  }
+  function restartAnimTimer() {
+    clearInterval(anim.timer);
+    if (!anim.playing) return;
+    const fps = Math.max(1, parseInt(document.getElementById("anim-fps").value || "10", 10));
+    anim.timer = setInterval(() => { anim.frame++; drawAnimFrame(); }, 1000 / fps);
+  }
+
+  function render() {
+    renderNav();
+    const root = document.getElementById("view-root");
+    if (state.tab === "overview") root.innerHTML = renderOverview();
+    else if (state.tab === "progression") root.innerHTML = renderProgression();
+    else if (state.tab === "assets") root.innerHTML = renderAssets();
+    else if (state.tab === "uikit") root.innerHTML = renderUIKit();
+    else if (state.tab === "arch") root.innerHTML = renderArch();
+    else if (state.tab === "brief") root.innerHTML = renderBrief();
+    bindViewEvents(root);
+  }
+
+  function bindViewEvents(root) {
+    root.querySelectorAll("[data-if]").forEach(b => b.onclick = () => { state.issueFilter = b.dataset.if; render(); });
+    root.querySelectorAll("[data-goto]").forEach(b => b.onclick = () => { state.tab = b.dataset.goto; render(); });
+    root.querySelectorAll("[data-add-issue]").forEach(b => b.onclick = () => {
+      const list = M.issues.filter(i => (state.issueFilter === "all" || i.severity === state.issueFilter) && matchesQuery(i.title + " " + i.detail + " " + i.file + " " + i.code));
+      const iss = list[parseInt(b.dataset.addIssue, 10)];
+      if (!iss) return;
+      addToBrief(iss.prompt_hint ? { id: iss.entity_id || iss.id, ...iss.prompt_hint } : { id: iss.id, title: iss.title, spec: iss.detail, targets: [iss.file] });
+    });
+    root.querySelectorAll("[data-brief-stage]").forEach(b => b.onclick = () => {
+      const sid = b.dataset.briefStage;
+      const st = M.progression_stages.find(x => String(x.id) === sid);
+      addToBrief({ id: "stage_map_" + sid, title: `补齐第 ${sid} 关（${st ? st.name : ""}）地图地标与掩体`, spec: "参考 assets/v2/map_ch1/ 规格，补充中心锚点、掩体柱与 4 个交互地标，并更新 data/v2/map_arena_v2.json。", targets: [`assets/v2/map_ch${sid}/`, "data/v2/map_arena_v2.json"] });
+    });
+    root.querySelectorAll("[data-batch-brief]").forEach(b => b.onclick = () => {
+      const kind = b.dataset.batchBrief;
+      const iss = M.issues.find(i => i.prompt_hint && i.prompt_hint.kind === kind);
+      if (iss) addToBrief({ id: iss.entity_id, ...iss.prompt_hint });
+    });
+    root.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => { state.assetCat = b.dataset.cat; render(); });
+    const stSel = root.querySelector("#asset-status-sel");
+    if (stSel) stSel.onchange = () => { state.assetStatus = stSel.value; render(); };
+    const bgSel = root.querySelector("#bg-sel");
+    if (bgSel) bgSel.onchange = () => { state.previewBg = bgSel.value; render(); };
+    const pxTog = root.querySelector("#px-toggle");
+    if (pxTog) pxTog.onchange = () => { state.pixelated = pxTog.checked; render(); };
+    root.querySelectorAll("[data-copy-res]").forEach(b => b.onclick = () => copyText(b.dataset.copyRes));
+    root.querySelectorAll("[data-copy-col]").forEach(el => {
+      el.onclick = () => copyText(el.dataset.copyCol);
+      el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copyText(el.dataset.copyCol); } };
+    });
+    root.querySelectorAll("[data-anim-asset]").forEach(b => b.onclick = () => {
+      const a = M.assets.find(x => x.path === b.dataset.animAsset);
+      if (a) openAnimModal(a);
+    });
+    root.querySelectorAll("[data-detail-asset]").forEach(b => b.onclick = () => {
+      const a = M.assets.find(x => x.path === b.dataset.detailAsset);
+      if (!a) return;
+      document.getElementById("detail-title").textContent = a.name;
+      document.getElementById("detail-body").innerHTML = `
+        <div class="mono" style="margin-bottom:8px;">${esc(a.res_path)}</div>
+        <div class="muted" style="margin-bottom:10px;">尺寸：${a.width ? `${a.width}×${a.height}` : "N/A"} · 大小：${fmtBytes(a.size_bytes)} · 分类：${esc(a.category)}</div>
+        <div><strong>引用该素材的文件 (${a.used_by.length})：</strong></div>
+        <div style="margin-top:6px;">${a.used_by.length ? a.used_by.map(u => `<div class="mono" style="padding:4px 0;border-bottom:1px solid var(--border);">${esc(u)}</div>`).join("") : '<span class="muted">没有任何脚本/场景/JSON 引用（孤儿文件）。</span>'}</div>
+      `;
+      detailDialog.showModal();
+    });
+    root.querySelectorAll(".graph-node").forEach(g => g.onclick = () => {
+      state.selectedGraphNode = state.selectedGraphNode === g.dataset.node ? null : g.dataset.node;
+      render();
+    });
+    root.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => {
+      const kind = b.dataset.preset;
+      const iss = M.issues.find(i => i.prompt_hint && i.prompt_hint.kind === kind);
+      if (iss) { addToBrief({ id: iss.entity_id, ...iss.prompt_hint }); render(); }
+    });
+    root.querySelectorAll("[data-rm-brief]").forEach(b => b.onclick = () => {
+      state.briefQueue.splice(parseInt(b.dataset.rmBrief, 10), 1);
+      saveBrief();
+      render();
+    });
+    const clrBtn = root.querySelector("#clear-brief-btn");
+    if (clrBtn) clrBtn.onclick = () => { state.briefQueue = []; saveBrief(); render(); };
+    const cpyBrief = root.querySelector("#copy-brief-btn");
+    if (cpyBrief) cpyBrief.onclick = () => copyText(buildBriefText(), "AI 任务单 Markdown");
+  }
+
+  // Global bindings
+  const searchEl = document.getElementById("global-search");
+  searchEl.oninput = () => { state.search = searchEl.value; render(); };
+  window.addEventListener("keydown", e => {
+    if (e.key === "/" && document.activeElement !== searchEl) { e.preventDefault(); searchEl.focus(); }
+  });
+  document.getElementById("open-brief-btn").onclick = () => { state.tab = "brief"; render(); };
+  document.getElementById("anim-close").onclick = () => animDialog.close();
+  document.getElementById("detail-close").onclick = () => detailDialog.close();
+  document.getElementById("anim-play-btn").onclick = () => {
+    anim.playing = !anim.playing;
+    document.getElementById("anim-play-btn").textContent = anim.playing ? "暂停" : "播放";
+    restartAnimTimer();
+  };
+  document.getElementById("anim-prev-btn").onclick = () => { anim.playing = false; document.getElementById("anim-play-btn").textContent = "播放"; restartAnimTimer(); anim.frame--; drawAnimFrame(); };
+  document.getElementById("anim-next-btn").onclick = () => { anim.playing = false; document.getElementById("anim-play-btn").textContent = "播放"; restartAnimTimer(); anim.frame++; drawAnimFrame(); };
+  document.getElementById("anim-fps").oninput = e => { document.getElementById("anim-fps-val").textContent = e.target.value; restartAnimTimer(); };
+  ["anim-frames","anim-rows","anim-row-idx","anim-zoom"].forEach(id => { document.getElementById(id).onchange = drawAnimFrame; });
+
+  const rescanBtn = document.getElementById("rescan-btn");
+  if (location.protocol.startsWith("http")) {
+    rescanBtn.onclick = () => {
+      rescanBtn.disabled = true;
+      rescanBtn.textContent = "扫描中...";
+      fetch("/api/rescan", { method: "POST" })
+        .then(r => r.json())
+        .then(data => { M = data; render(); toast("已完成实时重新扫描"); })
+        .catch(() => toast("扫描失败"))
+        .finally(() => { rescanBtn.disabled = false; rescanBtn.textContent = "重新扫描"; });
+    };
+  } else {
+    rescanBtn.disabled = true;
+    rescanBtn.textContent = "离线模式";
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
