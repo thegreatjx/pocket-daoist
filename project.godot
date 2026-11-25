@@ -6,12 +6,12 @@ config_version=5
 
 [application]
 
-config/name="大荒诛魔录"
+config/name="百宝小道修 · Pocket Daoist"
 config/description="修仙肉鸽割草游戏"
 config/version="0.1.0"
 run/main_scene="res://scenes/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [autoload]
 
@@ -40,5 +40,6 @@ theme/custom_font="res://assets/ui_font.tres"
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=1
+textures/canvas_textures/default_texture_filter=2
+textures/canvas_textures/texture_repeat=1
 renderer/rendering_method="gl_compatibility"

@@ -1,0 +1,369 @@
+{
+  "schema_version": "2.0",
+  "base_constants": {
+    "player_speed": 250.0,
+    "enemy_speed": 110.0,
+    "unit_hp": 58.0
+  },
+  "global_limits": {
+    "max_active_enemies": 220,
+    "max_active_xp_orbs": 120,
+    "xp_orb_merge_radius": 90,
+    "player_hurt_invuln_sec": 0.45,
+    "spatial_hash_cell_size": 72,
+    "separation_weight": 1.35
+  },
+  "scaling_formulas": {
+    "enemy_hp": "base_hp * (1.0 + 0.20 * (wave - 1) + 0.018 * pow(wave - 1, 2))",
+    "enemy_damage": "base_dmg * (1.0 + 0.10 * (wave - 1))",
+    "wave_duration_sec": "clamp(25 + (wave - 1) * 3, 25, 65)",
+    "spawn_budget_per_sec": "2.2 + 0.65 * (wave - 1)"
+  },
+  "archetypes": [
+    {
+      "id": "enemy_swarm_imp",
+      "name": "幽冥小鬼",
+      "species": 1,
+      "ai_behavior": "swarm_chaser",
+      "chase_mode": "direct",
+      "hp_units": 0.85,
+      "speed_pct": 118,
+      "base_dmg": 5,
+      "radius": 18,
+      "xp_value": 2,
+      "gold_value": 1,
+      "spawn_cost": 1.0,
+      "knockback_resist": 0.0,
+      "resistances": {},
+      "element_multipliers": {},
+      "notes": "疾行蜂群怪：移速较快、血薄伤害低，考验范围清场与连锁闪电。",
+      "elite_chance": 0.08
+    },
+    {
+      "id": "enemy_skitter_shenjing",
+      "name": "地灵参精",
+      "species": 5,
+      "ai_behavior": "swarm_chaser",
+      "chase_mode": "snake",
+      "hp_units": 0.75,
+      "speed_pct": 142,
+      "base_dmg": 5,
+      "radius": 16,
+      "xp_value": 3,
+      "gold_value": 2,
+      "spawn_cost": 1.5,
+      "knockback_resist": 0.0,
+      "resistances": {},
+      "element_multipliers": {
+        "fire": 1.25
+      },
+      "notes": "极速骚扰怪：蛇形穿插、伤害低血最薄，克星是天雷符与冰/木减速。",
+      "elite_chance": 0.11
+    },
+    {
+      "id": "enemy_hopper_jiangshi",
+      "name": "符箓小僵",
+      "species": 3,
+      "ai_behavior": "swarm_chaser",
+      "chase_mode": "hop",
+      "hp_units": 1.5,
+      "speed_pct": 106,
+      "base_dmg": 8,
+      "radius": 18,
+      "xp_value": 2,
+      "gold_value": 2,
+      "spawn_cost": 1.4,
+      "knockback_resist": 0.0,
+      "resistances": {
+        "slow_resist": 0.25
+      },
+      "element_multipliers": {
+        "thunder": 1.2,
+        "fire": 1.2
+      },
+      "notes": "中速跳跃中坚怪，抗 25% 减速，弱雷火。",
+      "elite_chance": 0.11
+    },
+    {
+      "id": "enemy_kiter_fox",
+      "name": "赤尾妖狐",
+      "species": 0,
+      "ai_behavior": "kiter_shooter",
+      "chase_mode": "strafe_kiter",
+      "hp_units": 1.65,
+      "speed_pct": 108,
+      "base_dmg": 9,
+      "radius": 20,
+      "xp_value": 3,
+      "gold_value": 3,
+      "spawn_cost": 2.5,
+      "knockback_resist": 0.0,
+      "ranged_attack": {
+        "preferred_dist_min": 210,
+        "preferred_dist_max": 320,
+        "fire_cooldown": 2.4,
+        "bullet_speed": 215,
+        "bullet_radius": 11,
+        "color": "#F238AD"
+      },
+      "resistances": {},
+      "element_multipliers": {
+        "fire": 0.75,
+        "ice": 1.3
+      },
+      "notes": "保持中距离风筝走位，发射洋红妖火慢弹，抗火弱冰。",
+      "elite_chance": 0.12
+    },
+    {
+      "id": "enemy_bomber_wisp",
+      "name": "阴火毒灯",
+      "species": 1,
+      "ai_behavior": "splitter_bomber",
+      "chase_mode": "direct",
+      "hp_units": 1.15,
+      "speed_pct": 122,
+      "base_dmg": 14,
+      "radius": 18,
+      "xp_value": 3,
+      "gold_value": 2,
+      "spawn_cost": 2.2,
+      "knockback_resist": 0.2,
+      "death_burst": {
+        "radius": 78,
+        "delay_sec": 0.4,
+        "dmg_mult": 1.0,
+        "color": "#85EB3D"
+      },
+      "resistances": {
+        "knockback_resist": 0.2
+      },
+      "element_multipliers": {},
+      "notes": "高速自爆怪，死后延迟 0.4s 留警告圈，打破站桩挂机。",
+      "elite_chance": 0.1
+    },
+    {
+      "id": "enemy_charger_boar",
+      "name": "狂鬃山魈",
+      "species": 2,
+      "ai_behavior": "charger_telegraph",
+      "chase_mode": "direct",
+      "hp_units": 3.2,
+      "speed_pct": 76,
+      "base_dmg": 14,
+      "radius": 24,
+      "xp_value": 4,
+      "gold_value": 3,
+      "spawn_cost": 3.0,
+      "knockback_resist": 0.25,
+      "dash_telegraph": {
+        "charge_speed_pct": 282,
+        "telegraph_sec": 0.65,
+        "charge_dur_sec": 0.55,
+        "cooldown_sec": 2.8,
+        "dash_length": 260,
+        "dash_width": 42,
+        "windup_kb_resist": 0.9,
+        "stun_on_pillar": 1.2,
+        "color": "#F23344"
+      },
+      "resistances": {
+        "knockback_resist": 0.25
+      },
+      "element_multipliers": {},
+      "notes": "慢速重冲锋怪：血厚伤高，蓄力红线预警后高速冲刺，考验冰/木控场打断。",
+      "elite_chance": 0.14
+    },
+    {
+      "id": "enemy_charger_huodou",
+      "name": "炎煞祸斗",
+      "species": 6,
+      "ai_behavior": "charger_telegraph",
+      "chase_mode": "direct",
+      "hp_units": 3.6,
+      "speed_pct": 84,
+      "base_dmg": 16,
+      "radius": 22,
+      "xp_value": 5,
+      "gold_value": 4,
+      "spawn_cost": 3.2,
+      "knockback_resist": 0.25,
+      "dash_telegraph": {
+        "charge_speed_pct": 300,
+        "telegraph_sec": 0.6,
+        "charge_dur_sec": 0.5,
+        "cooldown_sec": 2.5,
+        "dash_length": 270,
+        "dash_width": 42,
+        "windup_kb_resist": 0.9,
+        "stun_on_pillar": 1.2,
+        "color": "#FF6B26"
+      },
+      "resistances": {
+        "knockback_resist": 0.25
+      },
+      "element_multipliers": {
+        "fire": 0.6,
+        "ice": 1.35
+      },
+      "notes": "食火凶兽，高血高伤冲锋怪，抗火 40%、弱冰 1.35×。",
+      "elite_chance": 0.14
+    },
+    {
+      "id": "enemy_bulwark_golem",
+      "name": "青石镇傀",
+      "species": 2,
+      "ai_behavior": "shield_bulwark",
+      "chase_mode": "direct",
+      "hp_units": 9.0,
+      "speed_pct": 46,
+      "base_dmg": 18,
+      "radius": 30,
+      "xp_value": 6,
+      "gold_value": 5,
+      "spawn_cost": 5.0,
+      "knockback_resist": 0.75,
+      "resistances": {
+        "knockback_resist": 0.75,
+        "phys_reduction": 0.25
+      },
+      "element_multipliers": {
+        "thunder": 1.25,
+        "ice": 1.2,
+        "wood": 1.2
+      },
+      "notes": "极慢超重装肉盾：移速极慢但血量极厚伤害极高，专考单点飞剑、DoT 与破甲。",
+      "elite_chance": 0.12
+    },
+    {
+      "id": "enemy_bulwark_jinchan",
+      "name": "三足金蟾",
+      "species": 4,
+      "ai_behavior": "shield_bulwark",
+      "chase_mode": "hop",
+      "hp_units": 6.5,
+      "speed_pct": 52,
+      "base_dmg": 15,
+      "radius": 26,
+      "xp_value": 5,
+      "gold_value": 10,
+      "spawn_cost": 3.8,
+      "knockback_resist": 0.65,
+      "resistances": {
+        "knockback_resist": 0.65,
+        "phys_reduction": 0.15
+      },
+      "element_multipliers": {},
+      "notes": "山海经三足金蟾，慢速高血高伤，高灵石掉落靶子。",
+      "elite_chance": 0.14
+    }
+  ],
+  "elite_variants": {
+    "0": {
+      "id": "elite_fox",
+      "name": "赤尾妖狐精英",
+      "species": 0,
+      "sprite": "res://assets/sprites/enemy_elite_fox.png",
+      "hp_mult": 3.0,
+      "speed_mult": 1.15,
+      "dmg_mult": 1.4,
+      "kb_resist": 0.72,
+      "xp_mult": 2.5,
+      "gold_mult": 3,
+      "exp_gem_count": 4,
+      "aura_color": "#F26835",
+      "skill_mode": "fan_volley"
+    },
+    "1": {
+      "id": "elite_doll",
+      "name": "幽冥纸灵精英",
+      "species": 1,
+      "sprite": "res://assets/sprites/enemy_elite_doll.png",
+      "hp_mult": 2.9,
+      "speed_mult": 1.14,
+      "dmg_mult": 1.4,
+      "kb_resist": 0.72,
+      "xp_mult": 2.5,
+      "gold_mult": 3,
+      "exp_gem_count": 4,
+      "aura_color": "#38E0C4",
+      "skill_mode": "wisp_pulse"
+    },
+    "2": {
+      "id": "elite_shanxiao",
+      "name": "狂鬃山魈精英",
+      "species": 2,
+      "sprite": "res://assets/sprites/enemy_elite_shanxiao.png",
+      "hp_mult": 3.6,
+      "speed_mult": 1.08,
+      "dmg_mult": 1.55,
+      "kb_resist": 0.85,
+      "xp_mult": 2.8,
+      "gold_mult": 3,
+      "exp_gem_count": 5,
+      "aura_color": "#F59B38",
+      "skill_mode": "heavy_dash"
+    },
+    "3": {
+      "id": "elite_jiangshi",
+      "name": "镇魂僵王精英",
+      "species": 3,
+      "sprite": "res://assets/sprites/enemy_elite_jiangshi.png",
+      "hp_mult": 3.3,
+      "speed_mult": 1.12,
+      "dmg_mult": 1.45,
+      "kb_resist": 0.78,
+      "slow_resist": 0.45,
+      "xp_mult": 2.6,
+      "gold_mult": 3,
+      "exp_gem_count": 4,
+      "aura_color": "#C9B84A",
+      "skill_mode": "hop_pounce"
+    },
+    "4": {
+      "id": "elite_jinchan",
+      "name": "聚宝金蟾精英",
+      "species": 4,
+      "sprite": "res://assets/sprites/enemy_elite_jinchan.png",
+      "hp_mult": 3.8,
+      "speed_mult": 1.02,
+      "dmg_mult": 1.35,
+      "kb_resist": 0.85,
+      "phys_reduction": 0.25,
+      "xp_mult": 3.0,
+      "gold_mult": 4,
+      "exp_gem_count": 6,
+      "aura_color": "#73F08E",
+      "skill_mode": "treasure_slam"
+    },
+    "5": {
+      "id": "elite_shenjing",
+      "name": "千年参王精英",
+      "species": 5,
+      "sprite": "res://assets/sprites/enemy_elite_shenjing.png",
+      "hp_mult": 2.8,
+      "speed_mult": 1.22,
+      "dmg_mult": 1.35,
+      "kb_resist": 0.68,
+      "xp_mult": 3.2,
+      "gold_mult": 3,
+      "exp_gem_count": 6,
+      "aura_color": "#7DF28C",
+      "skill_mode": "agile_dash"
+    },
+    "6": {
+      "id": "elite_huodou",
+      "name": "业火祸斗精英",
+      "species": 6,
+      "sprite": "res://assets/sprites/enemy_elite_huodou.png",
+      "hp_mult": 3.5,
+      "speed_mult": 1.16,
+      "dmg_mult": 1.5,
+      "kb_resist": 0.8,
+      "xp_mult": 2.8,
+      "gold_mult": 3,
+      "exp_gem_count": 5,
+      "aura_color": "#FF6B26",
+      "skill_mode": "fire_dash"
+    }
+  }
+}

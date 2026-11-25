@@ -62,14 +62,11 @@ value = 100.0
 show_percentage = false
 
 [node name="ExpBar" type="ProgressBar" parent="HUD"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 12.0
-offset_top = 6.0
-offset_right = -12.0
-offset_bottom = 14.0
-grow_horizontal = 2
+layout_mode = 0
+offset_left = 24.0
+offset_top = 74.0
+offset_right = 280.0
+offset_bottom = 82.0
 show_percentage = false
 
 [node name="HintLabel" type="Label" parent="HUD"]
@@ -78,11 +75,11 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = -118.0
+offset_top = -148.0
 offset_right = 420.0
 offset_bottom = -22.0
 grow_vertical = 0
 modulate = Color(1, 1, 1, 0.85)
 theme_override_font_sizes/font_size = 22
-text = "WASD / 方向键  移动\n空格  踏云步（冲刺期间无敌）\n飞剑 · 护体剑阵 · 九天玄雷  自动施展\nESC  退出"
+text = "WASD / 方向键  移动  |  空格  纯位移瞬步穿怪\n4 槽法宝自动御使攻击 · 异属性法宝碰撞触发五行元素反应\n击杀妖物掉落灵石，波次完结开启【天机阁】购宝（不清空场上怪物）\nESC  暂停"
 vertical_alignment = 2

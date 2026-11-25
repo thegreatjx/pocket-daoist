@@ -4,6 +4,7 @@ extends Node
 # 被池化的对象需实现 pool_acquire()，用于取用时重置自身状态。
 
 var _pools: Dictionary = {}   # scene_path -> { "scene", "free", "active" }
+var _script_pools: Dictionary = {}   # pool_key -> { "cls", "free", "active" }
 
 func _ready() -> void:
 	# 池数组独占持有已脱离场景树的节点，Godot 不会自动释放这类孤儿节点。
@@ -70,10 +71,59 @@ func release(obj: Node) -> void:
 		obj.queue_free()
 		return
 	var pool = _pools[path]
+	if pool["free"].has(obj):
+		return
 	if obj.get_parent() != null:
 		obj.get_parent().remove_child(obj)
 	obj.visible = false
 	pool["active"] = maxi(0, pool["active"] - 1)
+	pool["free"].append(obj)
+
+# 取用一个脚本对象并挂到 parent 下。max_active > 0 时超额返回 null。
+func acquire_script(pool_key: String, script_cls, parent: Node, max_active: int = 0) -> Node:
+	if parent == null or not is_instance_valid(parent):
+		return null
+	if not _script_pools.has(pool_key):
+		_script_pools[pool_key] = { "cls": script_cls, "free": [], "active": 0 }
+	var pool: Dictionary = _script_pools[pool_key]
+	if max_active > 0 and int(pool["active"]) >= max_active:
+		return null
+
+	var obj: Node = null
+	while pool["free"].size() > 0:
+		var cand = pool["free"].pop_back()
+		if cand != null and is_instance_valid(cand):
+			obj = cand
+			break
+	if obj == null:
+		obj = script_cls.new()
+		obj.set_meta("_script_pool_key", pool_key)
+
+	parent.add_child(obj)
+	obj.visible = true
+	pool["active"] += 1
+	if obj.has_method("pool_acquire"):
+		obj.pool_acquire()
+	return obj
+
+# 归还脚本对象。非池化实例（无池标记）退化为正常释放。
+func release_script(obj: Node) -> void:
+	if obj == null or not is_instance_valid(obj):
+		return
+	if not obj.has_meta("_script_pool_key"):
+		obj.queue_free()
+		return
+	var pool_key := str(obj.get_meta("_script_pool_key"))
+	if not _script_pools.has(pool_key):
+		obj.queue_free()
+		return
+	var pool: Dictionary = _script_pools[pool_key]
+	if pool["free"].has(obj):
+		return
+	if obj.get_parent() != null:
+		obj.get_parent().remove_child(obj)
+	obj.visible = false
+	pool["active"] = maxi(0, int(pool["active"]) - 1)
 	pool["free"].append(obj)
 
 # 清空所有池：场景重载与进程退出前调用
@@ -85,3 +135,11 @@ func clear() -> void:
 				obj.free()
 		pool["free"].clear()
 		pool["active"] = 0
+	for key in _script_pools.keys():
+		var spool: Dictionary = _script_pools[key]
+		for obj in spool["free"]:
+			if obj != null and is_instance_valid(obj):
+				obj.free()
+		spool["free"].clear()
+		spool["active"] = 0
+	_script_pools.clear()

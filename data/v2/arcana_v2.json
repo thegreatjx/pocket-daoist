@@ -1,0 +1,146 @@
+{
+  "schema_version": 2,
+  "arcanas": [
+    {
+      "id": "arcana_mirror_blade",
+      "name": "分光剑影",
+      "desc": "青霜飞剑与玄冰八卦镜每次出手额外发射1道45%伤害的镜像弹道",
+      "whitelist_scope": "weapons",
+      "whitelist_weapons": [
+        "wpn_jade_sword",
+        "wpn_ice_mirror"
+      ],
+      "whitelist_elements": [],
+      "whitelist_reactions": [],
+      "default_unlocked": true,
+      "effects": {
+        "mirror_damage_ratio": 0.45,
+        "extra_projectiles": 1
+      }
+    },
+    {
+      "id": "arcana_primordial_bond",
+      "name": "太初本命",
+      "desc": "当前角色初始法宝及合体超武冷却-18%，弹道或弹射+1（合体后+2）",
+      "whitelist_scope": "starter_and_fusion",
+      "whitelist_weapons": [],
+      "whitelist_elements": [],
+      "whitelist_reactions": [],
+      "default_unlocked": false,
+      "unlock_hint": "任意局合成1件合体超武解锁",
+      "effects": {
+        "cooldown_pct": -0.18,
+        "bonus_count": 1,
+        "fusion_bonus_count": 2
+      }
+    },
+    {
+      "id": "arcana_calamity_ember",
+      "name": "劫火归烬",
+      "desc": "离火葫芦、诛仙烈焰剑阵与熔金锻刃反应伤害随劫气等比放大",
+      "whitelist_scope": "weapons_and_reactions",
+      "whitelist_weapons": [
+        "wpn_fire_gourd",
+        "fusion_flame_sword_array"
+      ],
+      "whitelist_elements": [
+        "fire"
+      ],
+      "whitelist_reactions": [
+        "react_molten_forge"
+      ],
+      "default_unlocked": true,
+      "effects": {
+        "curse_damage_scale": 1.0,
+        "base_bonus_pct": 0.15
+      }
+    },
+    {
+      "id": "arcana_solitary_dao",
+      "name": "寂灭独行",
+      "desc": "每空出1个已解锁法宝槽位，全伤害+18%，攻速+6%",
+      "whitelist_scope": "empty_slots",
+      "whitelist_weapons": [],
+      "whitelist_elements": [],
+      "whitelist_reactions": [],
+      "default_unlocked": true,
+      "effects": {
+        "damage_pct_per_empty_slot": 0.18,
+        "attack_speed_pct_per_empty_slot": 0.06
+      }
+    },
+    {
+      "id": "arcana_samsara",
+      "name": "生死轮回",
+      "desc": "额外赐予+1次复活；每次复活永久提升+15%气血、+2护甲、+10%全伤害",
+      "whitelist_scope": "revival",
+      "whitelist_weapons": [],
+      "whitelist_elements": [],
+      "whitelist_reactions": [],
+      "default_unlocked": true,
+      "effects": {
+        "extra_revivals": 1,
+        "hp_pct_per_revival": 0.15,
+        "armor_per_revival": 2.0,
+        "damage_pct_per_revival": 0.1
+      }
+    },
+    {
+      "id": "arcana_glacial_shatter",
+      "name": "寒狱碎界",
+      "desc": "玄冰八卦镜、九霄雷冰天域与碎冰穿刺伤害+35%，定身冰符掉率翻倍",
+      "whitelist_scope": "weapons_and_reactions",
+      "whitelist_weapons": [
+        "wpn_ice_mirror",
+        "fusion_thunder_frost_domain"
+      ],
+      "whitelist_elements": [
+        "ice"
+      ],
+      "whitelist_reactions": [
+        "react_shatter"
+      ],
+      "default_unlocked": true,
+      "effects": {
+        "damage_pct": 0.35,
+        "frost_drop_mult": 2.0
+      }
+    },
+    {
+      "id": "arcana_void_magnet",
+      "name": "归墟引灵",
+      "desc": "每90秒自动将全图经验灵丹与掉落物吸向玩家",
+      "whitelist_scope": "arena_rule",
+      "whitelist_weapons": [],
+      "whitelist_elements": [],
+      "whitelist_reactions": [],
+      "default_unlocked": false,
+      "unlock_hint": "累计击碎15个青瓷罐或通关秘境解锁",
+      "effects": {
+        "vacuum_interval_sec": 90.0
+      }
+    },
+    {
+      "id": "arcana_thunder_venom",
+      "name": "雷毒交鸣",
+      "desc": "天雷符、万毒幡与雷瘴蚀脉反应伤害+35%，触发时额外结算25%毒伤",
+      "whitelist_scope": "weapons_and_reactions",
+      "whitelist_weapons": [
+        "wpn_thunder_talisman",
+        "wpn_venom_banner"
+      ],
+      "whitelist_elements": [
+        "thunder",
+        "venom"
+      ],
+      "whitelist_reactions": [
+        "react_miasma_arc"
+      ],
+      "default_unlocked": true,
+      "effects": {
+        "damage_pct": 0.35,
+        "venom_detonate_ratio": 0.25
+      }
+    }
+  ]
+}

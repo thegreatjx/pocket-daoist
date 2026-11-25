@@ -1,0 +1,269 @@
+{
+  "schema_version": 2,
+  "achievements": [
+    {
+      "id": "ach_first_run",
+      "name": "初入仙途",
+      "desc": "完成第1局大荒修行",
+      "metric": "total_runs",
+      "target": 1,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 40,
+      "reward_desc": "灵石 +40"
+    },
+    {
+      "id": "ach_three_runs",
+      "name": "问道三载",
+      "desc": "累计完成3局修行",
+      "metric": "total_runs",
+      "target": 3,
+      "reward_type": "unlock_character",
+      "reward_id": "fox_dango",
+      "reward_value": 1,
+      "reward_desc": "解锁修士【白团】"
+    },
+    {
+      "id": "ach_ten_runs",
+      "name": "百炼成道",
+      "desc": "累计完成10局修行",
+      "metric": "total_runs",
+      "target": 10,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 120,
+      "reward_desc": "灵石 +120"
+    },
+    {
+      "id": "ach_kills_150",
+      "name": "初试锋芒",
+      "desc": "单局诛魔达150",
+      "metric": "run_kills",
+      "target": 150,
+      "reward_type": "unlock_character",
+      "reward_id": "jinyiwei_gunner",
+      "reward_value": 1,
+      "reward_desc": "解锁修士【陆昭】"
+    },
+    {
+      "id": "ach_kills_500",
+      "name": "斩妖除魔",
+      "desc": "单局诛魔达500",
+      "metric": "run_kills",
+      "target": 500,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 80,
+      "reward_desc": "灵石 +80"
+    },
+    {
+      "id": "ach_kills_1200",
+      "name": "大荒煞星",
+      "desc": "单局诛魔达1200",
+      "metric": "run_kills",
+      "target": 1200,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 150,
+      "reward_desc": "灵石 +150"
+    },
+    {
+      "id": "ach_total_kills_1000",
+      "name": "千魔伏诛",
+      "desc": "累计诛魔达1000",
+      "metric": "total_kills",
+      "target": 1000,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 100,
+      "reward_desc": "灵石 +100"
+    },
+    {
+      "id": "ach_total_kills_5000",
+      "name": "万妖臣服",
+      "desc": "累计诛魔达5000",
+      "metric": "total_kills",
+      "target": 5000,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 250,
+      "reward_desc": "灵石 +250"
+    },
+    {
+      "id": "ach_level_12",
+      "name": "筑基有成",
+      "desc": "单局境界达到Lv.12",
+      "metric": "run_level",
+      "target": 12,
+      "reward_type": "unlock_character",
+      "reward_id": "gourd_spirit",
+      "reward_value": 1,
+      "reward_desc": "解锁修士【阿葫】"
+    },
+    {
+      "id": "ach_level_20",
+      "name": "金丹大道",
+      "desc": "单局境界达到Lv.20",
+      "metric": "run_level",
+      "target": 20,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 90,
+      "reward_desc": "灵石 +90"
+    },
+    {
+      "id": "ach_level_30",
+      "name": "元婴破境",
+      "desc": "单局境界达到Lv.30",
+      "metric": "run_level",
+      "target": 30,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 180,
+      "reward_desc": "灵石 +180"
+    },
+    {
+      "id": "ach_survive_3m",
+      "name": "初渡妖潮",
+      "desc": "单局存活满3分钟",
+      "metric": "run_time",
+      "target": 180,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 45,
+      "reward_desc": "灵石 +45"
+    },
+    {
+      "id": "ach_survive_6m",
+      "name": "孤军破阵",
+      "desc": "单局存活满6分钟",
+      "metric": "run_time",
+      "target": 360,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 85,
+      "reward_desc": "灵石 +85"
+    },
+    {
+      "id": "ach_clear_stage1",
+      "name": "青林问道",
+      "desc": "通关秘境1",
+      "metric": "cleared_stage_1",
+      "target": 1,
+      "reward_type": "unlock_character",
+      "reward_id": "daoist_mochi",
+      "reward_value": 1,
+      "reward_desc": "解锁修士【圆圆】"
+    },
+    {
+      "id": "ach_clear_stage2",
+      "name": "落霞归舟",
+      "desc": "通关秘境2",
+      "metric": "cleared_stage_2",
+      "target": 1,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 100,
+      "reward_desc": "灵石 +100"
+    },
+    {
+      "id": "ach_clear_stage3",
+      "name": "幽冥破阵",
+      "desc": "通关秘境3",
+      "metric": "cleared_stage_3",
+      "target": 1,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 130,
+      "reward_desc": "灵石 +130"
+    },
+    {
+      "id": "ach_clear_stage4",
+      "name": "赤焰镇魔",
+      "desc": "通关秘境4",
+      "metric": "cleared_stage_4",
+      "target": 1,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 160,
+      "reward_desc": "灵石 +160"
+    },
+    {
+      "id": "ach_clear_stage5",
+      "name": "云巅封神",
+      "desc": "通关秘境5",
+      "metric": "cleared_stage_5",
+      "target": 1,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 240,
+      "reward_desc": "灵石 +240"
+    },
+    {
+      "id": "ach_reactions_25",
+      "name": "五行生克",
+      "desc": "单局触发25次五行反应",
+      "metric": "run_reactions",
+      "target": 25,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 75,
+      "reward_desc": "灵石 +75"
+    },
+    {
+      "id": "ach_total_reactions_200",
+      "name": "天地玄黄",
+      "desc": "累计触发200次五行反应",
+      "metric": "total_reactions",
+      "target": 200,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 150,
+      "reward_desc": "灵石 +150"
+    },
+    {
+      "id": "ach_first_fusion",
+      "name": "法宝合体",
+      "desc": "任意局合成1件合体超武",
+      "metric": "run_fusions",
+      "target": 1,
+      "reward_type": "unlock_arcana",
+      "reward_id": "arcana_primordial_bond",
+      "reward_value": 1,
+      "reward_desc": "解锁天道道韵【太初本命】"
+    },
+    {
+      "id": "ach_jars_15",
+      "name": "搜山寻宝",
+      "desc": "累计击碎15个青瓷罐",
+      "metric": "total_jars_broken",
+      "target": 15,
+      "reward_type": "unlock_arcana",
+      "reward_id": "arcana_void_magnet",
+      "reward_value": 1,
+      "reward_desc": "解锁天道道韵【归墟引灵】"
+    },
+    {
+      "id": "ach_curse_clear_20",
+      "name": "逆天渡劫",
+      "desc": "携带不少于20%劫气通关任意秘境",
+      "metric": "curse_victory_pct",
+      "target": 20,
+      "reward_type": "bonus_seal",
+      "reward_id": "seal",
+      "reward_value": 2,
+      "reward_desc": "永久封印槽位上限 +2"
+    },
+    {
+      "id": "ach_sect_invest_500",
+      "name": "宗门兴盛",
+      "desc": "宗门累计投入达500灵石",
+      "metric": "sect_invested",
+      "target": 500,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 120,
+      "reward_desc": "灵石 +120"
+    }
+  ]
+}

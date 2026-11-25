@@ -62,12 +62,17 @@ const TESTS := [
 	"test_stats_record",
 	"test_title_scene",
 	"test_run_isolation",
+	"test_character_rig",
+	"test_boss_state_machine",
+	"test_map_landmarks_and_audio",
 	"test_smoke_long_run",
 ]
 
 func _run() -> void:
 	await _frame()
 	await _frame()
+	var saved_char := Stats.selected_character_id
+	Stats.selected_character_id = "sword_immortal"
 	for t in TESTS:
 		current_test = t
 		print("RUN  ", t)
@@ -75,6 +80,8 @@ func _run() -> void:
 		await self.call(t)
 		if get_tree() == null:
 			return
+	Stats.selected_character_id = saved_char
+	Stats.save_stats()
 	# 退出前彻底静默：
 	# 1) 清空对象池，释放池中孤儿节点
 	# 2) 等待若干帧，让 queue_free 的场景子树完成释放
@@ -158,8 +165,9 @@ func test_pool_reuse() -> void:
 	check("pool_acquire_parented", a.get_parent() == holder, "not parented")
 	check("pool_active_1", ObjectPools.active_count(path) == 1, "active=%d" % ObjectPools.active_count(path))
 	ObjectPools.release(a)
+	ObjectPools.release(a)
 	check("pool_active_0", ObjectPools.active_count(path) == 0, "active=%d after release" % ObjectPools.active_count(path))
-	check("pool_free_1", ObjectPools.free_count(path) == 1, "free=%d" % ObjectPools.free_count(path))
+	check("pool_free_1", ObjectPools.free_count(path) == 1, "free=%d (double release must be ignored)" % ObjectPools.free_count(path))
 	check("pool_detached", a.get_parent() == null, "still parented after release")
 	var b = ObjectPools.acquire(path, holder)
 	check("pool_same_instance", b.get_instance_id() == id_a, "pool did not reuse instance")
@@ -239,29 +247,47 @@ func test_knockback() -> void:
 	check("knockback_decays", enemy._knockback.length_squared() < 1.0, "knockback never decayed: %f" % enemy._knockback.length())
 	holder.free()
 
-# ---- 冲刺期间飞剑照常发射 ----
+# ---- 空格冲刺纯位移穿怪脱身：不触发剑气斩击、不造成伤害、也不被怪物堵死 ----
 func test_dash_keeps_attacking() -> void:
 	var m = await _load_main()
 	var p = m.get_node("Player")
+	if p.v2_combat != null:
+		p.v2_combat.set_physics_process(false)
+	var sp = m.get_node_or_null("Spawner")
+	if sp != null:
+		sp.set_process(false)
 	var enemy = (load("res://scenes/enemy.tscn") as PackedScene).instantiate()
 	m.add_child(enemy)
+	enemy.setup_type(Enemy.Type.ELITE, 10.0, 0)
 	enemy.speed = 0.0
 	enemy.separation_force = 0.0
 	enemy.max_health = 99999.0
 	enemy.current_health = 99999.0
-	enemy.global_position = p.global_position + Vector2(120, 0)
+	enemy.global_position = p.global_position + Vector2(24, 0)
 
-	p.is_dashing = true
-	p.dash_timer = 5.0
-	p.dash_direction = Vector2.ZERO
-	p.sword_interval = 0.1
-	p.sword_timer = 0.0
-	var before = ObjectPools.active_count(p.sword_scene_path)
-	for i in range(30):
+	var start_pos: Vector2 = p.global_position
+	var hp_before: float = enemy.current_health
+	var slash_before := ObjectPools.active_count(WeaponManager.SLASH_SCENE)
+	p.dash_direction = Vector2.RIGHT
+	p._start_dash()
+	for i in range(20):
 		await get_tree().physics_frame
-	check("dash_still_attacking", ObjectPools.active_count(p.sword_scene_path) > before, "no sword spawned while dashing (before=%d after=%d)" % [before, ObjectPools.active_count(p.sword_scene_path)])
-	check("dash_still_dashing", p.is_dashing, "dash ended early")
-	check("sword_cap_respected", ObjectPools.active_count(p.sword_scene_path) <= p.max_active_swords, "swords=%d exceed cap" % ObjectPools.active_count(p.sword_scene_path))
+	check("dash_pure_movement_escapes_block", p.global_position.x > start_pos.x + 120.0, "player blocked at x=%.1f from %.1f" % [p.global_position.x, start_pos.x])
+	check("dash_no_damage_or_slash_fx", is_equal_approx(enemy.current_health, hp_before) and ObjectPools.active_count(WeaponManager.SLASH_SCENE) == slash_before, "hp=%.1f before=%.1f slashes=%d" % [enemy.current_health, hp_before, ObjectPools.active_count(WeaponManager.SLASH_SCENE)])
+	check("dash_loadout_intact", p.weapon_mgr != null and p.weapon_mgr.weapon_level("lotus_slash") >= 1, "weapon manager missing")
+	var gold_before: int = p.v2_combat.run_gold
+	enemy.die()
+	await _frame()
+	var dropped_stones := get_tree().get_nodes_in_group("spirit_stones")
+	var stones_only_group := true
+	for st in dropped_stones:
+		if is_instance_valid(st) and st.is_in_group("world_pickups"):
+			stones_only_group = false
+			break
+	check("enemy_kill_drops_stone_no_direct_gold", p.v2_combat.run_gold == gold_before and dropped_stones.size() >= 1 and stones_only_group, "gold=%d->%d stones=%d only_group=%s" % [gold_before, p.v2_combat.run_gold, dropped_stones.size(), str(stones_only_group)])
+	for st in dropped_stones:
+		if is_instance_valid(st):
+			st.queue_free()
 	p.is_dashing = false
 	m.queue_free()
 	await _frame()
@@ -273,6 +299,14 @@ func test_multilevel_queue() -> void:
 	var p = m.get_node("Player")
 	var uui = m.get_node("UpgradeUI")
 	var cont = uui.get_node("Panel/CardContainer")
+	var sp = m.get_node_or_null("Spawner")
+	if sp != null:
+		sp.set_process(false)
+	var bystander = (load("res://scenes/enemy.tscn") as PackedScene).instantiate()
+	m.add_child(bystander)
+	bystander.global_position = p.global_position + Vector2(360, 0)
+	bystander.speed = 0.0
+	var enemies_before := get_tree().get_nodes_in_group("enemies").size()
 
 	var lvl_before = p.level
 	p.current_exp = 0.0
@@ -294,10 +328,13 @@ func test_multilevel_queue() -> void:
 		await get_tree().process_frame
 		rounds += 1
 		if uui.is_showing:
-			check("queue_cards_3_round%d" % rounds, cont.get_child_count() == 3, "cards=%d expect 3 (overlap bug)" % cont.get_child_count())
+			var max_cards := 4 if (p.v2_combat != null and p.v2_combat.get_luck() > 1.0) else 3
+			var cnt := cont.get_child_count()
+			check("queue_cards_3_round%d" % rounds, cnt >= 3 and cnt <= max_cards, "cards=%d expect 3..%d (overlap bug)" % [cnt, max_cards])
 	check("queue_all_rounds_shown", rounds == level_ups, "rounds=%d expect=%d" % [rounds, level_ups])
 	check("queue_done_unpaused", not uui.is_showing and not get_tree().paused, "still showing/paused")
-	check("orbit_swords_bounded", p.orbit_swords.size() == p.orbit_sword_count, "orbit=%d expect=%d" % [p.orbit_swords.size(), p.orbit_sword_count])
+	check("level_up_keeps_enemies", not bystander.is_dead and get_tree().get_nodes_in_group("enemies").size() >= enemies_before, "enemies cleared on level up: %d -> %d" % [enemies_before, get_tree().get_nodes_in_group("enemies").size()])
+	check("loadout_slots_bounded", p.weapon_mgr.weapons.size() <= WeaponCatalog.MAX_WEAPON_SLOTS and p.weapon_mgr.passives.size() <= WeaponCatalog.MAX_PASSIVE_SLOTS, "slots exceeded")
 	m.queue_free()
 	await _frame()
 	ObjectPools.clear()
@@ -369,28 +406,47 @@ func test_separation() -> void:
 	holder.free()
 	await _frame()
 
-# ---- 灵气珠超时归还池 ----
+# ---- 灵气珠永不超时消失 + 超量时 10 合 1 聚合 ----
 func test_gem_lifetime() -> void:
+	var path = "res://scenes/exp_gem.tscn"
 	var holder = Node2D.new()
 	get_tree().root.add_child(holder)
-	var path = "res://scenes/exp_gem.tscn"
 	var gem = ObjectPools.acquire(path, holder)
 	gem.lifetime = 0.25
 	for i in range(60):
 		await get_tree().physics_frame
-	check("gem_lifetime_returned", gem.get_parent() == null or ObjectPools.free_count(path) >= 1, "gem still active after lifetime")
+	check("gem_survives_no_timeout", is_instance_valid(gem) and gem.is_inside_tree(), "single gem disappeared after 60 physics frames")
+	ObjectPools.release(gem)
+	holder.free()
+	ObjectPools.clear()
+
+	# 第 121 颗触发聚合：最老的 9 颗并入最老的一颗，经验总量不变
+	holder = Node2D.new()
+	get_tree().root.add_child(holder)
+	for i in range(121):
+		var g = ObjectPools.acquire(path, holder)
+		g.setup_value(6.0)
+		if i < 10:
+			g._age = 100.0 - float(i)
+	var total_exp := 0.0
+	for g in get_tree().get_nodes_in_group("exp_gems"):
+		if is_instance_valid(g) and holder.is_ancestor_of(g):
+			total_exp += g.exp_value
+	check("gem_overflow_merges", ObjectPools.free_count(path) >= 9, "free=%d after 121 acquires" % ObjectPools.free_count(path))
+	check("gem_merge_preserves_exp", is_equal_approx(total_exp, 121.0 * 6.0), "total=%.3f expect=%.3f" % [total_exp, 121.0 * 6.0])
 	holder.free()
 	ObjectPools.clear()
 
 # ---- 战绩快照：测试会写入战绩，必须还原玩家真实数据 ----
 func _snapshot_stats() -> Dictionary:
-	return { "t": Stats.best_time, "l": Stats.best_level, "k": Stats.best_kills, "r": Stats.total_runs }
+	return { "t": Stats.best_time, "l": Stats.best_level, "k": Stats.best_kills, "r": Stats.total_runs, "c": Stats.selected_character_id }
 
 func _restore_stats(s: Dictionary) -> void:
 	Stats.best_time = s["t"]
 	Stats.best_level = s["l"]
 	Stats.best_kills = s["k"]
 	Stats.total_runs = s["r"]
+	Stats.selected_character_id = str(s.get("c", "sword_immortal"))
 	Stats.save_stats()
 
 # ---- 设置快照：同上，避免测试覆盖玩家偏好 ----
@@ -443,46 +499,63 @@ func test_game_over_flow() -> void:
 	ObjectPools.clear()
 	_restore_stats(stats_snap)
 
-# ---- 升级加权抽取 + 进化前置 ----
+# ---- 吸血鬼幸存者 6+6 槽位、升级池与天机宝箱超武质变进化 ----
 func test_upgrade_weight_and_prereq() -> void:
-	var mgr = Node.new()
-	mgr.set_script(load("res://scripts/upgrade_manager.gd"))
-	get_tree().root.add_child(mgr)
-	for i in range(60):
-		for c in mgr.get_random_choices(3):
-			check("evo_locked_hidden", c["id"] != "super_wanjian", "evo appeared without prereq")
-	mgr.upgrades["sword_amount"]["level"] = 2
-	var seen_evo = false
-	for i in range(150):
-		for c in mgr.get_random_choices(3):
-			if c["id"] == "super_wanjian":
-				seen_evo = true
-	check("evo_unlocked_visible", seen_evo, "evo never appeared in 150 draws")
+	var m = await _load_main()
+	var p = m.get_node("Player")
+	var mgr = m.get_node("UpgradeManager")
+	var wm: WeaponManager = p.weapon_mgr
+
+	check("start_weapon_lotus_slash", wm.weapon_level("lotus_slash") == 1 and wm.weapons.size() == 1, "start weapon wrong")
+
+	# 未满足 8 级 + 共鸣法宝前不应出现进化候选
+	check("evo_locked_before_max", wm.evolve_candidates().is_empty(), "evo unlocked too early")
+
+	# 抽卡去重且附带共鸣提示
 	var dup = false
-	for i in range(60):
+	var has_hint = false
+	for i in range(40):
 		var ids = {}
-		for c in mgr.get_random_choices(3):
+		for c in mgr.get_random_choices(p, 3):
 			if ids.has(c["id"]):
 				dup = true
 			ids[c["id"]] = true
+			if str(c.get("synergy_hint", "")) != "":
+				has_hint = true
 	check("choices_unique", not dup, "duplicate id in one draw")
-	# 权重确实生效：人为把两个普通项权重拉到 10:1，高频项应明显多出
-	# （不能用进化项 super_wanjian：它有前置且 max_level=1，会污染对比）
-	for id in mgr.upgrades.keys():
-		mgr.upgrades[id]["level"] = 0
-	mgr.upgrades["sword_amount"]["weight"] = 400
-	mgr.upgrades["thunder_freq"]["weight"] = 4
-	var counts = {}
-	for i in range(600):
-		for c in mgr.get_random_choices(3):
-			counts[c["id"]] = counts.get(c["id"], 0) + 1
-	var hi = counts.get("sword_amount", 0)
-	var lo = counts.get("thunder_freq", 0)
-	check("weight_influences_draw", hi > lo * 5, "w=400 drew %d, w=4 drew %d — weight not honored" % [hi, lo])
-	for id in mgr.upgrades.keys():
-		mgr.upgrades[id]["level"] = mgr.upgrades[id]["max_level"]
-	check("all_maxed_empty", mgr.get_random_choices(3).size() == 0, "non-empty when all maxed")
-	mgr.queue_free()
+	check("choices_have_synergy_hint", has_hint, "synergy hints missing")
+
+	# 升满青莲剑气至 8 级 + 灵风珠至 3 级满级 → 50 次抽卡绝不再出现已满级项
+	for _i in range(7):
+		wm.add_or_upgrade_weapon("lotus_slash")
+	for _i in range(3):
+		wm.add_or_upgrade_passive("wind_orb")
+	wm.add_or_upgrade_passive("sword_jade")
+	check("lotus_slash_maxed", wm.weapon_level("lotus_slash") == 8, "lv=%d" % wm.weapon_level("lotus_slash"))
+	var leaked_maxed := false
+	for _i in range(50):
+		for c in mgr.get_random_choices(p, 3):
+			if c["id"] == "weapon:lotus_slash" or c["id"] == "passive:wind_orb":
+				leaked_maxed = true
+	check("maxed_skills_never_offered", not leaked_maxed, "maxed skill reappeared in upgrade choices")
+	check("evo_candidate_ready", wm.evolve_candidates().has("lotus_slash"), "evo candidate missing")
+
+	var rewards: Array[Dictionary] = mgr.roll_chest_rewards(p)
+	check("chest_triggers_evo", rewards.size() == 1 and bool(rewards[0].get("is_evo", false)), "chest did not evolve")
+	check("lotus_slash_evolved", wm.is_weapon_evolved("lotus_slash"), "weapon not marked evolved")
+	check("evo_consumed_after_evolve", not wm.evolve_candidates().has("lotus_slash"), "already evolved weapon still listed")
+
+	# 全部武器和法宝满级后抽卡应返回空
+	for wid in WeaponCatalog.weapon_ids():
+		for _lv in range(WeaponCatalog.MAX_WEAPON_LEVEL):
+			wm.add_or_upgrade_weapon(wid)
+	for pid in WeaponCatalog.passive_ids():
+		for _lv in range(WeaponCatalog.MAX_PASSIVE_LEVEL):
+			wm.add_or_upgrade_passive(pid)
+	check("all_maxed_empty", mgr.get_random_choices(p, 3).size() == 0, "non-empty when all maxed")
+	m.queue_free()
+	await _frame()
+	ObjectPools.clear()
 
 # ---- 中文字体 ----
 func test_font_cjk() -> void:
@@ -495,13 +568,14 @@ func test_font_cjk() -> void:
 # ---- 音频资源全部可加载、可播放 ----
 func test_audio_assets() -> void:
 	check("sfx_players_pooled", Sfx.get_child_count() == Sfx.PLAYER_COUNT, "players=%d expect=%d" % [Sfx.get_child_count(), Sfx.PLAYER_COUNT])
-	for name in ["sword_cast", "sword_hit", "enemy_die", "gem_pickup", "level_up", "thunder", "player_hurt", "dash"]:
+	for name in ["sword_cast", "sword_hit", "enemy_die", "gem_pickup", "level_up", "chest_open", "thunder", "player_hurt", "dash", "jar_break", "gun_shot", "cannon_blast"]:
 		check("sfx_has_" + name, Sfx.has_sound(name), "sound not loaded")
 	var before = Sfx.play_count
 	Sfx.play("thunder", -2.0)
 	Sfx.play_varied("sword_hit", -10.0)
+	Sfx.play_gem_pickup()
 	Sfx.play("nonexistent_sound")
-	check("sfx_play_counter", Sfx.play_count == before + 2, "counter %d -> %d expect +2" % [before, Sfx.play_count])
+	check("sfx_play_counter", Sfx.play_count == before + 3, "counter %d -> %d expect +3" % [before, Sfx.play_count])
 
 # ---- GameFlow 状态机：暂停权独占、非法迁移被拒 ----
 func test_game_flow_state_machine() -> void:
@@ -609,6 +683,15 @@ func test_pause_menu_settings() -> void:
 	check("esc_keeps_paused", GameFlow.state == GameFlow.State.PAUSED, "game resumed when only settings should close: %s" % GameFlow.state_name())
 	check("menu_still_shown", menu.visible, "menu hidden after closing settings")
 
+	# 打开五行法典并按 ESC 优先关闭法典
+	menu.get_node("Root/Panel/VBox/CodexButton").emit_signal("pressed")
+	await _frame()
+	check("codex_panel_opened", menu._is_codex_open(), "codex panel not created")
+	menu._input(ev)
+	await _frame()
+	check("esc_closes_codex_first", not menu._is_codex_open(), "codex panel survived ESC")
+	check("esc_codex_keeps_paused", GameFlow.state == GameFlow.State.PAUSED and menu.visible, "pause broken after closing codex")
+
 	# 恢复后菜单应隐藏
 	GameFlow.resume()
 	await _frame()
@@ -693,10 +776,12 @@ func test_accessibility_effects() -> void:
 	# 关闭受击闪白后 modulate 不应变红
 	Settings.set_value("video/hit_flash", false)
 	p.modulate = Color.WHITE
+	p.invuln_timer = 0.0
 	p.take_damage(1.0)
 	check("flash_disabled_keeps_white", p.modulate == Color.WHITE, "modulate=%s while flash disabled" % str(p.modulate))
 	Settings.set_value("video/hit_flash", true)
 	p.modulate = Color.WHITE
+	p.invuln_timer = 0.0  # 玩家有受击无敌帧，先清掉再测第二次受击
 	p.take_damage(1.0)
 	check("flash_enabled_tints", p.modulate != Color.WHITE, "no flash while enabled")
 
@@ -710,6 +795,8 @@ func test_music_control() -> void:
 	var snap = _snapshot_settings()
 	check("music_has_title", Music.has_track("title"), "title track missing")
 	check("music_has_battle", Music.has_track("battle"), "battle track missing")
+	check("music_has_swarm", Music.has_track("swarm"), "swarm track missing")
+	check("music_has_boss", Music.has_track("boss"), "boss track missing")
 	check("music_missing_track", not Music.has_track("nonexistent"), "phantom track reported")
 	check("music_bus_assigned", Music._player.bus == "Music", "player on bus %s" % Music._player.bus)
 
@@ -726,7 +813,13 @@ func test_music_control() -> void:
 	await _frame()
 	check("music_same_track_no_restart", Music._player.stream.get_instance_id() == stream_id, "track restarted")
 
-	# 切曲应换流
+	# 切曲应换流（含大波与 Boss 曲目）
+	Music.play_track("swarm", 0.0)
+	await _frame()
+	check("music_switches_swarm", Music.current_track == "swarm", "track=%s" % Music.current_track)
+	Music.play_track("boss", 0.0)
+	await _frame()
+	check("music_switches_boss", Music.current_track == "boss", "track=%s" % Music.current_track)
 	Music.play_track("battle", 0.0)
 	await _frame()
 	check("music_switches_track", Music.current_track == "battle", "track=%s" % Music.current_track)
@@ -859,23 +952,22 @@ func test_title_scene() -> void:
 	Settings.reset_to_defaults()
 	_restore_stats(snap)
 
-# ---- 新局开始不应残留上一局的击杀数与升级进度 ----
+# ---- 新局开始不应残留上一局的击杀数与武器构筑 ----
 func test_run_isolation() -> void:
 	var snap = _snapshot_stats()
 	var m = await _load_main()
 	m.kill_count = 42
 	m.pending_level_ups = 3
-	var mgr = m.get_node("UpgradeManager")
-	for id in mgr.upgrades.keys():
-		mgr.upgrades[id]["level"] = 2
-	check("run_dirty_before", m.kill_count == 42 and mgr.upgrades["sword_amount"]["level"] == 2, "setup failed")
+	var p1 = m.get_node("Player")
+	p1.weapon_mgr.add_or_upgrade_weapon("flying_sword")
+	p1.weapon_mgr.add_or_upgrade_weapon("lotus_slash")
+	check("run_dirty_before", m.kill_count == 42 and p1.weapon_mgr.weapon_level("lotus_slash") == 2, "setup failed")
 
-	# 重新加载 main 场景模拟"重开本局"：UpgradeManager 是新实例，等级应归零
 	var m2 = await _load_main()
 	check("new_run_kills_zero", m2.kill_count == 0, "kills carried over: %d" % m2.kill_count)
 	check("new_run_pending_zero", m2.pending_level_ups == 0, "pending level ups carried over")
-	var mgr2 = m2.get_node("UpgradeManager")
-	check("new_run_upgrades_reset", mgr2.upgrades["sword_amount"]["level"] == 0, "upgrade level carried over: %d" % mgr2.upgrades["sword_amount"]["level"])
+	var p2 = m2.get_node("Player")
+	check("new_run_upgrades_reset", p2.weapon_mgr.weapon_level("lotus_slash") == 1 and p2.weapon_mgr.weapons.size() == 1, "loadout carried over")
 	check("new_run_state_playing", GameFlow.state == GameFlow.State.PLAYING, "state=%s" % GameFlow.state_name())
 	check("new_run_not_paused", not get_tree().paused, "new run started paused")
 
@@ -888,7 +980,6 @@ func test_run_isolation() -> void:
 # ---- 60 秒长跑冒烟：敌人受控、池不泄漏、无节点暴涨 ----
 func test_smoke_long_run() -> void:
 	var m = await _load_main()
-	var p = m.get_node("Player")
 	var peak_enemies = 0
 	var peak_children = 0
 	for i in range(3600):
@@ -902,9 +993,62 @@ func test_smoke_long_run() -> void:
 	check("smoke_enemy_bounded", peak_enemies <= 250, "peak enemies=%d" % peak_enemies)
 	check("smoke_survived", is_instance_valid(m), "main scene died during smoke run")
 	check("smoke_children_bounded", peak_children <= 400, "main node children peaked at %d (node explosion)" % peak_children)
-	check("smoke_sword_cap", ObjectPools.active_count(p.sword_scene_path) <= p.max_active_swords, "active swords=%d" % ObjectPools.active_count(p.sword_scene_path))
+	check("smoke_sword_cap", ObjectPools.active_count(WeaponManager.SWORD_SCENE) <= 120, "active swords=%d" % ObjectPools.active_count(WeaponManager.SWORD_SCENE))
 	check("smoke_kills_happened", m.kill_count > 0, "no enemies killed in 60s — combat broken")
 	check("smoke_gems_pooled", ObjectPools.free_count("res://scenes/exp_gem.tscn") >= 0, "gem pool missing")
 	m.queue_free()
 	await _frame()
 	ObjectPools.clear()
+
+func test_character_rig() -> void:
+	var rig := CharacterRig.new({"run_frames": 8, "idle_frames": 6, "flip_deadzone": 8.0})
+	var p_idle := rig.update(0.1, Vector2.ZERO, 250.0, false)
+	check("rig_idle_not_moving", not bool(p_idle["is_moving"]), "idle should not be moving")
+	var p_left := rig.update(0.1, Vector2(-180.0, -60.0), 250.0, false)
+	check("rig_left_flip", float(p_left["facing_sign"]) < 0.0, "moving left should flip facing_sign < 0")
+	var p_dash := rig.update(0.05, Vector2(-600.0, 0.0), 250.0, true)
+	check("rig_dash_stretch", absf((p_dash["abs_scale"] as Vector2).x) > 1.05, "dashing should stretch horizontally")
+	rig.trigger_attack(Vector2.RIGHT)
+	var p_atk := rig.update(0.04, Vector2.ZERO, 250.0, false)
+	check("rig_attack_lunge_right", float(p_atk["facing_sign"]) > 0.0, "attack right should face right")
+
+	var gunner_cfg := CharacterData.get_character("jinyiwei_gunner")
+	check("gunner_char_registered", str(gunner_cfg.get("id", "")) == "jinyiwei_gunner" and str(gunner_cfg.get("start_weapon", "")) == "shenji_musket", "gunner character config missing")
+	var musket_cfg := WeaponCatalog.get_weapon("shenji_musket")
+	check("musket_weapon_registered", str(musket_cfg.get("evo_name", "")) == "锦衣神机·天火流星", "shenji_musket catalog entry missing")
+
+func test_boss_state_machine() -> void:
+	var main = await _load_main()
+	await _frame()
+	var boss = ObjectPools.acquire("res://scenes/enemy.tscn", main)
+	boss.global_position = main.get_node("Player").global_position + Vector2(260.0, 0.0)
+	boss.setup_type(Enemy.Type.BOSS, 120.0, 0)
+	boss._boss_skill_cd = 0.01
+	for i in range(6):
+		await _frame()
+	check("boss_in_bosses_group", boss.is_in_group("bosses"), "boss should be registered in bosses group")
+	check("boss_enters_windup", boss._boss_state == Enemy.BossState.WINDUP or boss._boss_state == Enemy.BossState.ACTION, "boss should trigger skill windup")
+	boss.take_damage(boss.max_health * 1.1)
+	check("boss_phase2_enrage", boss._boss_enraged, "boss should enter phase 2 below 50% hp after 45% DR")
+	var slam := BossAttack.new()
+	slam.global_position = Vector2.ZERO
+	slam.radius = 100.0
+	check("boss_slam_ellipse_x_in", slam.is_point_in_slam(Vector2(105.0, 0.0)), "horizontal point within radius+10 should hit")
+	check("boss_slam_ellipse_y_out", not slam.is_point_in_slam(Vector2(0.0, 96.0)), "vertical point outside 0.80 ellipse should miss")
+	slam.free()
+	ObjectPools.release(boss)
+	main.queue_free()
+	await _frame()
+
+func test_map_landmarks_and_audio() -> void:
+	var main = await _load_main()
+	await _frame()
+	var bg = main.get_node("Background")
+	check("bg_has_4_landmarks", bg._landmarks.size() == 4, "background should build 4 distinct Nintendo-style landmarks")
+	check("bg_no_cross_stepping_stones", bg._stepping_stones.is_empty(), "cross-road stepping stones should be removed for a clean arena floor")
+	check("music_has_boss_track", Music.has_track("boss"), "Music autoload should have boss track")
+	check("music_has_swarm_track", Music.has_track("swarm"), "Music autoload should have swarm track")
+	bg.apply_chapter({"id": 2})
+	check("bg_switches_terrain_tile", bg._tile_tex != bg.DEFAULT_TILE, "chapter 2 should switch terrain texture from default forest")
+	main.queue_free()
+	await _frame()

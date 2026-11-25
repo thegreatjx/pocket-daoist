@@ -1,4 +1,4 @@
-# 创建桌面快捷方式：双击即玩，无控制台黑窗。
+﻿# 创建桌面快捷方式：双击即玩，无控制台黑窗。
 # 重新创建：pwsh -File toolsmake_shortcut.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -9,14 +9,14 @@ $vbsPath = Join-Path $projectDir 'play.vbs'
 if (-not (Test-Path $vbsPath)) { throw "缺少启动器: $vbsPath" }
 
 $desktop = [Environment]::GetFolderPath('Desktop')
-$lnkPath = Join-Path $desktop '大荒诛魔录.lnk'
+$lnkPath = Join-Path $desktop '百宝小道修.lnk'
 
 $ws = New-Object -ComObject WScript.Shell
 $lnk = $ws.CreateShortcut($lnkPath)
 $lnk.TargetPath = 'wscript.exe'
 $lnk.Arguments = '"' + $vbsPath + '"'
 $lnk.WorkingDirectory = $projectDir
-$lnk.Description = '修仙肉鸽割草游戏'
+$lnk.Description = '百宝小道修 (Pocket Daoist) · 修仙肉鸽割草游戏'
 if (Test-Path $icoPath) {
     $lnk.IconLocation = $icoPath
 } else {

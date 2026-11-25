@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/title.gd" id="1_title"]
+[ext_resource type="Texture2D" path="res://assets/art/title_bg.png" id="2_title_bg"]
+[ext_resource type="FontFile" path="res://assets/title_font.tres" id="3_title_font"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -18,7 +20,29 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.035, 0.04, 0.07, 1)
+color = Color(0.86, 0.94, 0.90, 1)
+
+[node name="ArtBG" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_title_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.95, 0.98, 0.94, 0.10)
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -30,59 +54,75 @@ grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="Center"]
 layout_mode = 2
-theme_override_constants/separation = 18
+custom_minimum_size = Vector2(640, 0)
+theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 72
-theme_override_colors/font_color = Color(0.55, 0.88, 1, 1)
-text = "大荒诛魔录"
+theme_override_fonts/font = ExtResource("3_title_font")
+theme_override_font_sizes/font_size = 68
+theme_override_colors/font_color = Color(0.08, 0.25, 0.22, 1)
+theme_override_colors/font_outline_color = Color(0.99, 0.97, 0.90, 0.95)
+theme_override_constants/outline_size = 10
+theme_override_colors/font_shadow_color = Color(0.08, 0.22, 0.20, 0.28)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 4
+text = "百宝小道修"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-modulate = Color(1, 1, 1, 0.55)
-text = "修仙肉鸽割草"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.14, 0.34, 0.30, 1)
+theme_override_colors/font_outline_color = Color(0.99, 0.97, 0.90, 0.92)
+theme_override_constants/outline_size = 5
+text = "Pocket Daoist · 修仙割草肉鸽"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="Center/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 26)
+custom_minimum_size = Vector2(0, 6)
 
 [node name="StartButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(320, 58)
-theme_override_font_sizes/font_size = 30
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(360, 52)
+theme_override_font_sizes/font_size = 28
 text = "开始修行"
 
 [node name="SettingsButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(320, 48)
-theme_override_font_sizes/font_size = 24
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(360, 40)
+theme_override_font_sizes/font_size = 22
 text = "设置"
 
 [node name="QuitButton" type="Button" parent="Center/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(320, 48)
-theme_override_font_sizes/font_size = 24
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(360, 40)
+theme_override_font_sizes/font_size = 22
 text = "退出"
 
 [node name="Spacer2" type="Control" parent="Center/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 14)
+custom_minimum_size = Vector2(0, 2)
 
 [node name="BestLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-modulate = Color(1, 0.92, 0.6, 0.85)
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.12, 0.28, 0.24, 1)
+theme_override_colors/font_outline_color = Color(0.99, 0.97, 0.90, 0.95)
+theme_override_constants/outline_size = 5
 text = ""
 horizontal_alignment = 1
 
 [node name="HintLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 21
-modulate = Color(1, 1, 1, 0.35)
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.18, 0.34, 0.30, 0.92)
+theme_override_colors/font_outline_color = Color(0.99, 0.97, 0.90, 0.9)
+theme_override_constants/outline_size = 4
 text = "ESC 退出 · 战斗中按 ESC 打开暂停菜单"
 horizontal_alignment = 1
 

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/talisman.gd" id="1_talisman"]
+
+[node name="Talisman" type="Node2D"]
+z_index = -3
+script = ExtResource("1_talisman")

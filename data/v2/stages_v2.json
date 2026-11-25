@@ -1,0 +1,2180 @@
+{
+  "schema_version": "2.0",
+  "stages": [
+    {
+      "id": 1,
+      "name": "青冥古林",
+      "subtitle": "初入仙途 · 8分钟试炼",
+      "difficulty": "初阶 · 推荐",
+      "duration": 480.0,
+      "elite_interval": 95.0,
+      "boss_name": "苍鬃狼王",
+      "boss_type": "wolf",
+      "boss_hp": 18000.0,
+      "hp_mult": 1.0,
+      "stone_mult": 1.0,
+      "palette": {
+        "ground": "#4f5c57",
+        "tint": "#3dd1b3"
+      },
+      "mods": {
+        "player_speed": 1.0,
+        "enemy_speed": 1.0,
+        "enemy_hp": 1.0,
+        "stone_mult": 1.0,
+        "stele_wave_interval": 3,
+        "hp_ramp_per_min": 0.0,
+        "extra_chest_elite_per_min": false,
+        "pool_bias": {}
+      },
+      "waves": [
+        {
+          "wave": 1,
+          "name": "林隙初探",
+          "role": "warmup",
+          "start": 0.0,
+          "end": 35.0,
+          "cap": 36,
+          "budget_per_sec": 2.6,
+          "hp_scale": 0.85,
+          "dmg_scale": 0.95,
+          "speed_scale": 0.92,
+          "exp_mult": 1.35,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.42
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.28
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 2,
+          "name": "狐魅启蒙",
+          "role": "ranged_intro",
+          "start": 35.0,
+          "end": 80.0,
+          "cap": 54,
+          "budget_per_sec": 3.4,
+          "hp_scale": 1.05,
+          "dmg_scale": 1.08,
+          "speed_scale": 0.98,
+          "exp_mult": 1.25,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.36
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 3,
+          "name": "小鬼爽潮",
+          "role": "horde",
+          "start": 80.0,
+          "end": 130.0,
+          "cap": 135,
+          "budget_per_sec": 7.5,
+          "hp_scale": 0.78,
+          "dmg_scale": 1.15,
+          "speed_scale": 1.02,
+          "exp_mult": 1.45,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.56
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.2
+            }
+          ],
+          "events": [
+            {
+              "time": 95.0,
+              "type": "ring",
+              "count": 30,
+              "msg": "【妖群合围 · 突围杀敌！】"
+            }
+          ]
+        },
+        {
+          "wave": 4,
+          "name": "镇傀考官",
+          "role": "examiner",
+          "start": 130.0,
+          "end": 180.0,
+          "cap": 48,
+          "budget_per_sec": 3.0,
+          "hp_scale": 1.95,
+          "dmg_scale": 1.32,
+          "speed_scale": 1.0,
+          "exp_mult": 1.55,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.4
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.28
+            }
+          ],
+          "events": [
+            {
+              "time": 136.0,
+              "type": "mini_boss",
+              "hp": 3200.0,
+              "msg": "【巡山妖将现身 · 斩将夺箱！】"
+            }
+          ]
+        },
+        {
+          "wave": 5,
+          "name": "冲锋破阵",
+          "role": "charger_pressure",
+          "start": 180.0,
+          "end": 235.0,
+          "cap": 78,
+          "budget_per_sec": 4.8,
+          "hp_scale": 1.65,
+          "dmg_scale": 1.45,
+          "speed_scale": 1.05,
+          "exp_mult": 1.7,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.28
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.28
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.2
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 6,
+          "name": "百妖金蟾潮",
+          "role": "gold_horde",
+          "start": 235.0,
+          "end": 290.0,
+          "cap": 175,
+          "budget_per_sec": 9.6,
+          "hp_scale": 1.35,
+          "dmg_scale": 1.55,
+          "speed_scale": 1.08,
+          "exp_mult": 1.95,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.36
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.18
+            }
+          ],
+          "events": [
+            {
+              "time": 255.0,
+              "type": "swarm",
+              "count": 32,
+              "elites": 1,
+              "msg": "【金蟾灵石潮 · 聚宝良机！】"
+            }
+          ]
+        },
+        {
+          "wave": 7,
+          "name": "精英考官",
+          "role": "elite_examiner",
+          "start": 290.0,
+          "end": 345.0,
+          "cap": 65,
+          "budget_per_sec": 3.8,
+          "hp_scale": 2.55,
+          "dmg_scale": 1.72,
+          "speed_scale": 1.08,
+          "exp_mult": 2.2,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": [
+            {
+              "time": 298.0,
+              "type": "mini_boss",
+              "hp": 6800.0,
+              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
+            },
+            {
+              "time": 320.0,
+              "type": "flank",
+              "count": 18,
+              "msg": "【两翼妖阵夹击！】"
+            }
+          ]
+        },
+        {
+          "wave": 8,
+          "name": "全系混编",
+          "role": "mixed_assault",
+          "start": 345.0,
+          "end": 400.0,
+          "cap": 102,
+          "budget_per_sec": 6.6,
+          "hp_scale": 2.85,
+          "dmg_scale": 1.88,
+          "speed_scale": 1.12,
+          "exp_mult": 2.5,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.1
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 9,
+          "name": "终局大怪潮",
+          "role": "final_horde",
+          "start": 400.0,
+          "end": 460.0,
+          "cap": 190,
+          "budget_per_sec": 11.0,
+          "hp_scale": 2.15,
+          "dmg_scale": 2.02,
+          "speed_scale": 1.15,
+          "exp_mult": 2.95,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.08
+            }
+          ],
+          "events": [
+            {
+              "time": 425.0,
+              "type": "swarm",
+              "count": 36,
+              "elites": 1,
+              "msg": "【百妖狂潮 · 决战前奏！】"
+            }
+          ]
+        },
+        {
+          "wave": 10,
+          "name": "首领降临",
+          "role": "boss",
+          "start": 460.0,
+          "end": 99999.0,
+          "cap": 32,
+          "budget_per_sec": 2.0,
+          "hp_scale": 2.4,
+          "dmg_scale": 2.1,
+          "speed_scale": 1.12,
+          "exp_mult": 3.0,
+          "tier_variant": 3,
+          "shop_after": false,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.6
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.4
+            }
+          ],
+          "events": []
+        }
+      ],
+      "floor_tile": "res://assets/v2/map_ch1/tile_grass_512.png"
+    },
+    {
+      "id": 2,
+      "name": "落霞花溪",
+      "subtitle": "灵魅重重 · 9分钟试炼",
+      "difficulty": "中阶 · 灵魅",
+      "duration": 540.0,
+      "elite_interval": 88.0,
+      "boss_name": "赤霞纸仙",
+      "boss_type": "ghost",
+      "boss_hp": 24000.0,
+      "hp_mult": 1.22,
+      "stone_mult": 1.35,
+      "palette": {
+        "ground": "#5e544f",
+        "tint": "#f5bd52"
+      },
+      "mods": {
+        "player_speed": 1.08,
+        "enemy_speed": 1.1,
+        "enemy_hp": 1.22,
+        "stone_mult": 1.35,
+        "stele_wave_interval": 3,
+        "hp_ramp_per_min": 0.02,
+        "extra_chest_elite_per_min": false,
+        "pool_bias": {
+          "enemy_kiter_fox": 2.0,
+          "enemy_bomber_wisp": 1.4
+        }
+      },
+      "waves": [
+        {
+          "wave": 1,
+          "name": "花溪初遇",
+          "role": "warmup",
+          "start": 0.0,
+          "end": 40.0,
+          "cap": 38,
+          "budget_per_sec": 2.8,
+          "hp_scale": 0.85,
+          "dmg_scale": 0.98,
+          "speed_scale": 0.94,
+          "exp_mult": 1.35,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.42
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.28
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 2,
+          "name": "赤尾游狐",
+          "role": "ranged_intro",
+          "start": 40.0,
+          "end": 90.0,
+          "cap": 56,
+          "budget_per_sec": 3.6,
+          "hp_scale": 1.05,
+          "dmg_scale": 1.1,
+          "speed_scale": 1.0,
+          "exp_mult": 1.3,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.26
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 3,
+          "name": "霞影小鬼潮",
+          "role": "horde",
+          "start": 90.0,
+          "end": 145.0,
+          "cap": 138,
+          "budget_per_sec": 7.8,
+          "hp_scale": 0.8,
+          "dmg_scale": 1.18,
+          "speed_scale": 1.04,
+          "exp_mult": 1.5,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.52
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            }
+          ],
+          "events": [
+            {
+              "time": 110.0,
+              "type": "ring",
+              "count": 30,
+              "msg": "【花溪妖阵合围！】"
+            }
+          ]
+        },
+        {
+          "wave": 4,
+          "name": "镇傀考官",
+          "role": "examiner",
+          "start": 145.0,
+          "end": 200.0,
+          "cap": 50,
+          "budget_per_sec": 3.1,
+          "hp_scale": 2.0,
+          "dmg_scale": 1.35,
+          "speed_scale": 1.02,
+          "exp_mult": 1.6,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.36
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.34
+            }
+          ],
+          "events": [
+            {
+              "time": 152.0,
+              "type": "mini_boss",
+              "hp": 3800.0,
+              "msg": "【巡山妖将现身 · 斩将夺箱！】"
+            }
+          ]
+        },
+        {
+          "wave": 5,
+          "name": "阴火毒阵",
+          "role": "charger_pressure",
+          "start": 200.0,
+          "end": 260.0,
+          "cap": 80,
+          "budget_per_sec": 5.0,
+          "hp_scale": 1.7,
+          "dmg_scale": 1.48,
+          "speed_scale": 1.06,
+          "exp_mult": 1.75,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 6,
+          "name": "百妖金蟾潮",
+          "role": "gold_horde",
+          "start": 260.0,
+          "end": 325.0,
+          "cap": 178,
+          "budget_per_sec": 9.8,
+          "hp_scale": 1.38,
+          "dmg_scale": 1.58,
+          "speed_scale": 1.1,
+          "exp_mult": 2.05,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.35
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.25
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.18
+            }
+          ],
+          "events": [
+            {
+              "time": 285.0,
+              "type": "swarm",
+              "count": 34,
+              "elites": 1,
+              "msg": "【金蟾灵石潮 · 聚宝良机！】"
+            }
+          ]
+        },
+        {
+          "wave": 7,
+          "name": "灵魅考官",
+          "role": "elite_examiner",
+          "start": 325.0,
+          "end": 385.0,
+          "cap": 66,
+          "budget_per_sec": 3.9,
+          "hp_scale": 2.6,
+          "dmg_scale": 1.75,
+          "speed_scale": 1.1,
+          "exp_mult": 2.25,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.26
+            }
+          ],
+          "events": [
+            {
+              "time": 335.0,
+              "type": "mini_boss",
+              "hp": 7600.0,
+              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
+            },
+            {
+              "time": 360.0,
+              "type": "flank",
+              "count": 20,
+              "msg": "【两翼妖阵夹击！】"
+            }
+          ]
+        },
+        {
+          "wave": 8,
+          "name": "全系混编",
+          "role": "mixed_assault",
+          "start": 385.0,
+          "end": 450.0,
+          "cap": 106,
+          "budget_per_sec": 6.8,
+          "hp_scale": 2.9,
+          "dmg_scale": 1.92,
+          "speed_scale": 1.14,
+          "exp_mult": 2.55,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.1
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 9,
+          "name": "终局大怪潮",
+          "role": "final_horde",
+          "start": 450.0,
+          "end": 520.0,
+          "cap": 195,
+          "budget_per_sec": 11.4,
+          "hp_scale": 2.2,
+          "dmg_scale": 2.08,
+          "speed_scale": 1.16,
+          "exp_mult": 3.0,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.08
+            }
+          ],
+          "events": [
+            {
+              "time": 478.0,
+              "type": "swarm",
+              "count": 38,
+              "elites": 1,
+              "msg": "【百妖狂潮 · 决战前奏！】"
+            }
+          ]
+        },
+        {
+          "wave": 10,
+          "name": "首领降临",
+          "role": "boss",
+          "start": 520.0,
+          "end": 99999.0,
+          "cap": 32,
+          "budget_per_sec": 2.0,
+          "hp_scale": 2.45,
+          "dmg_scale": 2.15,
+          "speed_scale": 1.14,
+          "exp_mult": 3.0,
+          "tier_variant": 3,
+          "shop_after": false,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.6
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.4
+            }
+          ],
+          "events": []
+        }
+      ],
+      "floor_tile": "res://assets/terrain/tile_ch2_sunset_blossom_512.png"
+    },
+    {
+      "id": 3,
+      "name": "幽冥玄坛",
+      "subtitle": "诡阵压境 · 10分钟试炼",
+      "difficulty": "进阶 · 诡阵",
+      "duration": 600.0,
+      "elite_interval": 65.0,
+      "boss_name": "玄冥妖猪王",
+      "boss_type": "skeleton",
+      "boss_hp": 32000.0,
+      "hp_mult": 1.5,
+      "stone_mult": 1.7,
+      "palette": {
+        "ground": "#474d5c",
+        "tint": "#5cdbeb"
+      },
+      "mods": {
+        "player_speed": 1.05,
+        "enemy_speed": 1.05,
+        "enemy_hp": 1.5,
+        "stone_mult": 1.7,
+        "stele_wave_interval": 2,
+        "hp_ramp_per_min": 0.03,
+        "extra_chest_elite_per_min": false,
+        "pool_bias": {
+          "enemy_hopper_jiangshi": 1.6,
+          "enemy_bulwark_golem": 1.5
+        }
+      },
+      "waves": [
+        {
+          "wave": 1,
+          "name": "玄坛试剑",
+          "role": "warmup",
+          "start": 0.0,
+          "end": 45.0,
+          "cap": 38,
+          "budget_per_sec": 2.9,
+          "hp_scale": 0.88,
+          "dmg_scale": 1.0,
+          "speed_scale": 0.94,
+          "exp_mult": 1.4,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.42
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.28
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 2,
+          "name": "僵魅惊起",
+          "role": "ranged_intro",
+          "start": 45.0,
+          "end": 100.0,
+          "cap": 58,
+          "budget_per_sec": 3.8,
+          "hp_scale": 1.08,
+          "dmg_scale": 1.12,
+          "speed_scale": 1.0,
+          "exp_mult": 1.35,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 3,
+          "name": "阴兵过境潮",
+          "role": "horde",
+          "start": 100.0,
+          "end": 160.0,
+          "cap": 142,
+          "budget_per_sec": 8.0,
+          "hp_scale": 0.82,
+          "dmg_scale": 1.2,
+          "speed_scale": 1.04,
+          "exp_mult": 1.55,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.48
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.3
+            }
+          ],
+          "events": [
+            {
+              "time": 122.0,
+              "type": "ring",
+              "count": 32,
+              "msg": "【玄坛阴兵合围！】"
+            }
+          ]
+        },
+        {
+          "wave": 4,
+          "name": "重傀镇坛",
+          "role": "examiner",
+          "start": 160.0,
+          "end": 220.0,
+          "cap": 52,
+          "budget_per_sec": 3.2,
+          "hp_scale": 2.05,
+          "dmg_scale": 1.38,
+          "speed_scale": 1.02,
+          "exp_mult": 1.65,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.46
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.24
+            }
+          ],
+          "events": [
+            {
+              "time": 170.0,
+              "type": "mini_boss",
+              "hp": 4200.0,
+              "msg": "【巡山妖将现身 · 斩将夺箱！】"
+            }
+          ]
+        },
+        {
+          "wave": 5,
+          "name": "煞兽冲阵",
+          "role": "charger_pressure",
+          "start": 220.0,
+          "end": 285.0,
+          "cap": 82,
+          "budget_per_sec": 5.2,
+          "hp_scale": 1.72,
+          "dmg_scale": 1.52,
+          "speed_scale": 1.08,
+          "exp_mult": 1.8,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.26
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 6,
+          "name": "百妖金蟾潮",
+          "role": "gold_horde",
+          "start": 285.0,
+          "end": 355.0,
+          "cap": 180,
+          "budget_per_sec": 10.2,
+          "hp_scale": 1.4,
+          "dmg_scale": 1.62,
+          "speed_scale": 1.1,
+          "exp_mult": 2.1,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.34
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.16
+            }
+          ],
+          "events": [
+            {
+              "time": 315.0,
+              "type": "swarm",
+              "count": 34,
+              "elites": 1,
+              "msg": "【金蟾灵石潮 · 聚宝良机！】"
+            }
+          ]
+        },
+        {
+          "wave": 7,
+          "name": "护法考官",
+          "role": "elite_examiner",
+          "start": 355.0,
+          "end": 425.0,
+          "cap": 68,
+          "budget_per_sec": 4.0,
+          "hp_scale": 2.65,
+          "dmg_scale": 1.8,
+          "speed_scale": 1.1,
+          "exp_mult": 2.3,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.36
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": [
+            {
+              "time": 366.0,
+              "type": "mini_boss",
+              "hp": 8400.0,
+              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
+            },
+            {
+              "time": 395.0,
+              "type": "flank",
+              "count": 20,
+              "msg": "【两翼妖阵夹击！】"
+            }
+          ]
+        },
+        {
+          "wave": 8,
+          "name": "全系混编",
+          "role": "mixed_assault",
+          "start": 425.0,
+          "end": 495.0,
+          "cap": 108,
+          "budget_per_sec": 7.0,
+          "hp_scale": 2.95,
+          "dmg_scale": 1.96,
+          "speed_scale": 1.14,
+          "exp_mult": 2.6,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.1
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 9,
+          "name": "终局大怪潮",
+          "role": "final_horde",
+          "start": 495.0,
+          "end": 575.0,
+          "cap": 195,
+          "budget_per_sec": 11.6,
+          "hp_scale": 2.25,
+          "dmg_scale": 2.12,
+          "speed_scale": 1.16,
+          "exp_mult": 3.05,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.15
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.09
+            }
+          ],
+          "events": [
+            {
+              "time": 530.0,
+              "type": "swarm",
+              "count": 40,
+              "elites": 1,
+              "msg": "【百妖狂潮 · 决战前奏！】"
+            }
+          ]
+        },
+        {
+          "wave": 10,
+          "name": "首领降临",
+          "role": "boss",
+          "start": 575.0,
+          "end": 99999.0,
+          "cap": 32,
+          "budget_per_sec": 2.0,
+          "hp_scale": 2.5,
+          "dmg_scale": 2.2,
+          "speed_scale": 1.15,
+          "exp_mult": 3.05,
+          "tier_variant": 3,
+          "shop_after": false,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.6
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.4
+            }
+          ],
+          "events": []
+        }
+      ],
+      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png"
+    },
+    {
+      "id": 4,
+      "name": "赤焰荒原",
+      "subtitle": "群妖狂潮 · 10分钟试炼",
+      "difficulty": "高阶 · 狂潮",
+      "duration": 600.0,
+      "elite_interval": 76.0,
+      "boss_name": "焚天山魈王",
+      "boss_type": "skeleton",
+      "boss_hp": 40000.0,
+      "hp_mult": 1.75,
+      "stone_mult": 2.05,
+      "palette": {
+        "ground": "#5c4a47",
+        "tint": "#47e0a3"
+      },
+      "mods": {
+        "player_speed": 1.12,
+        "enemy_speed": 1.15,
+        "enemy_hp": 1.75,
+        "stone_mult": 2.05,
+        "stele_wave_interval": 3,
+        "hp_ramp_per_min": 0.05,
+        "extra_chest_elite_per_min": false,
+        "pool_bias": {
+          "enemy_charger_huodou": 1.8,
+          "enemy_charger_boar": 1.6,
+          "enemy_bomber_wisp": 1.5
+        }
+      },
+      "waves": [
+        {
+          "wave": 1,
+          "name": "荒原热身",
+          "role": "warmup",
+          "start": 0.0,
+          "end": 45.0,
+          "cap": 40,
+          "budget_per_sec": 3.0,
+          "hp_scale": 0.9,
+          "dmg_scale": 1.02,
+          "speed_scale": 0.96,
+          "exp_mult": 1.45,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.42
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.28
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 2,
+          "name": "火魅围拢",
+          "role": "ranged_intro",
+          "start": 45.0,
+          "end": 100.0,
+          "cap": 60,
+          "budget_per_sec": 3.9,
+          "hp_scale": 1.1,
+          "dmg_scale": 1.14,
+          "speed_scale": 1.02,
+          "exp_mult": 1.4,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.22
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 3,
+          "name": "荒原鬼潮",
+          "role": "horde",
+          "start": 100.0,
+          "end": 160.0,
+          "cap": 145,
+          "budget_per_sec": 8.4,
+          "hp_scale": 0.84,
+          "dmg_scale": 1.24,
+          "speed_scale": 1.06,
+          "exp_mult": 1.6,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.5
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.26
+            }
+          ],
+          "events": [
+            {
+              "time": 124.0,
+              "type": "ring",
+              "count": 34,
+              "msg": "【荒原妖群合围！】"
+            }
+          ]
+        },
+        {
+          "wave": 4,
+          "name": "镇傀考官",
+          "role": "examiner",
+          "start": 160.0,
+          "end": 220.0,
+          "cap": 52,
+          "budget_per_sec": 3.3,
+          "hp_scale": 2.1,
+          "dmg_scale": 1.4,
+          "speed_scale": 1.04,
+          "exp_mult": 1.7,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.4
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.3
+            }
+          ],
+          "events": [
+            {
+              "time": 170.0,
+              "type": "mini_boss",
+              "hp": 5200.0,
+              "msg": "【巡山妖将现身 · 斩将夺箱！】"
+            }
+          ]
+        },
+        {
+          "wave": 5,
+          "name": "祸斗炎冲",
+          "role": "charger_pressure",
+          "start": 220.0,
+          "end": 285.0,
+          "cap": 86,
+          "budget_per_sec": 5.5,
+          "hp_scale": 1.78,
+          "dmg_scale": 1.56,
+          "speed_scale": 1.1,
+          "exp_mult": 1.85,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.34
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.12
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 6,
+          "name": "百妖金蟾潮",
+          "role": "gold_horde",
+          "start": 285.0,
+          "end": 355.0,
+          "cap": 185,
+          "budget_per_sec": 10.6,
+          "hp_scale": 1.44,
+          "dmg_scale": 1.66,
+          "speed_scale": 1.12,
+          "exp_mult": 2.15,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.34
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.18
+            }
+          ],
+          "events": [
+            {
+              "time": 318.0,
+              "type": "swarm",
+              "count": 36,
+              "elites": 1,
+              "msg": "【金蟾灵石潮 · 聚宝良机！】"
+            }
+          ]
+        },
+        {
+          "wave": 7,
+          "name": "焚炎考官",
+          "role": "elite_examiner",
+          "start": 355.0,
+          "end": 425.0,
+          "cap": 68,
+          "budget_per_sec": 4.2,
+          "hp_scale": 2.7,
+          "dmg_scale": 1.85,
+          "speed_scale": 1.12,
+          "exp_mult": 2.35,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.28
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.16
+            }
+          ],
+          "events": [
+            {
+              "time": 368.0,
+              "type": "mini_boss",
+              "hp": 9600.0,
+              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
+            },
+            {
+              "time": 396.0,
+              "type": "flank",
+              "count": 22,
+              "msg": "【两翼妖阵夹击！】"
+            }
+          ]
+        },
+        {
+          "wave": 8,
+          "name": "全系混编",
+          "role": "mixed_assault",
+          "start": 425.0,
+          "end": 495.0,
+          "cap": 110,
+          "budget_per_sec": 7.2,
+          "hp_scale": 3.0,
+          "dmg_scale": 2.0,
+          "speed_scale": 1.15,
+          "exp_mult": 2.65,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.13
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.1
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 9,
+          "name": "终局大怪潮",
+          "role": "final_horde",
+          "start": 495.0,
+          "end": 575.0,
+          "cap": 200,
+          "budget_per_sec": 12.0,
+          "hp_scale": 2.3,
+          "dmg_scale": 2.15,
+          "speed_scale": 1.18,
+          "exp_mult": 3.15,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.08
+            }
+          ],
+          "events": [
+            {
+              "time": 530.0,
+              "type": "swarm",
+              "count": 42,
+              "elites": 1,
+              "msg": "【百妖狂潮 · 决战前奏！】"
+            }
+          ]
+        },
+        {
+          "wave": 10,
+          "name": "首领降临",
+          "role": "boss",
+          "start": 575.0,
+          "end": 99999.0,
+          "cap": 32,
+          "budget_per_sec": 2.0,
+          "hp_scale": 2.55,
+          "dmg_scale": 2.25,
+          "speed_scale": 1.16,
+          "exp_mult": 3.15,
+          "tier_variant": 3,
+          "shop_after": false,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.6
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.4
+            }
+          ],
+          "events": []
+        }
+      ],
+      "floor_tile": "res://assets/terrain/tile_ch4_crimson_wasteland_512.png"
+    },
+    {
+      "id": 5,
+      "name": "云巅仙境",
+      "subtitle": "终极试炼 · 10分钟试炼",
+      "difficulty": "终极 · 试炼",
+      "duration": 600.0,
+      "elite_interval": 70.0,
+      "boss_name": "啸月仙狼王",
+      "boss_type": "wolf",
+      "boss_hp": 50000.0,
+      "hp_mult": 2.05,
+      "stone_mult": 2.5,
+      "palette": {
+        "ground": "#545963",
+        "tint": "#facc5c"
+      },
+      "mods": {
+        "player_speed": 1.15,
+        "enemy_speed": 1.18,
+        "enemy_hp": 2.05,
+        "stone_mult": 2.5,
+        "stele_wave_interval": 2,
+        "hp_ramp_per_min": 0.08,
+        "extra_chest_elite_per_min": true,
+        "pool_bias": {}
+      },
+      "waves": [
+        {
+          "wave": 1,
+          "name": "云巅试炼",
+          "role": "warmup",
+          "start": 0.0,
+          "end": 45.0,
+          "cap": 42,
+          "budget_per_sec": 3.1,
+          "hp_scale": 0.92,
+          "dmg_scale": 1.05,
+          "speed_scale": 0.98,
+          "exp_mult": 1.5,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.42
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.28
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 2,
+          "name": "仙障破袭",
+          "role": "ranged_intro",
+          "start": 45.0,
+          "end": 100.0,
+          "cap": 62,
+          "budget_per_sec": 4.1,
+          "hp_scale": 1.12,
+          "dmg_scale": 1.18,
+          "speed_scale": 1.04,
+          "exp_mult": 1.45,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.22
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 3,
+          "name": "天罡妖潮",
+          "role": "horde",
+          "start": 100.0,
+          "end": 160.0,
+          "cap": 150,
+          "budget_per_sec": 8.8,
+          "hp_scale": 0.86,
+          "dmg_scale": 1.28,
+          "speed_scale": 1.08,
+          "exp_mult": 1.65,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.5
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.26
+            }
+          ],
+          "events": [
+            {
+              "time": 124.0,
+              "type": "ring",
+              "count": 36,
+              "msg": "【天罡妖阵合围！】"
+            }
+          ]
+        },
+        {
+          "wave": 4,
+          "name": "金傀考官",
+          "role": "examiner",
+          "start": 160.0,
+          "end": 220.0,
+          "cap": 54,
+          "budget_per_sec": 3.5,
+          "hp_scale": 2.15,
+          "dmg_scale": 1.45,
+          "speed_scale": 1.06,
+          "exp_mult": 1.75,
+          "tier_variant": 1,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.4
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.28
+            }
+          ],
+          "events": [
+            {
+              "time": 170.0,
+              "type": "mini_boss",
+              "hp": 6000.0,
+              "msg": "【巡山妖将现身 · 斩将夺箱！】"
+            }
+          ]
+        },
+        {
+          "wave": 5,
+          "name": "天劫冲阵",
+          "role": "charger_pressure",
+          "start": 220.0,
+          "end": 285.0,
+          "cap": 88,
+          "budget_per_sec": 5.8,
+          "hp_scale": 1.82,
+          "dmg_scale": 1.6,
+          "speed_scale": 1.12,
+          "exp_mult": 1.9,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.28
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.28
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.2
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 6,
+          "name": "百妖金蟾潮",
+          "role": "gold_horde",
+          "start": 285.0,
+          "end": 355.0,
+          "cap": 190,
+          "budget_per_sec": 11.2,
+          "hp_scale": 1.48,
+          "dmg_scale": 1.7,
+          "speed_scale": 1.14,
+          "exp_mult": 2.25,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.34
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.22
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.26
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.18
+            }
+          ],
+          "events": [
+            {
+              "time": 318.0,
+              "type": "swarm",
+              "count": 38,
+              "elites": 1,
+              "msg": "【金蟾灵石潮 · 聚宝良机！】"
+            }
+          ]
+        },
+        {
+          "wave": 7,
+          "name": "仙途考官",
+          "role": "elite_examiner",
+          "start": 355.0,
+          "end": 425.0,
+          "cap": 70,
+          "budget_per_sec": 4.4,
+          "hp_scale": 2.75,
+          "dmg_scale": 1.9,
+          "speed_scale": 1.14,
+          "exp_mult": 2.45,
+          "tier_variant": 2,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.32
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.24
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.2
+            }
+          ],
+          "events": [
+            {
+              "time": 368.0,
+              "type": "mini_boss",
+              "hp": 11000.0,
+              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
+            },
+            {
+              "time": 396.0,
+              "type": "flank",
+              "count": 24,
+              "msg": "【两翼妖阵夹击！】"
+            }
+          ]
+        },
+        {
+          "wave": 8,
+          "name": "全系混编",
+          "role": "mixed_assault",
+          "start": 425.0,
+          "end": 495.0,
+          "cap": 114,
+          "budget_per_sec": 7.6,
+          "hp_scale": 3.05,
+          "dmg_scale": 2.05,
+          "speed_scale": 1.16,
+          "exp_mult": 2.75,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.11
+            }
+          ],
+          "events": []
+        },
+        {
+          "wave": 9,
+          "name": "终局大怪潮",
+          "role": "final_horde",
+          "start": 495.0,
+          "end": 575.0,
+          "cap": 205,
+          "budget_per_sec": 12.6,
+          "hp_scale": 2.35,
+          "dmg_scale": 2.2,
+          "speed_scale": 1.2,
+          "exp_mult": 3.25,
+          "tier_variant": 3,
+          "shop_after": true,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.2
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_hopper_jiangshi",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_kiter_fox",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bomber_wisp",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_charger_boar",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_charger_huodou",
+              "weight": 0.11
+            },
+            {
+              "id": "enemy_bulwark_golem",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_bulwark_jinchan",
+              "weight": 0.09
+            }
+          ],
+          "events": [
+            {
+              "time": 530.0,
+              "type": "swarm",
+              "count": 45,
+              "elites": 1,
+              "msg": "【百妖狂潮 · 决战前奏！】"
+            }
+          ]
+        },
+        {
+          "wave": 10,
+          "name": "首领降临",
+          "role": "boss",
+          "start": 575.0,
+          "end": 99999.0,
+          "cap": 32,
+          "budget_per_sec": 2.0,
+          "hp_scale": 2.6,
+          "dmg_scale": 2.3,
+          "speed_scale": 1.18,
+          "exp_mult": 3.25,
+          "tier_variant": 3,
+          "shop_after": false,
+          "pool": [
+            {
+              "id": "enemy_swarm_imp",
+              "weight": 0.6
+            },
+            {
+              "id": "enemy_skitter_shenjing",
+              "weight": 0.4
+            }
+          ],
+          "events": []
+        }
+      ],
+      "floor_tile": "res://assets/terrain/tile_ch5_cloud_immortal_512.png"
+    }
+  ]
+}

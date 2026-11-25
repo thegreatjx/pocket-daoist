@@ -131,6 +131,13 @@ func start_game() -> void:
 	_enter_run()
 	get_tree().change_scene_to_file(GAME_SCENE)
 
+func start_game_packed(packed_scene: PackedScene) -> void:
+	if packed_scene == null:
+		start_game()
+		return
+	_enter_run()
+	get_tree().change_scene_to_packed(packed_scene)
+
 func restart_run() -> void:
 	_enter_run()
 	get_tree().reload_current_scene()

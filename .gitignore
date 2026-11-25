@@ -16,3 +16,19 @@ _*.gd.uid
 
 # 启动器运行日志
 play_log.txt
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 本地运行与测试日志 / 截图 / 临时产物
+*.log
+.tmp/
+.forge/
+.sprite-studio/
+screenshots/
+pck_index.json
+
+# 本地竞品分析与拆包资料（体积过大，不入库）
+brotato_analysis/
+vs_analysis/

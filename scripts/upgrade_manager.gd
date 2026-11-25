@@ -1,189 +1,684 @@
 extends Node
 class_name UpgradeManager
 
-# 升级项定义
-# id: 标识  title: 名称  desc: 描述  tag: 类别标签
-# max_level: 最大等级  level: 当前等级  weight: 抽取权重
-# is_evo/req_id/req_level: 进化神通前置条件 (可选)
-
-var upgrades: Dictionary = {
-	"sword_amount": {
-		"id": "sword_amount",
-		"title": "青竹剑影",
-		"desc": "青竹蜂云剑弹道数量 +1，穿透 +1",
-		"tag": "【飞剑】",
-		"level": 0,
-		"max_level": 5,
-		"weight": 10
-	},
-	"sword_speed": {
-		"id": "sword_speed",
-		"title": "御剑疾风",
-		"desc": "飞剑攻击间隔缩减 20%，飞剑飞行速度 +25%",
-		"tag": "【飞剑】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 10
-	},
-	"sword_damage": {
-		"id": "sword_damage",
-		"title": "青霄剑芒",
-		"desc": "飞剑伤害提高 40%",
-		"tag": "【飞剑】",
-		"level": 0,
-		"max_level": 5,
-		"weight": 10
-	},
-	"orbit_count": {
-		"id": "orbit_count",
-		"title": "太极两仪生四象",
-		"desc": "护体飞剑数量 +1，旋转半径略微扩大",
-		"tag": "【剑阵】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 9
-	},
-	"orbit_speed": {
-		"id": "orbit_speed",
-		"title": "真武剑罡",
-		"desc": "护体剑阵旋转速度 +30%，护体剑伤害 +35%",
-		"tag": "【剑阵】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 9
-	},
-	"thunder_power": {
-		"id": "thunder_power",
-		"title": "霄雷正法",
-		"desc": "九天玄雷爆炸伤害 +50%，轰击范围扩大 35%",
-		"tag": "【雷法】",
-		"level": 0,
-		"max_level": 5,
-		"weight": 8
-	},
-	"thunder_freq": {
-		"id": "thunder_freq",
-		"title": "引雷诀",
-		"desc": "天雷施法间隔减少 25%",
-		"tag": "【雷法】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 8
-	},
-	"step_cloud": {
-		"id": "step_cloud",
-		"title": "凌波踏云步",
-		"desc": "人物移动速度 +18%，踏云步闪避冷却减少 0.6 秒",
-		"tag": "【身法】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 9
-	},
-	"immortal_body": {
-		"id": "immortal_body",
-		"title": "神农九转身",
-		"desc": "气血上限 +35，并瞬间恢复 50% 气血",
-		"tag": "【心法】",
-		"level": 0,
-		"max_level": 5,
-		"weight": 8
-	},
-	"spirit_magnet": {
-		"id": "spirit_magnet",
-		"title": "混元聚灵诀",
-		"desc": "神识吸灵范围 +60%，天地灵气经验获取 +25%",
-		"tag": "【心法】",
-		"level": 0,
-		"max_level": 4,
-		"weight": 9
-	},
-	"super_wanjian": {
-		"id": "super_wanjian",
-		"title": "【神通蜕变】万剑归宗",
-		"desc": "青竹剑与养剑真意合一！每次连射 6 柄飞剑，全屏穿透！",
-		"tag": "【造化神通】",
-		"level": 0,
-		"max_level": 1,
-		"weight": 15,
-		"is_evo": true,
-		"req_id": "sword_amount",
-		"req_level": 2
-	}
+const V2_ELEM_NAMES := {
+	"metal": "金系法宝",
+	"fire": "火系法宝",
+	"thunder": "雷系法宝",
+	"ice": "冰系法宝",
+	"wood": "木系法宝",
+	"venom": "毒系法宝",
+	"water": "水系法宝",
 }
 
-func get_random_choices(count: int = 3) -> Array:
-	var pool: Array = []
-	for id in upgrades.keys():
-		var u = upgrades[id]
-		if u["level"] >= u["max_level"]:
+const V2_TIER_NAMES := ["", "Lv.1", "Lv.2", "Lv.3", "Lv.4", "Lv.5", "Lv.6", "Lv.7", "Lv.8", "超武"]
+
+const V2_REALM_BREAKTHROUGHS := [
+	{"id": "v2_stat:dmg", "tag": "【灵力淬炼】", "title": "道心凝锋", "desc": "所有法宝与元素反应伤害 +7%（限叠 4 次）。", "icon": "res://assets/icons/icon_qingzhu_sword.png", "hint": "✦ 稳健全局增幅", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:spd", "tag": "【身法灵韵】", "title": "御风迅捷", "desc": "所有法宝攻速 +7%，移速 +4%（限叠 4 次）。", "icon": "res://assets/icons/relic_wind.png", "hint": "✦ 加快法宝出手与跑图", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:mastery", "tag": "【五行参悟】", "title": "五行通玄", "desc": "元素反应伤害 +12%，反应范围 +6%（限叠 4 次）。", "icon": "res://assets/icons/icon_taichi_array.png", "hint": "✦ 元素流派核心加成", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:crit", "tag": "【剑意凌厉】", "title": "破妄灵瞳", "desc": "暴击率 +5%，暴击伤害 +12%（限叠 4 次）。", "icon": "res://assets/icons/relic_luck.png", "hint": "✦ 单点高伤法宝首选", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:hp_armor", "tag": "【护体金身】", "title": "玄玉护脉", "desc": "最大气血 +16 并回复 16 点，护甲 +1（限叠 4 次）。", "icon": "res://assets/icons/relic_armor.png", "hint": "✦ 提高生存容错", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:gold_heal", "tag": "【灵露润脉】", "title": "甘露回春", "desc": "立刻回复 32 点气血，并提高 8 点最大气血。", "icon": "res://assets/sprites/pickup_peach.png", "hint": "✦ 续航保命补给", "stackable": false, "max_stacks": 0},
+	{"id": "v2_stat:luck", "tag": "【天机气运】", "title": "天机福缘", "desc": "机缘 +15%，提高 4 选 1 与高阶宝物率（限叠 3 次）。", "icon": "res://assets/icons/relic_luck.png", "hint": "✦ 提高高阶卡出现率", "stackable": true, "max_stacks": 3},
+	{"id": "v2_stat:area", "tag": "【乾坤法域】", "title": "法域扩张", "desc": "所有法宝攻击与法阵范围 +10%（限叠 3 次）。", "icon": "res://assets/icons/icon_taichi_array.png", "hint": "✦ 扩大火域/声波/藤蔓范围", "stackable": true, "max_stacks": 3},
+	{"id": "v2_stat:proj", "tag": "【御器通灵】", "title": "灵器贯通", "desc": "飞剑/冰锥穿透 +1，雷系弹射目标 +1（限叠 2 次）。", "icon": "res://assets/icons/icon_jiutian_thunder.png", "hint": "✦ 适度提升清杂与连锁", "stackable": true, "max_stacks": 2},
+	{"id": "v2_stat:dodge_dash", "tag": "【踏云灵步】", "title": "御风绝影", "desc": "闪避率 +4%，踏云步冷却 -8%（限叠 3 次）。", "icon": "res://assets/icons/relic_boots.png", "hint": "✦ 提高机动走位容错", "stackable": true, "max_stacks": 3},
+]
+
+var rerolls_left: int = 3
+var banishes_left: int = 2
+var skips_left: int = 2
+var banished_ids: Dictionary = {}
+
+func reset_run_controls() -> void:
+	rerolls_left = 3 + Stats.get_sect_level("rerolls")
+	banishes_left = 2 + (Stats.get_total_seal_bonus() if Stats.has_method("get_total_seal_bonus") else Stats.get_sect_level("seal"))
+	skips_left = 2
+	banished_ids.clear()
+
+func _normalize_banish_key(choice_id: String) -> String:
+	if not choice_id.begins_with("v2_wpn:"):
+		return choice_id
+	var parts := choice_id.split(":")
+	if parts.size() >= 2:
+		return "v2_wpn:" + parts[1]
+	return choice_id
+
+func banish_choice(choice_id: String) -> bool:
+	if banishes_left <= 0 or choice_id == "":
+		return false
+	banishes_left -= 1
+	banished_ids[_normalize_banish_key(choice_id)] = true
+	return true
+
+func get_random_choices(player: Node, count: int = 3) -> Array[Dictionary]:
+	if player == null or not ("weapon_mgr" in player) or player.weapon_mgr == null:
+		return []
+	var wm: WeaponManager = player.weapon_mgr
+	var pool: Array[Dictionary] = []
+
+	var weapon_slots_full := wm.weapons.size() >= WeaponCatalog.MAX_WEAPON_SLOTS
+	for wid in WeaponCatalog.weapon_ids():
+		var uid := "weapon:" + wid
+		if banished_ids.has(uid):
 			continue
-		# 检查进化超武前置
-		if u.get("is_evo", false):
-			if upgrades[u["req_id"]]["level"] < u["req_level"]:
-				continue
-		pool.append(u)
+		var cur_lv := wm.weapon_level(wid)
+		if wm.is_weapon_evolved(wid) or cur_lv >= WeaponCatalog.MAX_WEAPON_LEVEL:
+			continue
+		if cur_lv == 0 and weapon_slots_full:
+			continue
+		var cfg := WeaponCatalog.get_weapon(wid)
+		var next_lv := cur_lv + 1
+		var weight := 14 if cur_lv > 0 else 10
+		if wm.has_passive(str(cfg["partner_passive"])):
+			weight += 5
+		pool.append({
+			"id": uid,
+			"kind": "weapon",
+			"item_id": wid,
+			"tag": "【%s】" % str(cfg["tag"]),
+			"title": str(cfg["name"]),
+			"desc": WeaponCatalog.weapon_level_desc(wid, next_lv),
+			"level": cur_lv,
+			"next_level": next_lv,
+			"max_level": WeaponCatalog.MAX_WEAPON_LEVEL,
+			"icon": str(cfg["icon"]),
+			"synergy_hint": WeaponCatalog.evolution_hint_for_weapon(wid),
+			"is_new": cur_lv == 0,
+			"is_relic": false,
+			"is_evo": false,
+			"weight": weight,
+		})
 
-	# 按权重不放回抽取
-	var result: Array = []
-	while pool.size() > 0 and result.size() < count:
-		var total: float = 0.0
-		for u in pool:
-			total += float(u.get("weight", 10))
-		var roll: float = randf() * total
-		var acc: float = 0.0
-		var pick_index: int = pool.size() - 1
-		for i in range(pool.size()):
-			acc += float(pool[i].get("weight", 10))
-			if roll <= acc:
-				pick_index = i
+	var passive_slots_full := wm.passives.size() >= WeaponCatalog.MAX_PASSIVE_SLOTS
+	for pid in WeaponCatalog.passive_ids():
+		var uid := "passive:" + pid
+		if banished_ids.has(uid):
+			continue
+		var cfg := WeaponCatalog.get_passive(pid)
+		var max_lv := int(cfg.get("max_level", WeaponCatalog.MAX_PASSIVE_LEVEL))
+		var cur_lv := wm.passive_level(pid)
+		if cur_lv >= max_lv:
+			continue
+		if cur_lv == 0 and passive_slots_full:
+			continue
+		var next_lv := cur_lv + 1
+		var partner_w := str(cfg["evolves_weapon"])
+		var weight := 11 if cur_lv > 0 else 8
+		if wm.has_weapon(partner_w) and not wm.is_weapon_evolved(partner_w):
+			weight += 6
+		var hint := WeaponCatalog.evolution_hint_for_passive(pid)
+		if wm.is_weapon_evolved(partner_w):
+			var wcfg := WeaponCatalog.get_weapon(partner_w)
+			hint = "✦ 已共鸣超武【%s】" % str(wcfg.get("evo_name", ""))
+		elif wm.weapon_level(partner_w) >= WeaponCatalog.MAX_WEAPON_LEVEL:
+			var wcfg := WeaponCatalog.get_weapon(partner_w)
+			hint = "✦【%s】已满级！拾取宝箱即可进化" % str(wcfg.get("name", ""))
+		pool.append({
+			"id": uid,
+			"kind": "passive",
+			"item_id": pid,
+			"tag": "【法宝】",
+			"title": str(cfg["name"]),
+			"desc": str(cfg["desc"]),
+			"level": cur_lv,
+			"next_level": next_lv,
+			"max_level": max_lv,
+			"icon": str(cfg["icon"]),
+			"synergy_hint": hint,
+			"is_new": cur_lv == 0,
+			"is_relic": true,
+			"is_evo": false,
+			"weight": weight,
+		})
+
+	var selected: Array[Dictionary] = []
+	var draw_n := mini(count, pool.size())
+	for _i in range(draw_n):
+		var total_w := 0
+		for item in pool:
+			total_w += int(item["weight"])
+		var r := randi() % maxi(1, total_w)
+		var acc := 0
+		var picked_idx := 0
+		for idx in range(pool.size()):
+			acc += int(pool[idx]["weight"])
+			if r < acc:
+				picked_idx = idx
 				break
-		result.append(pool[pick_index])
-		pool.remove_at(pick_index)
-	return result
+		selected.append(pool[picked_idx])
+		pool.remove_at(picked_idx)
+	return selected
 
-func apply_upgrade(upgrade_id: String, player: Node) -> void:
-	if not upgrades.has(upgrade_id):
+func get_limit_break_choices(_player: Node, count: int = 3) -> Array[Dictionary]:
+	var pool: Array[Dictionary] = [
+		{
+			"id": "limit:might",
+			"tag": "【破境】",
+			"title": "剑意破限",
+			"desc": "所有神通基础伤害永久 +8%（本局无限叠加）。",
+			"level": 1,
+			"next_level": 1,
+			"max_level": 1,
+			"icon": "res://assets/icons/icon_qingzhu_sword.png",
+			"synergy_hint": "✦ 满级突破 · 无限成长",
+			"is_new": false,
+			"is_relic": false,
+			"is_evo": true,
+		},
+		{
+			"id": "limit:haste",
+			"tag": "【破境】",
+			"title": "行云神速",
+			"desc": "所有神通施法冷却缩减 5%（本局无限叠加）。",
+			"level": 1,
+			"next_level": 1,
+			"max_level": 1,
+			"icon": "res://assets/icons/relic_wind.png",
+			"synergy_hint": "✦ 满级突破 · 无限成长",
+			"is_new": false,
+			"is_relic": true,
+			"is_evo": false,
+		},
+		{
+			"id": "limit:heal",
+			"tag": "【灵露】",
+			"title": "甘露回春",
+			"desc": "立刻恢复 35 点气血，并获得 12 枚灵石。",
+			"level": 1,
+			"next_level": 1,
+			"max_level": 1,
+			"icon": "res://assets/sprites/pickup_peach.png",
+			"synergy_hint": "✦ 续航补给",
+			"is_new": false,
+			"is_relic": false,
+			"is_evo": false,
+		},
+	]
+	return pool.slice(0, mini(count, pool.size()))
+
+func apply_upgrade(choice_id: String, player: Node) -> void:
+	if player == null or not ("weapon_mgr" in player) or player.weapon_mgr == null:
 		return
-	var u = upgrades[upgrade_id]
-	u["level"] += 1
+	var wm: WeaponManager = player.weapon_mgr
+	if choice_id.begins_with("weapon:"):
+		wm.add_or_upgrade_weapon(choice_id.substr(7))
+	elif choice_id.begins_with("passive:"):
+		wm.add_or_upgrade_passive(choice_id.substr(8))
+	elif choice_id == "limit:might":
+		if "limit_might_bonus" in player:
+			player.limit_might_bonus += 0.08
+			wm.refresh_stats()
+	elif choice_id == "limit:haste":
+		if "limit_haste_bonus" in player:
+			player.limit_haste_bonus += 1.0
+			wm.refresh_stats()
+	elif choice_id == "limit:heal":
+		if player.has_method("heal"):
+			player.heal(35.0)
+		Stats.add_spirit_stones(12)
 
-	match upgrade_id:
-		"sword_amount":
-			player.sword_count += 1
-			player.sword_pierce += 1
-		"sword_speed":
-			player.sword_interval = maxf(0.25, player.sword_interval * 0.8)
-			player.sword_fly_speed *= 1.25
-		"sword_damage":
-			player.sword_base_damage *= 1.4
-		"orbit_count":
-			player.orbit_sword_count += 1
-			player.orbit_radius += 10.0
-			player.refresh_orbit_swords()
-		"orbit_speed":
-			player.orbit_speed *= 1.3
-			player.orbit_damage *= 1.35
-			for sw in player.orbit_swords:
-				if is_instance_valid(sw):
-					sw.damage = player.orbit_damage
-		"thunder_power":
-			player.thunder_damage *= 1.5
-			player.thunder_radius *= 1.35
-		"thunder_freq":
-			player.thunder_interval = maxf(0.8, player.thunder_interval * 0.75)
-		"step_cloud":
-			player.speed *= 1.18
-			player.dash_cooldown = maxf(0.8, player.dash_cooldown - 0.6)
-		"immortal_body":
-			player.max_health += 35.0
-			player.current_health = minf(player.max_health, player.current_health + player.max_health * 0.5)
-			player.emit_signal("health_changed", player.current_health, player.max_health)
-		"spirit_magnet":
-			player.magnet_radius *= 1.6
-			player.exp_multiplier *= 1.25
-		"super_wanjian":
-			player.is_wanjian_unlocked = true
-			player.sword_count += 5
-			player.sword_interval = 0.4
-			player.sword_pierce += 5
-			player.sword_base_damage *= 1.5
+func roll_chest_rewards(player: Node) -> Array[Dictionary]:
+	var rewards: Array[Dictionary] = []
+	if player == null or not ("weapon_mgr" in player) or player.weapon_mgr == null:
+		rewards.append(_chest_guarantee_reward(player))
+		return rewards
+	var wm: WeaponManager = player.weapon_mgr
+
+	var evos := wm.evolve_candidates()
+	if not evos.is_empty():
+		var wid: String = evos[0]
+		wm.evolve_weapon(wid)
+		var cfg := WeaponCatalog.get_weapon(wid)
+		var partner := WeaponCatalog.get_passive(str(cfg["partner_passive"]))
+		rewards.append({
+			"is_evo": true,
+			"title": "【超武质变】%s" % str(cfg["evo_name"]),
+			"subtitle": "%s + %s 灵韵合一！" % [str(cfg["name"]), str(partner.get("name", ""))],
+			"desc": str(cfg["evo_desc"]),
+			"icon": str(cfg["evo_icon"]),
+		})
+		return rewards
+
+	var roll := randf()
+	var count := 1
+	if roll > 0.88:
+		count = 5
+	elif roll > 0.55:
+		count = 3
+
+	for _i in range(count):
+		var cands: Array[Dictionary] = []
+		for wid in wm.weapons.keys():
+			var w_key := str(wid)
+			if not wm.is_weapon_evolved(w_key) and wm.weapon_level(w_key) < WeaponCatalog.MAX_WEAPON_LEVEL:
+				cands.append({"kind": "weapon", "id": w_key})
+		for pid in wm.passives.keys():
+			var pcfg := WeaponCatalog.get_passive(str(pid))
+			if wm.passive_level(str(pid)) < int(pcfg.get("max_level", WeaponCatalog.MAX_PASSIVE_LEVEL)):
+				cands.append({"kind": "passive", "id": str(pid)})
+		if cands.is_empty():
+			if player.has_method("heal"):
+				player.heal(45.0)
+			Stats.add_spirit_stones(25)
+			rewards.append({
+				"is_evo": false,
+				"title": "仙果灵露",
+				"subtitle": "所有神通法宝均已圆满",
+				"desc": "恢复 45 点气血，并获赠 25 枚灵石！",
+				"icon": "res://assets/sprites/pickup_peach.png",
+			})
+			break
+		var pick: Dictionary = cands[randi() % cands.size()]
+		if pick["kind"] == "weapon":
+			var wid: String = pick["id"]
+			wm.add_or_upgrade_weapon(wid)
+			var cfg := WeaponCatalog.get_weapon(wid)
+			var lv := wm.weapon_level(wid)
+			rewards.append({
+				"is_evo": false,
+				"title": "%s Lv.%d" % [str(cfg["name"]), lv],
+				"subtitle": "神通精进",
+				"desc": WeaponCatalog.weapon_level_desc(wid, lv),
+				"icon": str(cfg["icon"]),
+			})
+		else:
+			var pid: String = pick["id"]
+			wm.add_or_upgrade_passive(pid)
+			var cfg := WeaponCatalog.get_passive(pid)
+			var lv := wm.passive_level(pid)
+			rewards.append({
+				"is_evo": false,
+				"title": "%s Lv.%d" % [str(cfg["name"]), lv],
+				"subtitle": "法宝炼化",
+				"desc": str(cfg["desc"]),
+				"icon": str(cfg["icon"]),
+			})
+	return rewards
+
+func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
+	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
+		return get_random_choices(player, count)
+	var v2: V2CombatController = player.v2_combat
+	if v2.loader == null or v2.orbit_rig == null:
+		return get_random_choices(player, count)
+
+	var is_breakthrough := v2.should_offer_breakthrough_pick()
+	var owned_elems := v2.get_owned_elements()
+	var new_weapon_cards: Array[Dictionary] = []
+	var upgrade_weapon_cards: Array[Dictionary] = []
+
+	for wid in v2.loader.weapons_by_id.keys():
+		var sid := String(wid)
+		if banished_ids.has("v2_wpn:" + sid):
+			continue
+		var w: Dictionary = v2.loader.weapons_by_id[wid]
+		var elem := String(w.get("element", "metal"))
+		var cur_lv := v2.orbit_rig.get_weapon_tier(sid)
+		if cur_lv >= OrbitWeaponRig.MAX_WEAPON_TIER:
+			continue
+		if cur_lv == 0:
+			if not is_breakthrough or not v2.can_add_weapon(sid, 1):
+				continue
+
+		var next_lv := maxi(1, cur_lv + 1)
+		var tiers: Array = w.get("tiers", [])
+		var ts: Dictionary = tiers[clampi(next_lv - 1, 0, tiers.size() - 1)] if not tiers.is_empty() else {}
+		var summary := String(ts.get("level_summary", ""))
+		var desc := "%s\n伤害 %d · 冷却 %.2fs" % [summary, int(ts.get("damage", 15)), float(ts.get("cooldown", 1.0))]
+		var w_weight := maxi(1, roundi(v2.get_weapon_offer_weight(sid) * 10.0))
+
+		var finfo := v2.find_companion_fusion_info(sid)
+		var fusion_hint := ""
+		var ready_now := bool(finfo.get("ready_now", false))
+		if not finfo.is_empty():
+			var p_name := String(finfo.get("partner_name", ""))
+			var f_name := String(finfo.get("fusion_name", ""))
+			if ready_now:
+				if cur_lv > 0 and next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER:
+					fusion_hint = "✦ 升满即与【%s】合体为【%s】！" % [p_name, f_name]
+				else:
+					fusion_hint = "✦ 可与【%s】合体为【%s】！" % [p_name, f_name]
+			else:
+				fusion_hint = "✦ 与已有【%s】双满级可合体【%s】" % [p_name, f_name]
+
+		var syn_hint := "✦ 可触发不同五行元素反应"
+		if fusion_hint != "":
+			syn_hint = fusion_hint
+		elif cur_lv > 0:
+			syn_hint = "✦ 法宝原地淬炼，不占新槽位"
+		elif not owned_elems.has(elem):
+			syn_hint = "✦ 新属性【%s】可与现有法宝触发五行反应！" % String(V2_ELEM_NAMES.get(elem, elem))
+
+		var card := {
+			"id": "v2_wpn:%s:%d" % [sid, next_lv],
+			"weapon_id": sid,
+			"tag": "【%s · %s】" % [String(V2_ELEM_NAMES.get(elem, "法宝")), V2_TIER_NAMES[clampi(next_lv, 0, OrbitWeaponRig.MAX_WEAPON_TIER)]],
+			"title": String(w.get("name", sid)),
+			"desc": desc,
+			"level": cur_lv,
+			"next_level": next_lv,
+			"max_level": OrbitWeaponRig.MAX_WEAPON_TIER,
+			"icon": String(w.get("icon", "")),
+			"synergy_hint": syn_hint,
+			"fusion_hint": fusion_hint,
+			"offer_kind": "new_weapon" if cur_lv == 0 else "upgrade_weapon",
+			"is_new": cur_lv == 0,
+			"is_relic": false,
+			"is_evo": (cur_lv > 0 and next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER) or ready_now,
+			"weight": w_weight,
+			"elem": elem,
+		}
+		if cur_lv == 0:
+			new_weapon_cards.append(card)
+		else:
+			upgrade_weapon_cards.append(card)
+
+	var lb_cards: Array[Dictionary] = _build_weapon_limit_break_cards(v2)
+	var stat_cards: Array[Dictionary] = []
+	for b in V2_REALM_BREAKTHROUGHS:
+		var bid := String(b["id"])
+		if banished_ids.has(bid):
+			continue
+		var is_stackable := bool(b.get("stackable", true))
+		var cur_stacks := v2.get_stat_pick_count(bid)
+		var cap := int(b.get("max_stacks", 0))
+		if cap > 0 and cur_stacks >= cap:
+			continue
+		stat_cards.append({
+			"id": bid,
+			"tag": String(b["tag"]),
+			"title": String(b["title"]),
+			"desc": String(b["desc"]),
+			"level": cur_stacks,
+			"next_level": cur_stacks + 1,
+			"max_level": cap if cap > 0 else (0 if is_stackable else -1),
+			"icon": String(b["icon"]),
+			"synergy_hint": String(b["hint"]),
+			"fusion_hint": "",
+			"offer_kind": "stat",
+			"is_new": false,
+			"is_relic": true,
+			"is_evo": false,
+			"weight": 110,
+		})
+
+	var selected: Array[Dictionary] = []
+	if is_breakthrough:
+		_draw_weighted_cards(new_weapon_cards, count, selected)
+		var fallback: Array[Dictionary] = []
+		fallback.append_array(upgrade_weapon_cards)
+		fallback.append_array(stat_cards)
+		_draw_weighted_cards(fallback, count, selected)
+	else:
+		var combined: Array[Dictionary] = []
+		combined.append_array(upgrade_weapon_cards)
+		combined.append_array(lb_cards)
+		combined.append_array(stat_cards)
+		_draw_weighted_cards(combined, count, selected)
+
+	return selected
+
+func _build_weapon_limit_break_cards(v2: V2CombatController) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if v2 == null or v2.orbit_rig == null or v2.loader == null:
+		return out
+	var defs := [
+		{"stat": "damage_pct", "label": "破境·锋芒 +8%", "desc": "该法宝基础伤害永久 +8%（最多5层）", "max": 5, "weight": 85},
+		{"stat": "cooldown_pct", "label": "破境·迅捷 -4%", "desc": "该法宝出手冷却永久 -4%（最多5层）", "max": 5, "weight": 65},
+	]
+	for s in v2.orbit_rig.slots:
+		var wid := String(s.get("id", ""))
+		var is_fus := bool(s.get("is_fusion", false))
+		var tier := int(s.get("tier", 0))
+		if not is_fus and tier < OrbitWeaponRig.MAX_WEAPON_TIER:
+			continue
+		var w_name := String(s.get("name", wid))
+		var w_icon := String(s.get("icon", ""))
+		if v2.loader.weapons_by_id.has(wid):
+			var wd: Dictionary = v2.loader.weapons_by_id[wid]
+			w_name = String(wd.get("name", w_name))
+			w_icon = String(wd.get("icon", w_icon))
+		else:
+			for rec in v2.loader.fusion_recipes:
+				if rec is Dictionary and String((rec as Dictionary).get("id", "")) == wid:
+					w_name = String((rec as Dictionary).get("name", w_name))
+					w_icon = String((rec as Dictionary).get("icon", w_icon))
+					break
+		for d in defs:
+			var skey := String(d["stat"])
+			var cur_st := v2.get_weapon_limit_break_stacks(wid, skey)
+			if cur_st >= int(d["max"]):
+				continue
+			var cid := "v2_lb:%s:%s" % [wid, skey]
+			if banished_ids.has(cid):
+				continue
+			out.append({
+				"id": cid,
+				"weapon_id": wid,
+				"tag": "【%s】" % String(d["label"]),
+				"title": w_name,
+				"desc": String(d["desc"]),
+				"level": cur_st,
+				"next_level": cur_st + 1,
+				"max_level": int(d["max"]),
+				"icon": w_icon,
+				"synergy_hint": "✦ 满阶法宝专属破境词条",
+				"fusion_hint": "",
+				"offer_kind": "limit_break",
+				"is_new": false,
+				"is_relic": false,
+				"is_evo": true,
+				"weight": int(d["weight"]),
+			})
+	return out
+
+func _draw_weighted_cards(pool: Array[Dictionary], target_count: int, selected: Array[Dictionary]) -> void:
+	while selected.size() < target_count and not pool.is_empty():
+		var total_w := 0
+		for it in pool:
+			total_w += int(it.get("weight", 10))
+		var r := randi() % maxi(1, total_w)
+		var acc := 0
+		var pick_idx := 0
+		for idx in range(pool.size()):
+			acc += int(pool[idx].get("weight", 10))
+			if r < acc:
+				pick_idx = idx
+				break
+		var chosen := pool[pick_idx]
+		pool.remove_at(pick_idx)
+		var dup := false
+		for s in selected:
+			if String(s["id"]) == String(chosen["id"]):
+				dup = true
+				break
+		if not dup:
+			selected.append(chosen)
+
+func apply_v2_upgrade(choice_id: String, player: Node) -> void:
+	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
+		apply_upgrade(choice_id, player)
+		return
+	var v2: V2CombatController = player.v2_combat
+	if choice_id.begins_with("v2_wpn:"):
+		var parts := choice_id.split(":")
+		if parts.size() >= 3:
+			v2.add_weapon(parts[1], int(parts[2]))
+		return
+	if choice_id.begins_with("v2_lb:"):
+		var lb_parts := choice_id.split(":")
+		if lb_parts.size() >= 3:
+			var wid := lb_parts[1]
+			var skey := lb_parts[2]
+			var dval := 0.08 if skey == "damage_pct" else (-0.04 if skey == "cooldown_pct" else 1.0)
+			v2.apply_weapon_limit_break(wid, skey, dval, 5)
+		return
+	if choice_id.begins_with("v2_arcana:"):
+		v2.add_arcana(choice_id.substr(10))
+		return
+	if choice_id.begins_with("v2_stat:"):
+		v2.record_stat_pick(choice_id)
+	match choice_id:
+		"v2_stat:dmg":
+			v2.add_realm_bonus("damage_pct", 0.07)
+		"v2_stat:spd":
+			v2.add_realm_bonus("attack_speed_pct", 0.07)
+			v2.add_realm_bonus("move_speed_pct", 0.04)
+		"v2_stat:mastery":
+			v2.add_realm_bonus("reaction_damage_pct", 0.12)
+			v2.add_realm_bonus("reaction_radius_pct", 0.06)
+		"v2_stat:crit":
+			v2.add_realm_bonus("crit_chance", 0.05)
+			v2.add_realm_bonus("crit_mult_bonus", 0.12)
+		"v2_stat:hp_armor":
+			v2.add_realm_bonus("max_hp", 16.0)
+			v2.add_realm_bonus("armor", 1.0)
+			if player.has_method("heal"):
+				player.heal(16.0)
+		"v2_stat:gold_heal":
+			v2.add_realm_bonus("max_hp", 8.0)
+			if player.has_method("heal"):
+				player.heal(32.0)
+		"v2_stat:luck":
+			v2.add_realm_bonus("luck", 0.15)
+		"v2_stat:area":
+			v2.add_realm_bonus("area_pct", 0.10)
+		"v2_stat:proj":
+			v2.add_realm_bonus("pierce_flat", 1.0)
+			v2.add_realm_bonus("chain_bonus", 1.0)
+		"v2_stat:dodge_dash":
+			v2.add_realm_bonus("dodge_pct", 0.04)
+			v2.add_realm_bonus("dash_cooldown_pct", -0.08)
+		_:
+			apply_upgrade(choice_id, player)
+
+func roll_v2_chest_rewards(player: Node) -> Array[Dictionary]:
+	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
+		var legacy_rewards: Array[Dictionary] = roll_chest_rewards(player)
+		if legacy_rewards.is_empty():
+			legacy_rewards.append(_chest_guarantee_reward(player))
+		return legacy_rewards
+	var v2: V2CombatController = player.v2_combat
+	var rewards: Array[Dictionary] = []
+
+	if v2.orbit_rig != null and v2.loader != null:
+		for recipe in v2.loader.fusion_recipes:
+			var ing: Array = recipe["ingredients"]
+			var a := String(ing[0])
+			var b := String(ing[1])
+			var has_a_max := v2.orbit_rig._find_slot(a, OrbitWeaponRig.MAX_WEAPON_TIER) != -1
+			var has_b_max := v2.orbit_rig._find_slot(b, OrbitWeaponRig.MAX_WEAPON_TIER) != -1
+			if has_a_max and not has_b_max and v2.can_add_weapon(b, OrbitWeaponRig.MAX_WEAPON_TIER):
+				v2.add_weapon(b, OrbitWeaponRig.MAX_WEAPON_TIER)
+				rewards.append({
+					"is_evo": true,
+					"title": "【合体超武】%s" % String(recipe["name"]),
+					"subtitle": "天机宝箱赐予满级伴生法宝，当场合体！",
+					"desc": "双 Lv.8 满级神兵融为一体，腾出 1 个法宝槽并激活双元素自反应！",
+					"icon": String(recipe["icon"]),
+				})
+				return rewards
+			if has_b_max and not has_a_max and v2.can_add_weapon(a, OrbitWeaponRig.MAX_WEAPON_TIER):
+				v2.add_weapon(a, OrbitWeaponRig.MAX_WEAPON_TIER)
+				rewards.append({
+					"is_evo": true,
+					"title": "【合体超武】%s" % String(recipe["name"]),
+					"subtitle": "天机宝箱赐予满级伴生法宝，当场合体！",
+					"desc": "双 Lv.8 满级神兵融为一体，腾出 1 个法宝槽并激活双元素自反应！",
+					"icon": String(recipe["icon"]),
+				})
+				return rewards
+
+	var roll := randf()
+	var cnt := 3 if roll > 0.65 else 2
+	var upgraded_any := false
+	for _i in range(cnt):
+		if _i == 0 and v2.orbit_rig != null and not v2.orbit_rig.slots.is_empty():
+			var upgradable := []
+			for s in v2.orbit_rig.slots:
+				if not bool(s["is_fusion"]) and int(s["tier"]) < OrbitWeaponRig.MAX_WEAPON_TIER:
+					upgradable.append(s)
+			if not upgradable.is_empty():
+				var pick_s: Dictionary = upgradable[randi() % upgradable.size()]
+				var wid := String(pick_s["id"])
+				var t := int(pick_s["tier"])
+				if v2.upgrade_weapon(wid, 1):
+					upgraded_any = true
+					var w: Dictionary = v2.loader.weapons_by_id[wid]
+					var next_tier := mini(t + 1, OrbitWeaponRig.MAX_WEAPON_TIER)
+					rewards.append({
+						"is_evo": false,
+						"title": "%s 淬炼" % String(w["name"]),
+						"subtitle": "天机奇缘 · 法宝淬炼",
+						"desc": "法宝原地淬炼，提升至 %s！" % V2_TIER_NAMES[next_tier],
+						"icon": String(w["icon"]),
+					})
+					continue
+		var item_keys: Array = []
+		if v2.loader != null:
+			item_keys = v2.loader.items_by_id.keys()
+		if not item_keys.is_empty():
+			var iid := String(item_keys[randi() % item_keys.size()])
+			var it: Dictionary = v2.loader.items_by_id[iid]
+			v2.add_item(iid)
+			rewards.append({
+				"is_evo": false,
+				"title": String(it["name"]),
+				"subtitle": "秘宝现世",
+				"desc": String(it["desc"]),
+				"icon": String(V2ShopUI.ITEM_ICONS.get(iid, "res://assets/icons/relic_insight.png")),
+			})
+
+	if rewards.is_empty() or not upgraded_any:
+		rewards.append(_chest_guarantee_reward(player))
+	return rewards
+
+func _chest_guarantee_reward(player: Node) -> Dictionary:
+	var v2: V2CombatController = null
+	if player != null and "v2_combat" in player and player.v2_combat != null:
+		v2 = player.v2_combat
+	if v2 == null:
+		if player != null and player.has_method("heal"):
+			player.heal(45.0)
+		return {
+			"is_evo": false,
+			"title": "九转还魂丹",
+			"subtitle": "保底奇珍 · 丹香续命",
+			"desc": "九转丹成，立刻回复 45 点气血！",
+			"icon": "res://assets/sprites/pickup_peach.png",
+		}
+	var pick := randi() % 3
+	if pick == 0:
+		v2.add_run_gold(40)
+		return {
+			"is_evo": false,
+			"title": "天机灵石袋",
+			"subtitle": "保底奇珍 · 灵石满袋",
+			"desc": "获得 40 枚局内灵石，天机阁购宝不虚此行！",
+			"icon": "res://assets/sprites/pickup_spirit_pouch.png",
+		}
+	if pick == 1:
+		if player.has_method("heal"):
+			player.heal(60.0)
+		return {
+			"is_evo": false,
+			"title": "九转还魂丹",
+			"subtitle": "保底奇珍 · 丹香续命",
+			"desc": "九转丹成，立刻回复 60 点气血！",
+			"icon": "res://assets/sprites/pickup_peach.png",
+		}
+	v2.add_realm_bonus("damage_pct", 0.03)
+	v2.add_realm_bonus("attack_speed_pct", 0.03)
+	v2.add_realm_bonus("move_speed_pct", 0.02)
+	v2.add_realm_bonus("max_hp", 8.0)
+	if player.has_method("heal"):
+		player.heal(8.0)
+	return {
+		"is_evo": false,
+		"title": "天机洗髓",
+		"subtitle": "保底奇珍 · 全属性小幅提升",
+		"desc": "伤害 +3%，攻速 +3%，移速 +2%，气血上限 +8！",
+		"icon": "res://assets/icons/icon_taichi_array.png",
+	}

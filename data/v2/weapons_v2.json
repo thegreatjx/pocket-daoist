@@ -1,0 +1,978 @@
+{
+  "schema_version": "2.0",
+  "max_weapon_slots": 4,
+  "max_weapon_level": 8,
+  "tier_scaling_note": "单局最多装备 4 件法宝；每件法宝从 Lv.1 原地淬炼至 Lv.8 触发形态与配色质变；互为配方的两件满级法宝可合体为仙阶超武。",
+  "realm_slot_unlocks": [
+    {"slots": 1, "level": 1, "realm": "练气"},
+    {"slots": 2, "level": 5, "realm": "筑基"},
+    {"slots": 3, "level": 11, "realm": "金丹"},
+    {"slots": 4, "level": 18, "realm": "元婴", "alt_elite_kills": 2}
+  ],
+  "weapons": [
+    {
+      "id": "wpn_jade_sword",
+      "name": "青霜飞剑",
+      "element": "metal",
+      "icon": "res://assets/v2/weapons/wpn_jade_sword.png",
+      "attack_pattern": "pierce_boomerang",
+      "base_cost": 18,
+      "sfx_cue": "sfx_sword_whoosh",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 14,
+          "cooldown": 1.05,
+          "range": 345,
+          "projectile_count": 1,
+          "pierce": 2,
+          "proj_speed": 630,
+          "crit_chance": 0.12,
+          "crit_mult": 1.85,
+          "level_summary": "单点高伤飞剑，每次齐发 1 柄"
+        },
+        {
+          "tier": 2,
+          "damage": 18,
+          "cooldown": 1.00,
+          "range": 355,
+          "projectile_count": 1,
+          "pierce": 2,
+          "proj_speed": 660,
+          "crit_chance": 0.14,
+          "crit_mult": 1.88,
+          "level_summary": "剑锋淬炼，单发伤害与飞行速度提升"
+        },
+        {
+          "tier": 3,
+          "damage": 22,
+          "cooldown": 0.95,
+          "range": 368,
+          "projectile_count": 2,
+          "pierce": 2,
+          "proj_speed": 690,
+          "crit_chance": 0.16,
+          "crit_mult": 1.92,
+          "level_summary": "飞剑增至 2 柄齐发"
+        },
+        {
+          "tier": 4,
+          "damage": 26,
+          "cooldown": 0.90,
+          "range": 382,
+          "projectile_count": 2,
+          "pierce": 3,
+          "proj_speed": 720,
+          "crit_chance": 0.18,
+          "crit_mult": 1.96,
+          "level_summary": "贯穿增至 3 敌，伤害提高"
+        },
+        {
+          "tier": 5,
+          "damage": 31,
+          "cooldown": 0.85,
+          "range": 400,
+          "projectile_count": 3,
+          "pierce": 3,
+          "proj_speed": 755,
+          "crit_chance": 0.20,
+          "crit_mult": 2.02,
+          "level_summary": "飞剑增至 3 柄，冷却缩短"
+        },
+        {
+          "tier": 6,
+          "damage": 36,
+          "cooldown": 0.80,
+          "range": 420,
+          "projectile_count": 4,
+          "pierce": 4,
+          "proj_speed": 790,
+          "crit_chance": 0.22,
+          "crit_mult": 2.08,
+          "level_summary": "飞剑增至 4 柄，贯穿增至 4 敌"
+        },
+        {
+          "tier": 7,
+          "damage": 43,
+          "cooldown": 0.75,
+          "range": 440,
+          "projectile_count": 4,
+          "pierce": 5,
+          "proj_speed": 830,
+          "crit_chance": 0.24,
+          "crit_mult": 2.15,
+          "level_summary": "射程与暴伤提升，贯穿增至 5 敌"
+        },
+        {
+          "tier": 8,
+          "damage": 50,
+          "cooldown": 0.70,
+          "range": 465,
+          "projectile_count": 5,
+          "pierce": 5,
+          "proj_speed": 870,
+          "crit_chance": 0.26,
+          "crit_mult": 2.25,
+          "max_tier_perk": "afterimage_double_slash",
+          "level_summary": "【质变】金光万剑 5 柄齐发 + 剑气残影"
+        }
+      ],
+      "vfx_profile": {
+        "trail_color": "#2DD4BF",
+        "max_tier_color": "#FACC15",
+        "trail_alpha": 0.58,
+        "max_tier_effect": "ink_sword_afterimage"
+      }
+    },
+    {
+      "id": "wpn_fire_gourd",
+      "name": "离火葫芦",
+      "element": "fire",
+      "icon": "res://assets/v2/weapons/wpn_fire_gourd.png",
+      "attack_pattern": "lob_burn_zone",
+      "base_cost": 20,
+      "sfx_cue": "sfx_fire_lob",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 7,
+          "cooldown": 1.65,
+          "range": 320,
+          "aoe_radius": 70,
+          "zone_duration": 2.8,
+          "tick_dps": 9,
+          "burn_dur": 1.5,
+          "level_summary": "抛射离火球，命中与火海均附带 1.5s 灼烧"
+        },
+        {
+          "tier": 2,
+          "damage": 9,
+          "cooldown": 1.58,
+          "range": 330,
+          "aoe_radius": 75,
+          "zone_duration": 3.0,
+          "tick_dps": 13,
+          "burn_dur": 1.55,
+          "level_summary": "火域延长，灼烧秒伤与持续时间提升"
+        },
+        {
+          "tier": 3,
+          "damage": 12,
+          "cooldown": 1.50,
+          "range": 345,
+          "aoe_radius": 82,
+          "zone_duration": 3.3,
+          "tick_dps": 17,
+          "burn_dur": 1.6,
+          "level_summary": "火域范围扩张，冷却缩短，附带 1.6s 灼烧"
+        },
+        {
+          "tier": 4,
+          "damage": 15,
+          "cooldown": 1.42,
+          "range": 360,
+          "aoe_radius": 88,
+          "zone_duration": 3.6,
+          "tick_dps": 22,
+          "burn_dur": 1.7,
+          "level_summary": "持续总伤提高，沾火延续 1.7s 灼烧"
+        },
+        {
+          "tier": 5,
+          "damage": 18,
+          "cooldown": 1.35,
+          "range": 375,
+          "aoe_radius": 96,
+          "zone_duration": 3.9,
+          "tick_dps": 27,
+          "burn_dur": 1.75,
+          "level_summary": "火域持续接近 4 秒，灼烧跃升至 1.75s"
+        },
+        {
+          "tier": 6,
+          "damage": 21,
+          "cooldown": 1.28,
+          "range": 390,
+          "aoe_radius": 104,
+          "zone_duration": 4.1,
+          "tick_dps": 33,
+          "burn_dur": 1.85,
+          "level_summary": "炽烈业火半径突破百像素，附带 1.85s 灼烧"
+        },
+        {
+          "tier": 7,
+          "damage": 24,
+          "cooldown": 1.22,
+          "range": 405,
+          "aoe_radius": 112,
+          "zone_duration": 4.3,
+          "tick_dps": 39,
+          "burn_dur": 1.9,
+          "level_summary": "高频持续火海与 1.9s 灼烧，烧穿高血肉盾"
+        },
+        {
+          "tier": 8,
+          "damage": 28,
+          "cooldown": 1.15,
+          "range": 420,
+          "aoe_radius": 120,
+          "zone_duration": 4.6,
+          "tick_dps": 46,
+          "burn_dur": 2.0,
+          "max_tier_perk": "lotus_implosion",
+          "level_summary": "【质变】赤金红莲火海 + 2.0s 灼烧 + 终结内爆"
+        }
+      ],
+      "vfx_profile": {
+        "zone_color": "#EA580C",
+        "max_tier_color": "#F43F5E",
+        "zone_alpha": 0.34,
+        "max_tier_effect": "shader_fire_lotus_ring"
+      }
+    },
+    {
+      "id": "wpn_thunder_talisman",
+      "name": "天雷符",
+      "element": "thunder",
+      "icon": "res://assets/v2/weapons/wpn_thunder_talisman.png",
+      "attack_pattern": "instant_chain_bolt",
+      "base_cost": 22,
+      "sfx_cue": "sfx_thunder_snap",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 11,
+          "cooldown": 1.38,
+          "range": 360,
+          "chain_count": 2,
+          "chain_range": 130,
+          "level_summary": "瞬发引雷必中，弹射 2 目标"
+        },
+        {
+          "tier": 2,
+          "damage": 14,
+          "cooldown": 1.32,
+          "range": 370,
+          "chain_count": 2,
+          "chain_range": 140,
+          "level_summary": "引雷伤害与弹射距离提升"
+        },
+        {
+          "tier": 3,
+          "damage": 17,
+          "cooldown": 1.25,
+          "range": 382,
+          "chain_count": 3,
+          "chain_range": 150,
+          "level_summary": "闪电弹射增至 3 目标"
+        },
+        {
+          "tier": 4,
+          "damage": 21,
+          "cooldown": 1.18,
+          "range": 396,
+          "chain_count": 4,
+          "chain_range": 160,
+          "level_summary": "闪电弹射增至 4 目标，冷却缩短"
+        },
+        {
+          "tier": 5,
+          "damage": 25,
+          "cooldown": 1.12,
+          "range": 412,
+          "chain_count": 5,
+          "chain_range": 172,
+          "level_summary": "闪电弹射增至 5 目标，覆盖疾行怪"
+        },
+        {
+          "tier": 6,
+          "damage": 29,
+          "cooldown": 1.06,
+          "range": 428,
+          "chain_count": 6,
+          "chain_range": 184,
+          "level_summary": "闪电弹射增至 6 目标，跳跃范围扩大"
+        },
+        {
+          "tier": 7,
+          "damage": 34,
+          "cooldown": 1.00,
+          "range": 444,
+          "chain_count": 7,
+          "chain_range": 196,
+          "level_summary": "闪电弹射增至 7 目标，连锁电弧"
+        },
+        {
+          "tier": 8,
+          "damage": 40,
+          "cooldown": 0.94,
+          "range": 465,
+          "chain_count": 8,
+          "chain_range": 210,
+          "max_tier_perk": "five_thunder_arc",
+          "level_summary": "【质变】紫金五雷 8 连弧无衰减传导"
+        }
+      ],
+      "vfx_profile": {
+        "bolt_color": "#818CF8",
+        "max_tier_color": "#FDE047",
+        "bolt_alpha": 0.75,
+        "max_tier_effect": "gold_core_chain_bolt"
+      }
+    },
+    {
+      "id": "wpn_ice_mirror",
+      "name": "玄冰八卦镜",
+      "element": "ice",
+      "icon": "res://assets/v2/weapons/wpn_ice_mirror.png",
+      "attack_pattern": "cone_shards",
+      "base_cost": 19,
+      "sfx_cue": "sfx_ice_chime",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 5,
+          "cooldown": 1.24,
+          "range": 320,
+          "projectile_count": 3,
+          "slow_pct": 0.30,
+          "slow_dur": 2.4,
+          "level_summary": "低伤控场：扇形 3 道冰锥强力减速"
+        },
+        {
+          "tier": 2,
+          "damage": 7,
+          "cooldown": 1.18,
+          "range": 330,
+          "projectile_count": 3,
+          "slow_pct": 0.34,
+          "slow_dur": 2.6,
+          "level_summary": "寒意减速增强，持续延长"
+        },
+        {
+          "tier": 3,
+          "damage": 9,
+          "cooldown": 1.13,
+          "range": 342,
+          "projectile_count": 4,
+          "slow_pct": 0.37,
+          "slow_dur": 2.8,
+          "level_summary": "冰锥增至 4 道"
+        },
+        {
+          "tier": 4,
+          "damage": 11,
+          "cooldown": 1.08,
+          "range": 356,
+          "projectile_count": 4,
+          "slow_pct": 0.40,
+          "slow_dur": 3.0,
+          "level_summary": "射程扩大，强效迟滞冲锋怪"
+        },
+        {
+          "tier": 5,
+          "damage": 13,
+          "cooldown": 1.03,
+          "range": 370,
+          "projectile_count": 5,
+          "slow_pct": 0.44,
+          "slow_dur": 3.2,
+          "level_summary": "冰锥增至 5 道"
+        },
+        {
+          "tier": 6,
+          "damage": 15,
+          "cooldown": 0.98,
+          "range": 384,
+          "projectile_count": 6,
+          "slow_pct": 0.48,
+          "slow_dur": 3.4,
+          "level_summary": "冰锥增至 6 道，冷却缩短"
+        },
+        {
+          "tier": 7,
+          "damage": 17,
+          "cooldown": 0.94,
+          "range": 400,
+          "projectile_count": 6,
+          "slow_pct": 0.51,
+          "slow_dur": 3.6,
+          "level_summary": "寒霜封脉减速突破 50%"
+        },
+        {
+          "tier": 8,
+          "damage": 20,
+          "cooldown": 0.89,
+          "range": 415,
+          "projectile_count": 7,
+          "slow_pct": 0.54,
+          "slow_dur": 3.9,
+          "max_tier_perk": "bagua_frost_wheel",
+          "level_summary": "【质变】幽蓝极寒 7 锥 + 八卦冰轮"
+        }
+      ],
+      "vfx_profile": {
+        "shard_color": "#38BDF8",
+        "max_tier_color": "#E0F2FE",
+        "shard_alpha": 0.58,
+        "max_tier_effect": "frost_wheel_shatter"
+      }
+    },
+    {
+      "id": "wpn_venom_banner",
+      "name": "万毒幡",
+      "element": "wood",
+      "icon": "res://assets/v2/weapons/wpn_venom_banner.png",
+      "attack_pattern": "homing_soul_seal_spirits",
+      "desc": "摇幡放出数道追踪绿紫毒灵，自动索敌并种下噬魂毒印；带印妖物身亡时毒印向周围至多 3 名敌人炸开传染。",
+      "base_cost": 20,
+      "sfx_cue": "sfx_venom_hiss",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 6,
+          "cooldown": 1.55,
+          "range": 350,
+          "projectile_count": 1,
+          "spirit_speed": 330,
+          "dot_dps": 10,
+          "dot_dur": 4.2,
+          "spread_radius": 110,
+          "spread_targets": 3,
+          "level_summary": "摇幡放出 1 道追踪毒灵，种下噬魂毒印"
+        },
+        {
+          "tier": 2,
+          "damage": 7,
+          "cooldown": 1.50,
+          "range": 362,
+          "projectile_count": 1,
+          "spirit_speed": 350,
+          "dot_dps": 13,
+          "dot_dur": 4.4,
+          "spread_radius": 112,
+          "spread_targets": 3,
+          "level_summary": "毒灵飞得更快，毒印秒伤提升"
+        },
+        {
+          "tier": 3,
+          "damage": 9,
+          "cooldown": 1.44,
+          "range": 374,
+          "projectile_count": 2,
+          "spirit_speed": 365,
+          "dot_dps": 16,
+          "dot_dur": 4.6,
+          "spread_radius": 115,
+          "spread_targets": 3,
+          "level_summary": "毒灵增至 2 道，可同时追猎两只妖物"
+        },
+        {
+          "tier": 4,
+          "damage": 11,
+          "cooldown": 1.38,
+          "range": 386,
+          "projectile_count": 2,
+          "spirit_speed": 385,
+          "dot_dps": 20,
+          "dot_dur": 4.8,
+          "spread_radius": 118,
+          "spread_targets": 3,
+          "level_summary": "噬魂毒印加深，索敌射程扩大"
+        },
+        {
+          "tier": 5,
+          "damage": 13,
+          "cooldown": 1.32,
+          "range": 398,
+          "projectile_count": 2,
+          "spirit_speed": 405,
+          "dot_dps": 24,
+          "dot_dur": 5.0,
+          "spread_radius": 122,
+          "spread_targets": 3,
+          "level_summary": "毒灵穿行更快，持续剧毒逼近 25/s"
+        },
+        {
+          "tier": 6,
+          "damage": 15,
+          "cooldown": 1.26,
+          "range": 410,
+          "projectile_count": 3,
+          "spirit_speed": 425,
+          "dot_dps": 29,
+          "dot_dur": 5.2,
+          "spread_radius": 126,
+          "spread_targets": 3,
+          "level_summary": "毒灵增至 3 道，钻入怪堆连环种印"
+        },
+        {
+          "tier": 7,
+          "damage": 17,
+          "cooldown": 1.20,
+          "range": 420,
+          "projectile_count": 3,
+          "spirit_speed": 450,
+          "dot_dps": 34,
+          "dot_dur": 5.5,
+          "spread_radius": 130,
+          "spread_targets": 3,
+          "level_summary": "高频摇幡，毒灵追魂夺魄"
+        },
+        {
+          "tier": 8,
+          "damage": 20,
+          "cooldown": 1.14,
+          "range": 430,
+          "projectile_count": 4,
+          "spirit_speed": 480,
+          "dot_dps": 40,
+          "dot_dur": 5.8,
+          "spread_radius": 135,
+          "spread_targets": 3,
+          "max_tier_perk": "soul_seal_pandemic",
+          "level_summary": "【质变】四灵齐出 + 噬魂毒印死亡大传染"
+        }
+      ],
+      "vfx_profile": {
+        "spirit_color": "#34D399",
+        "spirit_halo": "#A78BFA",
+        "max_tier_color": "#A3E635",
+        "spirit_alpha": 0.82,
+        "max_tier_effect": "soul_seal_pandemic_burst"
+      }
+    },
+    {
+      "id": "wpn_gold_bell",
+      "name": "玄金古钟",
+      "element": "metal",
+      "icon": "res://assets/v2/weapons/wpn_gold_bell.png",
+      "attack_pattern": "radial_knockback_wave",
+      "desc": "古钟震出多层金色水墨音波与符文脉冲，命中小幅外推并迟滞妖物；音波触及冰、雷、火毒印记时引动洪钟共鸣：金声碎冰、钟鸣引雷、震荡扬波。",
+      "base_cost": 21,
+      "sfx_cue": "sfx_bell_gong",
+      "resonance_profile": {
+        "icd_sec": 1.6,
+        "shatter": {
+          "aoe_radius": 95,
+          "damage_mult": 0.85,
+          "splash_mult": 0.55,
+          "true_damage": true,
+          "vfx_color": "#9AE6FF"
+        },
+        "thunder_echo": {
+          "chain_count": 2,
+          "chain_range": 155,
+          "damage_mult": 0.55,
+          "stun_dur": 0.35,
+          "vfx_color": "#FDE047"
+        },
+        "shock_spread": {
+          "aoe_radius": 118,
+          "damage_mult": 0.45,
+          "max_targets": 4,
+          "vfx_color": "#6EE7B7"
+        }
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 10,
+          "cooldown": 2.05,
+          "aoe_radius": 175,
+          "knockback": 230,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": false,
+          "level_summary": "多层金声浪：小幅外推 + 25% 微减速 1.2s"
+        },
+        {
+          "tier": 2,
+          "damage": 13,
+          "cooldown": 1.96,
+          "aoe_radius": 190,
+          "knockback": 250,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": false,
+          "level_summary": "声波扩至 190，击退与迟滞更稳"
+        },
+        {
+          "tier": 3,
+          "damage": 16,
+          "cooldown": 1.88,
+          "aoe_radius": 205,
+          "knockback": 270,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": false,
+          "level_summary": "声波覆盖突破 200 像素，共鸣更易触发"
+        },
+        {
+          "tier": 4,
+          "damage": 20,
+          "cooldown": 1.80,
+          "aoe_radius": 222,
+          "knockback": 295,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": true,
+          "level_summary": "金钟声波可震碎敌方弹幕"
+        },
+        {
+          "tier": 5,
+          "damage": 24,
+          "cooldown": 1.72,
+          "aoe_radius": 240,
+          "knockback": 318,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": true,
+          "level_summary": "声波半径扩至 240，护体无忧"
+        },
+        {
+          "tier": 6,
+          "damage": 28,
+          "cooldown": 1.64,
+          "aoe_radius": 258,
+          "knockback": 340,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": true,
+          "level_summary": "高频远距声浪清场，碎冰引雷齐鸣"
+        },
+        {
+          "tier": 7,
+          "damage": 33,
+          "cooldown": 1.56,
+          "aoe_radius": 274,
+          "knockback": 360,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": true,
+          "level_summary": "声波覆盖扩至 274 像素，扬波传毒"
+        },
+        {
+          "tier": 8,
+          "damage": 38,
+          "cooldown": 1.48,
+          "aoe_radius": 290,
+          "knockback": 385,
+          "slow_pct": 0.25,
+          "slow_dur": 1.2,
+          "clear_enemy_bullets": true,
+          "max_tier_perk": "echo_armor_shred",
+          "level_summary": "【质变】梵金回响远距声波 + 群体破甲 + 洪钟共鸣"
+        }
+      ],
+      "vfx_profile": {
+        "wave_color": "#F59E0B",
+        "wave_accent": "#FDE047",
+        "max_tier_color": "#FDE047",
+        "wave_alpha": 0.38,
+        "max_tier_effect": "bagua_echo_shockwave"
+      }
+    },
+    {
+      "id": "wpn_jade_vase",
+      "name": "甘露玉净瓶",
+      "element": "water",
+      "icon": "res://assets/v2/weapons/wpn_jade_vase.png",
+      "attack_pattern": "water_dew_splash",
+      "base_cost": 19,
+      "sfx_cue": "sfx_ice_chime",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 7,
+          "cooldown": 1.26,
+          "range": 335,
+          "aoe_radius": 78,
+          "slow_pct": 0.28,
+          "slow_dur": 2.4,
+          "level_summary": "水系控场：玉净瓶倾洒甘露范围濡湿减速"
+        },
+        {
+          "tier": 2,
+          "damage": 9,
+          "cooldown": 1.20,
+          "range": 345,
+          "aoe_radius": 84,
+          "slow_pct": 0.31,
+          "slow_dur": 2.6,
+          "level_summary": "水浪波纹扩大，濡湿持续延长"
+        },
+        {
+          "tier": 3,
+          "damage": 12,
+          "cooldown": 1.15,
+          "range": 358,
+          "aoe_radius": 92,
+          "slow_pct": 0.34,
+          "slow_dur": 2.8,
+          "level_summary": "清波荡漾，范围与减速增强"
+        },
+        {
+          "tier": 4,
+          "damage": 15,
+          "cooldown": 1.10,
+          "range": 370,
+          "aoe_radius": 100,
+          "slow_pct": 0.37,
+          "slow_dur": 3.0,
+          "level_summary": "射程与水浪范围突破百像素"
+        },
+        {
+          "tier": 5,
+          "damage": 18,
+          "cooldown": 1.05,
+          "range": 384,
+          "aoe_radius": 108,
+          "slow_pct": 0.40,
+          "slow_dur": 3.2,
+          "level_summary": "碧水灵潮范围扩张，配合火雷木打反应"
+        },
+        {
+          "tier": 6,
+          "damage": 21,
+          "cooldown": 1.00,
+          "range": 396,
+          "aoe_radius": 115,
+          "slow_pct": 0.43,
+          "slow_dur": 3.4,
+          "level_summary": "水潮冷却缩至 1 秒，控场稳定"
+        },
+        {
+          "tier": 7,
+          "damage": 24,
+          "cooldown": 0.95,
+          "range": 408,
+          "aoe_radius": 122,
+          "slow_pct": 0.46,
+          "slow_dur": 3.6,
+          "level_summary": "大范围迟滞妖群，铺垫水火/感电/绽放"
+        },
+        {
+          "tier": 8,
+          "damage": 28,
+          "cooldown": 0.90,
+          "range": 420,
+          "aoe_radius": 130,
+          "slow_pct": 0.48,
+          "slow_dur": 3.9,
+          "max_tier_perk": "sweet_dew_tide",
+          "level_summary": "【质变】净瓶双潮连波 + 甘露清心回血"
+        }
+      ],
+      "vfx_profile": {
+        "wave_color": "#22D3EE",
+        "max_tier_color": "#A5F3FC",
+        "wave_alpha": 0.48,
+        "max_tier_effect": "double_water_tide"
+      }
+    },
+    {
+      "id": "wpn_spirit_vine",
+      "name": "青藤灵鞭",
+      "element": "wood",
+      "icon": "res://assets/v2/weapons/wpn_spirit_vine.png",
+      "attack_pattern": "vine_lash_leech",
+      "base_cost": 20,
+      "sfx_cue": "sfx_venom_hiss",
+      "tiers": [
+        {
+          "tier": 1,
+          "damage": 6,
+          "cooldown": 1.44,
+          "range": 340,
+          "aoe_radius": 74,
+          "dot_dps": 9,
+          "dot_dur": 4.4,
+          "slow_pct": 0.28,
+          "slow_dur": 2.2,
+          "leech_hp": 1.0,
+          "level_summary": "木系藤蔓缠绕减速，挂寄生并吸血"
+        },
+        {
+          "tier": 2,
+          "damage": 8,
+          "cooldown": 1.38,
+          "range": 350,
+          "aoe_radius": 80,
+          "dot_dps": 13,
+          "dot_dur": 4.6,
+          "slow_pct": 0.30,
+          "slow_dur": 2.4,
+          "leech_hp": 1.2,
+          "level_summary": "寄生持续伤害与汲取回血微增"
+        },
+        {
+          "tier": 3,
+          "damage": 10,
+          "cooldown": 1.32,
+          "range": 362,
+          "aoe_radius": 88,
+          "dot_dps": 17,
+          "dot_dur": 4.8,
+          "slow_pct": 0.33,
+          "slow_dur": 2.6,
+          "leech_hp": 1.4,
+          "level_summary": "灵藤范围扩大，缠绕减速增强"
+        },
+        {
+          "tier": 4,
+          "damage": 12,
+          "cooldown": 1.26,
+          "range": 374,
+          "aoe_radius": 96,
+          "dot_dps": 22,
+          "dot_dur": 5.0,
+          "slow_pct": 0.36,
+          "slow_dur": 2.8,
+          "leech_hp": 1.6,
+          "level_summary": "寄生秒伤突破 20，吸血更稳"
+        },
+        {
+          "tier": 5,
+          "damage": 15,
+          "cooldown": 1.20,
+          "range": 386,
+          "aoe_radius": 104,
+          "dot_dps": 27,
+          "dot_dur": 5.3,
+          "slow_pct": 0.39,
+          "slow_dur": 3.0,
+          "leech_hp": 1.9,
+          "level_summary": "灵藤覆百像素，持续吸血续航"
+        },
+        {
+          "tier": 6,
+          "damage": 18,
+          "cooldown": 1.14,
+          "range": 400,
+          "aoe_radius": 112,
+          "dot_dps": 32,
+          "dot_dur": 5.5,
+          "slow_pct": 0.41,
+          "slow_dur": 3.2,
+          "leech_hp": 2.2,
+          "level_summary": "噬灵蔓剧烈蔓延，克制厚血怪"
+        },
+        {
+          "tier": 7,
+          "damage": 21,
+          "cooldown": 1.08,
+          "range": 414,
+          "aoe_radius": 120,
+          "dot_dps": 38,
+          "dot_dur": 5.8,
+          "slow_pct": 0.43,
+          "slow_dur": 3.4,
+          "leech_hp": 2.5,
+          "level_summary": "高频灵藤抽击，强效缠绕吸血"
+        },
+        {
+          "tier": 8,
+          "damage": 24,
+          "cooldown": 1.02,
+          "range": 430,
+          "aoe_radius": 130,
+          "dot_dps": 44,
+          "dot_dur": 6.0,
+          "slow_pct": 0.46,
+          "slow_dur": 3.6,
+          "leech_hp": 2.8,
+          "max_tier_perk": "ancient_vine_bloom",
+          "level_summary": "【质变】翠金噬灵古藤：定身缠绕 + 灵苞回血爆发"
+        }
+      ],
+      "vfx_profile": {
+        "vine_color": "#22C55E",
+        "max_tier_color": "#BEF264",
+        "vine_alpha": 0.42,
+        "max_tier_effect": "ancient_vine_bloom"
+      }
+    }
+  ],
+  "fusion_recipes": [
+    {
+      "id": "fusion_flame_sword_array",
+      "name": "诛仙烈焰剑阵",
+      "icon": "res://assets/v2/weapons/wpn_jade_sword.png",
+      "secondary_icon": "res://assets/v2/weapons/wpn_fire_gourd.png",
+      "ingredients": [
+        "wpn_jade_sword",
+        "wpn_fire_gourd"
+      ],
+      "required_tier": 8,
+      "desc": "青霜飞剑与离火葫芦双满级合体，剑阵环射并留下烈焰剑域。",
+      "elements": [
+        "metal",
+        "fire"
+      ],
+      "attack_pattern": "orbit_burst_array",
+      "damage": 92,
+      "cooldown": 0.62,
+      "projectile_count": 6,
+      "aoe_radius": 110,
+      "sfx_cue": "sfx_fusion_sword_array",
+      "vfx_profile": {
+        "array_alpha": 0.28,
+        "trail_color": "#F97316",
+        "ink_outline": true
+      }
+    },
+    {
+      "id": "fusion_thunder_frost_domain",
+      "name": "九霄雷冰天域",
+      "icon": "res://assets/v2/weapons/wpn_thunder_talisman.png",
+      "secondary_icon": "res://assets/v2/weapons/wpn_ice_mirror.png",
+      "ingredients": [
+        "wpn_thunder_talisman",
+        "wpn_ice_mirror"
+      ],
+      "required_tier": 8,
+      "desc": "天雷符与玄冰八卦镜双满级合体，冰雷天域自动引雷冻结。",
+      "elements": [
+        "thunder",
+        "ice"
+      ],
+      "attack_pattern": "frost_wheel_auto_lightning",
+      "damage": 78,
+      "cooldown": 0.72,
+      "chain_count": 8,
+      "aoe_radius": 140,
+      "sfx_cue": "sfx_fusion_thunder_ice",
+      "vfx_profile": {
+        "domain_alpha": 0.3,
+        "bolt_color": "#60A5FA"
+      }
+    },
+    {
+      "id": "fusion_venom_zen_bell",
+      "name": "镇岳枯荣梵钟",
+      "icon": "res://assets/v2/weapons/wpn_gold_bell.png",
+      "secondary_icon": "res://assets/v2/weapons/wpn_venom_banner.png",
+      "ingredients": [
+        "wpn_gold_bell",
+        "wpn_venom_banner"
+      ],
+      "required_tier": 8,
+      "desc": "玄金古钟与万毒幡双满级合体，梵钟震波引爆周身木毒持续伤害。",
+      "elements": [
+        "metal",
+        "wood"
+      ],
+      "attack_pattern": "radial_dot_detonate",
+      "damage": 84,
+      "cooldown": 1.25,
+      "aoe_radius": 240,
+      "detonate_remaining_dot_pct": 0.45,
+      "sfx_cue": "sfx_fusion_zen_bell",
+      "vfx_profile": {
+        "wave_alpha": 0.35,
+        "wave_color": "#34D399"
+      }
+    }
+  ]
+}

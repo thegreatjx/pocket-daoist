@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/background.gd" id="2_bg"]
@@ -9,8 +9,12 @@
 [ext_resource type="PackedScene" path="res://scenes/upgrade_ui.tscn" id="7_uip"]
 [ext_resource type="PackedScene" path="res://scenes/game_over_ui.tscn" id="8_gover"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="9_pause"]
+[ext_resource type="Script" path="res://scripts/stage_director.gd" id="10_stage"]
+[ext_resource type="PackedScene" path="res://scenes/chest_ui.tscn" id="11_chest"]
+[ext_resource type="Script" path="res://scripts/v2/arena_landmarks_controller.gd" id="12_landmarks"]
 
 [node name="Main" type="Node2D"]
+y_sort_enabled = true
 script = ExtResource("1_main")
 
 [node name="UpgradeManager" type="Node" parent="."]
@@ -20,15 +24,23 @@ script = ExtResource("6_mgr")
 z_index = -10
 script = ExtResource("2_bg")
 
+[node name="ArenaLandmarks" type="Node2D" parent="."]
+script = ExtResource("12_landmarks")
+
 [node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(640, 360)
 
 [node name="Spawner" type="Node2D" parent="."]
 script = ExtResource("4_spawner")
 
+[node name="StageDirector" type="Node" parent="."]
+script = ExtResource("10_stage")
+
 [node name="UI" parent="." instance=ExtResource("5_ui")]
 
 [node name="UpgradeUI" parent="." instance=ExtResource("7_uip")]
+
+[node name="ChestUI" parent="." instance=ExtResource("11_chest")]
 
 [node name="GameOverUI" parent="." instance=ExtResource("8_gover")]
 

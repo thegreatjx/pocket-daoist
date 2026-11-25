@@ -1,0 +1,115 @@
+{
+  "schema_version": "2.0",
+  "aura_duration_sec": 4.0,
+  "per_enemy_icd_sec": 2.4,
+  "boss_icd_sec": 1.6,
+  "global_vfx_cap_per_sec": 10,
+  "reactions": [
+    {
+      "id": "react_vaporize",
+      "name": "水火蒸发",
+      "pair": [
+        "fire",
+        "water"
+      ],
+      "role": "单点爆发",
+      "damage_mult": 1.05,
+      "aoe_radius": 0,
+      "true_damage": true,
+      "vfx_color": "#38BDF8",
+      "sfx_cue": "sfx_react_steam"
+    },
+    {
+      "id": "react_melt",
+      "name": "冰火破甲",
+      "pair": [
+        "fire",
+        "ice"
+      ],
+      "role": "单点破防",
+      "damage_mult": 0.90,
+      "aoe_radius": 0,
+      "armor_shred_pct": 0.25,
+      "debuff_dur": 4.0,
+      "true_damage": true,
+      "vfx_color": "#60A5FA",
+      "sfx_cue": "sfx_react_steam"
+    },
+    {
+      "id": "react_freeze",
+      "name": "寒渊冻结",
+      "pair": [
+        "ice",
+        "water"
+      ],
+      "role": "强控定身",
+      "damage_mult": 0.15,
+      "aoe_radius": 90,
+      "root_dur": 1.3,
+      "vfx_color": "#7DD3FC",
+      "sfx_cue": "sfx_react_freeze"
+    },
+    {
+      "id": "react_electro_charged",
+      "name": "感电麻痹",
+      "pair": [
+        "thunder",
+        "water"
+      ],
+      "role": "连锁控场",
+      "damage_mult": 0.25,
+      "chain_count": 3,
+      "chain_range": 145,
+      "root_dur": 0.45,
+      "vfx_color": "#818CF8",
+      "sfx_cue": "sfx_react_zap"
+    },
+    {
+      "id": "react_lightning_blade",
+      "name": "引雷破甲",
+      "pair": [
+        "thunder",
+        "metal"
+      ],
+      "role": "连锁易伤",
+      "damage_mult": 0.35,
+      "chain_count": 2,
+      "chain_range": 140,
+      "armor_shred_pct": 0.30,
+      "debuff_dur": 4.0,
+      "vfx_color": "#A78BFA",
+      "sfx_cue": "sfx_react_zap"
+    },
+    {
+      "id": "react_wood_burn",
+      "name": "焚林蔓燃",
+      "pair": [
+        "fire",
+        "wood"
+      ],
+      "role": "持续蔓延",
+      "damage_mult": 0.18,
+      "aoe_radius": 100,
+      "burn_dps_mult": 0.55,
+      "debuff_dur": 4.5,
+      "spread_element": "wood",
+      "vfx_color": "#F97316",
+      "sfx_cue": "sfx_react_pop"
+    },
+    {
+      "id": "react_wood_bloom",
+      "name": "灵苞绽放",
+      "pair": [
+        "water",
+        "wood"
+      ],
+      "role": "定身回血",
+      "damage_mult": 0.30,
+      "aoe_radius": 90,
+      "root_dur": 0.9,
+      "heal_player": 3.0,
+      "vfx_color": "#34D399",
+      "sfx_cue": "sfx_react_freeze"
+    }
+  ]
+}

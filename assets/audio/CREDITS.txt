@@ -1,0 +1,6 @@
+# 音频素材与开源许可说明
+
+- 标题背景乐（`music_title.ogg`）、战斗背景乐（`music_battle.ogg`）与古筝拾取/升级/开箱音效采用 CC0 1.0 公有领域古筝与箫真实多采样音源编曲混音制作：
+  - 来源：`sparklecatta-lang/XSXB-Band-Samples`（https://github.com/sparklecatta-lang/XSXB-Band-Samples）
+  - 许可：CC0 1.0 Universal (Public Domain)
+- 打击、雷鸣、踏云步、青瓷碎裂等战斗音效由 `tools/build_audio.py`（44.1kHz）合成并与真实乐器泛音混音生成。

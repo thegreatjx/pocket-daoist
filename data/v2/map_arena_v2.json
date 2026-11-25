@@ -1,0 +1,159 @@
+{
+  "schema_version": "2.0",
+  "arena_size": {
+    "width": 2800,
+    "height": 2000
+  },
+  "spawn_rules": {
+    "camera_ring_min_offset": 120,
+    "camera_ring_max_offset": 240,
+    "in_arena_telegraph_sec": 0.8,
+    "despawn_recycle_screens": 1.8
+  },
+  "chapters": [
+    {
+      "chapter_id": "ch1_qinglan_meadow",
+      "name": "第一章 · 青岚山林问道坪",
+      "waves": [
+        1,
+        5
+      ],
+      "floor_tile": "res://assets/v2/map_ch1/tile_grass_512.png",
+      "floor_tint": "#FFFFFF",
+      "center_anchor": {
+        "texture": "res://assets/v2/map_ch1/prop_center_stone_ring.png",
+        "pos": [
+          0,
+          0
+        ],
+        "scale": 1.15
+      },
+      "cover_pillars": [
+        {
+          "id": "pine_nw",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [-460, -290],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_ne",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [460, -290],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_sw",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [-460, 290],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_se",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [460, 290],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_n",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [0, -620],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_s",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [0, 620],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_w",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [-1020, 0],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        },
+        {
+          "id": "pine_e",
+          "texture": "res://assets/v2/map_ch1/prop_pine_tree.png",
+          "pos": [1020, 0],
+          "trunk_radius": 26,
+          "canopy_fade_alpha": 0.42
+        }
+      ],
+      "landmarks": [
+        {
+          "id": "poi_heal_haste",
+          "name": "山泉灵池",
+          "texture": "res://assets/v2/map_ch1/poi_mountain_spring.png",
+          "pos": [
+            940,
+            -640
+          ],
+          "trigger_radius": 145,
+          "hold_sec": 2.5,
+          "cooldown_sec": 30.0,
+          "effect": {
+            "heal_pct": 0.15,
+            "attack_speed_pct": 0.25,
+            "duration_sec": 8.0
+          }
+        },
+        {
+          "id": "poi_risk_chest",
+          "name": "缠藤封妖碑",
+          "texture": "res://assets/v2/map_ch1/poi_demon_stele.png",
+          "pos": [
+            -940,
+            -640
+          ],
+          "trigger_radius": 95,
+          "stele_hp": 180,
+          "cooldown_waves": 3,
+          "effect": {
+            "spawn_elite_pack": 3,
+            "drop_tier_bonus": 1
+          }
+        },
+        {
+          "id": "poi_fire_trap",
+          "name": "山神青铜香炉",
+          "texture": "res://assets/v2/map_ch1/poi_incense_brazier.png",
+          "pos": [
+            940,
+            640
+          ],
+          "trigger_radius": 90,
+          "cooldown_sec": 25.0,
+          "effect": {
+            "emit_element": "fire",
+            "aoe_radius": 340,
+            "damage": 45
+          }
+        },
+        {
+          "id": "poi_ice_zone",
+          "name": "寒雾古石井",
+          "texture": "res://assets/v2/map_ch1/poi_mossy_well.png",
+          "pos": [
+            -940,
+            640
+          ],
+          "trigger_radius": 100,
+          "cooldown_sec": 22.0,
+          "effect": {
+            "emit_element": "ice",
+            "slow_pct": 0.35,
+            "duration_sec": 5.0,
+            "aoe_radius": 280
+          }
+        }
+      ]
+    }
+  ]
+}

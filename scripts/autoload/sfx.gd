@@ -10,10 +10,28 @@ const SOUNDS := {
 	"enemy_die": "res://assets/audio/enemy_die.wav",
 	"gem_pickup": "res://assets/audio/gem_pickup.wav",
 	"level_up": "res://assets/audio/level_up.wav",
+	"chest_open": "res://assets/audio/chest_open.wav",
 	"thunder": "res://assets/audio/thunder.wav",
 	"player_hurt": "res://assets/audio/player_hurt.wav",
 	"dash": "res://assets/audio/dash.wav",
+	"jar_break": "res://assets/audio/jar_break.wav",
+	"gun_shot": "res://assets/audio/gun_shot.wav",
+	"cannon_blast": "res://assets/audio/cannon_blast.wav",
 }
+
+const OPTIONAL_SOUNDS := {
+	"swarm_horn": "res://assets/audio/swarm_horn.wav",
+	"boss_roar": "res://assets/audio/boss_roar.wav",
+	"boss_charge": "res://assets/audio/boss_charge.wav",
+	"boss_slam": "res://assets/audio/boss_slam.wav",
+	"boss_dash": "res://assets/audio/boss_dash.wav",
+}
+
+const PENTATONIC_PITCHES := [1.0, 1.1225, 1.2599, 1.4983, 1.6818, 2.0, 2.2449]
+var _gem_combo: int = 0
+var _last_gem_msec: int = 0
+var _last_thunder_msec: int = -1000
+var _last_gun_msec: int = -1000
 
 var _streams: Dictionary = {}
 var _players: Array = []
@@ -30,6 +48,12 @@ func _ready() -> void:
 			_streams[key] = s
 		else:
 			push_error("Sfx: 音效加载失败 %s" % SOUNDS[key])
+	for key in OPTIONAL_SOUNDS.keys():
+		var path: String = OPTIONAL_SOUNDS[key]
+		if ResourceLoader.exists(path):
+			var s = load(path)
+			if s != null:
+				_streams[key] = s
 	# 路由到 SFX 总线，与背景音乐分开调节音量
 	var bus = AudioServer.get_bus_index("SFX")
 	var bus_name = "SFX" if bus >= 0 else "Master"
@@ -62,6 +86,18 @@ func has_sound(sound_name: String) -> bool:
 func play(sound_name: String, volume_db: float = 0.0, pitch: float = 1.0) -> void:
 	if not _streams.has(sound_name) or _players.is_empty():
 		return
+	if sound_name == "thunder":
+		var now := Time.get_ticks_msec()
+		if now - _last_thunder_msec < 110:
+			play_count += 1
+			return
+		_last_thunder_msec = now
+	elif sound_name == "gun_shot":
+		var now_g := Time.get_ticks_msec()
+		if now_g - _last_gun_msec < 55:
+			play_count += 1
+			return
+		_last_gun_msec = now_g
 	var p = _players[_cursor]
 	_cursor = (_cursor + 1) % _players.size()
 	if p.playing:
@@ -75,3 +111,19 @@ func play(sound_name: String, volume_db: float = 0.0, pitch: float = 1.0) -> voi
 # 命中类音效加轻微随机音高，避免连续播放时的机械感
 func play_varied(sound_name: String, volume_db: float = 0.0) -> void:
 	play(sound_name, volume_db, randf_range(0.92, 1.10))
+
+# 连续吃灵气珠：按中国五声音阶（宫商角徵羽）逐颗升高音高
+func play_gem_pickup() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_gem_msec > 520:
+		_gem_combo = 0
+	else:
+		_gem_combo = mini(_gem_combo + 1, PENTATONIC_PITCHES.size() - 1)
+	_last_gem_msec = now
+	play("gem_pickup", -10.0, PENTATONIC_PITCHES[_gem_combo])
+# Boss / 兽潮专属音效播放：新音频文件尚未烘焙时安全回退到已有音效，绝不报错
+func play_boss_or_fallback(sound_name: String, fallback_name: String, volume_db: float = -3.0, pitch: float = 1.0) -> void:
+	if _streams.has(sound_name):
+		play(sound_name, volume_db, pitch)
+	elif _streams.has(fallback_name):
+		play(fallback_name, volume_db, pitch)

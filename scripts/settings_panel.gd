@@ -46,10 +46,9 @@ func _ready() -> void:
 	_apply_viewport_limits()
 
 func _build() -> void:
-	# 半透明遮罩：压暗下层内容，让面板文字有对比度
 	var dim = ColorRect.new()
 	dim.name = "Dim"
-	dim.color = Color(0.0, 0.0, 0.0, 0.72)
+	dim.color = Color(0.05, 0.14, 0.12, 0.58)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(dim)
@@ -71,6 +70,7 @@ func _build() -> void:
 	panel.name = "Panel"
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.add_theme_stylebox_override("panel", _make_panel_style())
+	XianxiaUITheme.attach_ornaments(panel, XianxiaUITheme.COL_GOLD, 14.0, 6.0)
 	center.add_child(panel)
 
 	# 滚动容器：窗口不足以显示全部设置时，内容可滚动而不被裁切
@@ -92,6 +92,10 @@ func _build() -> void:
 	heading.text = "设置"
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", 34)
+	heading.add_theme_color_override("font_color", Color(0.10, 0.28, 0.24))
+	var title_font = load("res://assets/title_font.tres")
+	if title_font != null:
+		heading.add_theme_font_override("font", title_font)
 	_content.add_child(heading)
 	_content.add_child(HSeparator.new())
 
@@ -111,6 +115,7 @@ func _build() -> void:
 	reset_btn.text = "恢复默认设置"
 	reset_btn.custom_minimum_size = Vector2(0, 50)
 	reset_btn.add_theme_font_size_override("font_size", 24)
+	_style_button(reset_btn, false)
 	reset_btn.pressed.connect(_on_reset_pressed)
 	_content.add_child(reset_btn)
 
@@ -119,21 +124,17 @@ func _build() -> void:
 	back_btn.text = "返回"
 	back_btn.custom_minimum_size = Vector2(0, 56)
 	back_btn.add_theme_font_size_override("font_size", 26)
+	_style_button(back_btn, true)
 	back_btn.pressed.connect(_on_back_pressed)
 	_content.add_child(back_btn)
 	# 键盘/手柄用户打开面板后直接能操作
 	back_btn.grab_focus()
 
+func _style_button(btn: Button, primary: bool) -> void:
+	XianxiaUITheme.style_button(btn, "primary" if primary else "secondary")
+
 func _make_panel_style() -> StyleBoxFlat:
-	var s = StyleBoxFlat.new()
-	s.bg_color = Color(0.06, 0.08, 0.13, 0.98)   # 近乎不透明，挡住下层文字
-	s.border_color = Color(0.4, 0.75, 0.95, 0.75)
-	s.set_border_width_all(2)
-	s.set_corner_radius_all(10)
-	s.set_content_margin_all(int(STYLE_CONTENT_MARGIN))
-	s.shadow_color = Color(0, 0, 0, 0.55)
-	s.shadow_size = 14
-	return s
+	return XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, int(STYLE_CONTENT_MARGIN))
 
 func _build_slider_row(key: String, label_text: String) -> Node:
 	var row = VBoxContainer.new()
@@ -141,9 +142,11 @@ func _build_slider_row(key: String, label_text: String) -> Node:
 	var lbl = Label.new()
 	lbl.text = label_text
 	lbl.add_theme_font_size_override("font_size", 24)
+	lbl.add_theme_color_override("font_color", Color(0.12, 0.26, 0.22))
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var val = Label.new()
 	val.add_theme_font_size_override("font_size", 24)
+	val.add_theme_color_override("font_color", Color(0.16, 0.46, 0.38))
 	val.custom_minimum_size = Vector2(70, 0)
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	head.add_child(lbl)
@@ -169,6 +172,9 @@ func _build_toggle_row(key: String, label_text: String) -> Node:
 	var btn = CheckButton.new()
 	btn.text = label_text
 	btn.add_theme_font_size_override("font_size", 24)
+	btn.add_theme_color_override("font_color", Color(0.12, 0.26, 0.22))
+	btn.add_theme_color_override("font_hover_color", Color(0.08, 0.20, 0.16))
+	btn.add_theme_color_override("font_pressed_color", Color(0.10, 0.34, 0.28))
 	btn.custom_minimum_size = Vector2(0, 42)
 	btn.toggled.connect(func(on: bool): _on_toggle_changed(key, on))
 	_toggles[key] = btn

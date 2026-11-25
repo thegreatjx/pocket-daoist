@@ -4,9 +4,11 @@
 [ext_resource type="Script" path="res://scripts/enemy_visual.gd" id="2_vis"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+resource_local_to_scene = true
 radius = 12.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hit"]
+resource_local_to_scene = true
 radius = 14.0
 
 [node name="Enemy" type="CharacterBody2D"]

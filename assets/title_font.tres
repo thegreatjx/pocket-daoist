@@ -1,0 +1,7 @@
+[gd_resource type="SystemFont" format=3]
+
+[resource]
+font_names = PackedStringArray("STXingkai", "STLiti", "STKaiti", "Noto Serif SC", "KaiTi", "Microsoft YaHei UI")
+allow_system_fallback = true
+force_autohinter = false
+subpixel_positioning = 1

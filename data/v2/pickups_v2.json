@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "pickups": [
+    {
+      "id": "peach",
+      "name": "仙林蟠桃",
+      "unlocks_at_level": 1,
+      "weight": 42,
+      "value": 35.0,
+      "desc": "恢复35点气血",
+      "icon": "res://assets/sprites/pickup_peach.png"
+    },
+    {
+      "id": "spirit_pouch",
+      "name": "灵石锦囊",
+      "unlocks_at_level": 1,
+      "weight": 20,
+      "value": 5.0,
+      "desc": "获得5枚局内灵石",
+      "icon": "res://assets/sprites/pickup_spirit_pouch.png"
+    },
+    {
+      "id": "qiankun_bag",
+      "name": "乾坤袋",
+      "unlocks_at_level": 1,
+      "weight": 24,
+      "value": 1.0,
+      "desc": "展开袋口，全图经验灵玉与散落灵石尽数入袋",
+      "icon": "res://assets/sprites/pickup_qiankun_bag.png"
+    },
+    {
+      "id": "medium_gem",
+      "name": "蕴灵丹",
+      "unlocks_at_level": 1,
+      "weight": 14,
+      "value": 35.0,
+      "desc": "获得35点修为经验",
+      "icon": "res://assets/sprites/exp_gem_jade.png"
+    },
+    {
+      "id": "taixu_talisman",
+      "name": "太虚定身符",
+      "unlocks_at_level": 5,
+      "weight": 8,
+      "value": 5.0,
+      "desc": "全场普通妖兽与精英定身5秒，首领定身1.5秒并减速60%",
+      "icon": "res://assets/sprites/pickup_taixu_talisman.png"
+    },
+    {
+      "id": "thunder_seal",
+      "name": "神霄灭魔符",
+      "unlocks_at_level": 12,
+      "weight": 4,
+      "value": 99999.0,
+      "desc": "清屏普通小怪并结算奖励",
+      "icon": "res://assets/sprites/exp_gem_jade.png"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema_version": "2.0",
+  "shop_economy": {
+    "slots_per_shop": 4,
+    "base_reroll_cost": 4,
+    "reroll_cost_per_wave": 2,
+    "reroll_escalation_step": 3,
+    "allow_lock_slot": true,
+    "sell_refund_ratio": 0.55,
+    "rarity_weights_by_wave_formula": "tier2 = clamp((wave-2)*0.06, 0, 0.45); tier3 = clamp((wave-6)*0.04, 0, 0.25); tier4 = clamp((wave-11)*0.025, 0, 0.12)"
+  },
+  "items": [
+    {
+      "id": "item_spirit_stone",
+      "name": "聚灵石坠",
+      "category": "base_stat",
+      "rarity": 1,
+      "cost": 22,
+      "max_stacks": 3,
+      "mods": {
+        "attack_speed_pct": 0.08,
+        "max_hp": -4
+      },
+      "desc": "攻速 +8%，最大生命 -4（上限 3 件）"
+    },
+    {
+      "id": "item_whetstone",
+      "name": "玄铁磨剑石",
+      "category": "base_stat",
+      "rarity": 1,
+      "cost": 26,
+      "max_stacks": 2,
+      "mods": {
+        "damage_pct": 0.10,
+        "pierce_flat": 1,
+        "move_speed_pct": -0.04
+      },
+      "desc": "伤害 +10%，穿透 +1，移速 -4%（上限 2 件）"
+    },
+    {
+      "id": "item_jade_pendant",
+      "name": "护心玉佩",
+      "category": "base_stat",
+      "rarity": 1,
+      "cost": 20,
+      "max_stacks": 3,
+      "mods": {
+        "max_hp": 14,
+        "armor": 1
+      },
+      "desc": "最大生命 +14，护甲 +1（上限 3 件）"
+    },
+    {
+      "id": "item_wind_talisman",
+      "name": "神行风符",
+      "category": "base_stat",
+      "rarity": 1,
+      "cost": 24,
+      "max_stacks": 3,
+      "mods": {
+        "move_speed_pct": 0.09,
+        "dodge_pct": 0.04,
+        "damage_pct": -0.03
+      },
+      "desc": "移速 +9%，闪避 +4%，伤害 -3%（上限 3 件）"
+    },
+    {
+      "id": "item_five_element_compass",
+      "name": "五行罗盘",
+      "category": "base_stat",
+      "rarity": 2,
+      "cost": 32,
+      "max_stacks": 2,
+      "mods": {
+        "area_pct": 0.12,
+        "pickup_radius_pct": 0.15,
+        "move_speed_pct": -0.03
+      },
+      "desc": "技能范围 +12%，拾取范围 +15%，移速 -3%（上限 2 件）"
+    },
+    {
+      "id": "item_lightning_rod",
+      "name": "引雷铜针",
+      "category": "mechanic_changer",
+      "rarity": 2,
+      "cost": 30,
+      "max_stacks": 2,
+      "mods": {
+        "chain_bonus": 1,
+        "attack_speed_pct": 0.06,
+        "max_hp": -6
+      },
+      "desc": "雷系弹射 +1，攻速 +6%，最大生命 -6（上限 2 件）"
+    },
+    {
+      "id": "item_crimson_furnace",
+      "name": "赤炎丹炉",
+      "category": "base_stat",
+      "rarity": 2,
+      "cost": 34,
+      "max_stacks": 2,
+      "mods": {
+        "dot_damage_pct": 0.14,
+        "damage_pct": 0.06,
+        "armor": -1
+      },
+      "desc": "持续灼烧/木毒 +14%，伤害 +6%，护甲 -1（上限 2 件）"
+    },
+    {
+      "id": "item_frost_core",
+      "name": "玄冰灵核",
+      "category": "base_stat",
+      "rarity": 2,
+      "cost": 28,
+      "max_stacks": 2,
+      "mods": {
+        "crit_chance": 0.06,
+        "crit_mult_bonus": 0.12
+      },
+      "desc": "暴击率 +6%，暴击伤害 +12%（上限 2 件）"
+    },
+    {
+      "id": "item_dash_boots",
+      "name": "缩地成寸靴",
+      "category": "mechanic_changer",
+      "rarity": 3,
+      "cost": 38,
+      "max_stacks": 1,
+      "mods": {
+        "dash_cooldown_pct": -0.25,
+        "move_speed_pct": 0.06
+      },
+      "desc": "冲刺冷却 -25%，移速 +6%（限 1 件）"
+    },
+    {
+      "id": "item_magnet_gourd",
+      "name": "吸灵紫葫芦",
+      "category": "mechanic_changer",
+      "rarity": 2,
+      "cost": 28,
+      "max_stacks": 1,
+      "mods": {
+        "pickup_radius_pct": 0.30
+      },
+      "trigger": "every_25_orbs_clear_bullets",
+      "desc": "拾取范围 +30%，每吸 25 颗灵珠清弹一次（限 1 件）"
+    },
+    {
+      "id": "item_greed_abacus",
+      "name": "聚宝算盘",
+      "category": "mechanic_changer",
+      "rarity": 2,
+      "cost": 30,
+      "max_stacks": 2,
+      "mods": {
+        "gold_gain_pct": 0.16,
+        "enemy_spawn_pct": 0.10
+      },
+      "desc": "灵石掉落 +16%，刷怪密度 +10%（上限 2 件）"
+    },
+    {
+      "id": "item_blood_lotus",
+      "name": "血莲心灯",
+      "category": "mechanic_changer",
+      "rarity": 3,
+      "cost": 36,
+      "max_stacks": 2,
+      "mods": {
+        "lifesteal_pct": 0.025,
+        "hp_regen": 0.8,
+        "max_hp": -8
+      },
+      "desc": "攻击吸血 +2.5%，每秒回血 +0.8，最大生命 -8（上限 2 件）"
+    },
+    {
+      "id": "item_lucky_coin",
+      "name": "天机铜钱",
+      "category": "base_stat",
+      "rarity": 2,
+      "cost": 28,
+      "max_stacks": 2,
+      "mods": {
+        "luck": 0.20,
+        "gold_gain_pct": 0.08,
+        "max_hp": -6
+      },
+      "desc": "机缘 +20%，灵石掉落 +8%，最大生命 -6（上限 2 件）"
+    },
+    {
+      "id": "item_heavenly_dice",
+      "name": "乾坤灵骰",
+      "category": "mechanic_changer",
+      "rarity": 3,
+      "cost": 36,
+      "max_stacks": 2,
+      "mods": {
+        "luck": 0.30,
+        "crit_chance": 0.05,
+        "armor": -2
+      },
+      "desc": "机缘 +30%，暴击率 +5%，护甲 -2（上限 2 件）"
+    },
+    {
+      "id": "item_obsidian_mirror",
+      "name": "玄煞魔镜",
+      "category": "mechanic_changer",
+      "rarity": 3,
+      "cost": 32,
+      "max_stacks": 2,
+      "mods": {
+        "curse_pct": 0.25,
+        "damage_pct": 0.14,
+        "gold_gain_pct": 0.12
+      },
+      "desc": "劫难 +25%，伤害 +14%，灵石 +12%（上限 2 件）"
+    },
+    {
+      "id": "item_blood_talisman",
+      "name": "燃血咒符",
+      "category": "mechanic_changer",
+      "rarity": 3,
+      "cost": 34,
+      "max_stacks": 2,
+      "mods": {
+        "curse_pct": 0.30,
+        "attack_speed_pct": 0.12,
+        "max_hp": -10
+      },
+      "desc": "劫难 +30%，攻速 +12%，最大生命 -10（上限 2 件）"
+    }
+  ]
+}
