@@ -50,7 +50,10 @@ var _temp_buff_timer: float = 0.0
 var last_move_dir: Vector2 = Vector2.RIGHT
 
 var shake_amount: float = 0.0
-var shake_decay: float = 14.0
+var shake_decay: float = 11.0
+var _shake_time: float = 0.0
+var _shake_dir: Vector2 = Vector2.RIGHT
+var _shake_dir_amount: float = 0.0
 var _flash_tween: Tween = null
 
 var weapon_mgr: WeaponManager = null
@@ -207,20 +210,36 @@ func _physics_process(delta: float) -> void:
 			emit_signal("health_changed", current_health, max_health)
 
 func _update_shake(delta: float) -> void:
-	if shake_amount <= 0.0:
-		if camera != null:
-			camera.offset = Vector2.ZERO
+	_shake_time += delta
+	if shake_amount <= 0.0 and _shake_dir_amount <= 0.05:
+		if camera != null and camera.offset != Vector2.ZERO:
+			camera.offset = camera.offset.lerp(Vector2.ZERO, minf(1.0, delta * 30.0))
 		return
 	shake_amount = maxf(0.0, shake_amount - shake_decay * delta * shake_amount)
 	if shake_amount < 0.05:
 		shake_amount = 0.0
+	_shake_dir_amount = maxf(0.0, _shake_dir_amount - 22.0 * delta * _shake_dir_amount)
+	if _shake_dir_amount < 0.05:
+		_shake_dir_amount = 0.0
+
+	var sway := Vector2(
+		sin(_shake_time * 97.0) * 0.55 + sin(_shake_time * 151.0 + 1.3) * 0.45,
+		sin(_shake_time * 83.0 + 0.7) * 0.55 + sin(_shake_time * 137.0 + 2.1) * 0.45)
+	var horizontal := clampf((shake_amount - 1.2) / 8.0, 0.0, 1.0)
+	var offset := Vector2(sway.x * horizontal, sway.y) * shake_amount + _shake_dir * _shake_dir_amount
 	if camera != null:
-		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake_amount
+		camera.offset = offset
 
 func shake_camera(amount: float) -> void:
 	if not Settings.get_bool("video/screen_shake"):
 		return
 	shake_amount = minf(20.0, shake_amount + amount)
+
+func shake_camera_dir(amount: float, dir: Vector2) -> void:
+	shake_camera(amount)
+	if dir.length_squared() > 0.0001:
+		_shake_dir = dir.normalized()
+		_shake_dir_amount = maxf(_shake_dir_amount, amount * 0.9)
 
 func _start_dash() -> void:
 	is_dashing = true

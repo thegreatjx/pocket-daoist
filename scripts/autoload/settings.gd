@@ -11,6 +11,7 @@ const DEFAULTS := {
 	"audio/sfx_volume_db": -3.0,
 	"video/screen_shake": true,
 	"video/hit_flash": true,
+	"video/hitstop": true,
 	"ui/hint_enabled": true,
 }
 

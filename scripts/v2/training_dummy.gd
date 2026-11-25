@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
 		_dot_tick_acc += delta
 		if _dot_tick_acc >= 0.5:
 			_dot_tick_acc -= 0.5
-			take_damage_v2(_dot_dps * 0.5, false, false, _dot_elem)
+			take_damage_v2(_dot_dps * 0.5, false, false, _dot_elem, Color(0.0, 0.0, 0.0, 0.0), true)
 			if is_dead:
 				return
 		if _dot_timer <= 0.0:
@@ -127,7 +127,7 @@ func _physics_process(delta: float) -> void:
 func apply_knockback(_impulse: Vector2) -> void:
 	return
 
-func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0)) -> void:
+func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), _is_dot: bool = false) -> void:
 	if is_dead:
 		return
 	var elem_mult := get_element_damage_mult(element)

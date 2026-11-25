@@ -26,6 +26,7 @@ const CUE_FALLBACK_PATHS := {
 	"sfx_thunder_snap": "res://assets/audio/thunder_arc_snap.wav",
 	"sfx_fusion_thunder_ice": "res://assets/audio/thunder.wav",
 	"sfx_ice_chime": "res://assets/audio/sword_hit.wav",
+	"sfx_hit": "res://assets/audio/sword_hit.wav",
 	"sfx_venom_hiss": "res://assets/audio/jar_break.wav",
 	"sfx_bell_gong": "res://assets/audio/cannon_blast.wav",
 	"sfx_fusion_zen_bell": "res://assets/audio/cannon_blast.wav",
@@ -69,8 +70,6 @@ var _shot_hit_counts: Dictionary = {}
 var _fusion_elem_toggle: Dictionary = {}
 var _lifesteal_budget: float = 0.0
 var _orb_counter: int = 0
-var _global_hitstop_end_ms: int = 0
-var _last_global_hitstop_ms: int = -1000
 var _prune_timer: float = 0.0
 var _reaction_pop_budget: int = 12
 var _reaction_pop_timer: float = 0.0
@@ -217,35 +216,17 @@ func _preload_cues() -> void:
 			if st != null:
 				_streams[cue_id] = st
 
-func play_v2_cue(cue_id: String, category: String = "default_hit") -> void:
+func play_v2_cue(cue_id: String, category: String = "default_hit", pitch: float = 1.0) -> void:
 	if audio_mgr == null:
 		return
 	var st: AudioStream = _streams.get(cue_id, null) as AudioStream
 	if st != null:
-		audio_mgr.play_cue(cue_id, st, category)
+		audio_mgr.play_cue(cue_id, st, category, pitch)
 
 func _on_orbit_loadout_changed(_slots: Array) -> void:
 	v2_loadout_changed.emit()
 
-func _exit_tree() -> void:
-	if _global_hitstop_end_ms > 0:
-		_global_hitstop_end_ms = 0
-		Engine.time_scale = 1.0
-
-func trigger_micro_hitstop(duration_ms: int = 26, slow_scale: float = 0.24) -> void:
-	if DisplayServer.get_name() == "headless":
-		return
-	var now := Time.get_ticks_msec()
-	if now - _last_global_hitstop_ms < 220:
-		return
-	_last_global_hitstop_ms = now
-	_global_hitstop_end_ms = now + clampi(duration_ms, 12, 50)
-	Engine.time_scale = clampf(slow_scale, 0.10, 0.50)
-
 func _physics_process(delta: float) -> void:
-	if _global_hitstop_end_ms > 0 and Time.get_ticks_msec() >= _global_hitstop_end_ms:
-		_global_hitstop_end_ms = 0
-		Engine.time_scale = 1.0
 	if player == null or not is_instance_valid(player) or player.is_dead or orbit_rig == null:
 		_pending_salvos.clear()
 		return
@@ -1255,16 +1236,29 @@ func deal_v2_damage(enemy: Node, base_dmg: float, element: String, opts: Diction
 	var is_crit := force_crit or (allow_crit and randf() < get_crit_chance())
 	var final_dmg := scaled_base * (get_crit_mult() if is_crit else 1.0)
 	var is_true := bool(opts.get("true_damage", false))
+	var is_dot := bool(opts.get("is_dot", false))
 
 	if enemy.has_method("take_damage_v2"):
-		enemy.take_damage_v2(final_dmg, is_crit, is_true, element)
+		enemy.take_damage_v2(final_dmg, is_crit, is_true, element, Color(0.0, 0.0, 0.0, 0.0), is_dot)
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(final_dmg)
 
-	if is_crit:
-		play_v2_cue("sfx_crit_hit", "crit_hit")
-		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 2.2:
-			player.shake_camera(1.15)
+	if not is_dot and not bool(enemy.get("is_visual_culled")):
+		var tier := 0
+		if bool(enemy.get("is_boss")):
+			tier = 2
+		elif int(enemy.get("enemy_type")) == 1:
+			tier = 1
+		var pitch := 1.0
+		if tier == 1:
+			pitch = 0.88
+		elif tier == 2:
+			pitch = 0.76
+		if is_crit:
+			pitch *= 1.07
+			play_v2_cue("sfx_crit_hit", "crit_hit", pitch)
+		else:
+			play_v2_cue("sfx_hit", "hit", pitch)
 
 	var kb := float(opts.get("knockback", 0.0)) * (1.35 if is_crit else 1.0)
 	if kb > 0.0 and not bool(enemy.get("is_dead")) and enemy.has_method("apply_knockback"):
@@ -1329,8 +1323,6 @@ func _execute_reaction(primary_enemy: Node, rx: Dictionary, trigger_scaled_base:
 		_spawn_reaction_visual(rx_id, center, aoe_r if aoe_r > 0.0 else 65.0, rx_col, {"executed": executed_target})
 		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 3.5:
 			player.shake_camera(1.8)
-		if executed_target or is_guaranteed_crit:
-			trigger_micro_hitstop(24, 0.26)
 
 	if rx_id == "react_miasma_arc" and is_instance_valid(primary_enemy) and primary_enemy.has_method("detonate_remaining_dot"):
 		bonus_dmg += float(primary_enemy.detonate_remaining_dot(float(spec.get("detonate_dot_pct", 0.35))))

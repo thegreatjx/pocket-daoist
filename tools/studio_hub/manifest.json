@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-25 21:17:54",
+    "generated_at": "2026-11-25 21:24:02",
     "active_media_count": 224,
     "used_media_count": 175,
     "orphan_media_count": 49,
@@ -45,6 +45,10 @@
       {
         "name": "GameFlow",
         "path": "res://scripts/autoload/game_flow.gd"
+      },
+      {
+        "name": "HitFeel",
+        "path": "res://scripts/autoload/hit_feel.gd"
       }
     ],
     "viewport": {
@@ -8191,6 +8195,10 @@
       {
         "name": "GameFlow",
         "path": "res://scripts/autoload/game_flow.gd"
+      },
+      {
+        "name": "HitFeel",
+        "path": "res://scripts/autoload/hit_feel.gd"
       }
     ],
     "scenes": [
@@ -8271,6 +8279,15 @@
         "sub_scenes": [],
         "scripts": [
           "res://scripts/ghost_trail.gd"
+        ]
+      },
+      {
+        "path": "scenes/hit_mark.tscn",
+        "name": "hit_mark",
+        "role": "entity",
+        "sub_scenes": [],
+        "scripts": [
+          "res://scripts/hit_mark.gd"
         ]
       },
       {

@@ -25,6 +25,7 @@ Stats="*res://scripts/autoload/stats.gd"
 Sfx="*res://scripts/autoload/sfx.gd"
 Music="*res://scripts/autoload/music.gd"
 GameFlow="*res://scripts/autoload/game_flow.gd"
+HitFeel="*res://scripts/autoload/hit_feel.gd"
 
 [display]
 

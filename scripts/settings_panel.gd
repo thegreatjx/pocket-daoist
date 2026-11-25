@@ -24,6 +24,7 @@ const SLIDER_KEYS := [
 const TOGGLE_KEYS := [
 	{ "key": "video/screen_shake", "label": "屏幕震动（光敏者可关闭）" },
 	{ "key": "video/hit_flash", "label": "受击闪白（光敏者可关闭）" },
+	{ "key": "video/hitstop", "label": "命中顿帧（打击停顿）" },
 	{ "key": "ui/hint_enabled", "label": "显示操作提示" },
 ]
 

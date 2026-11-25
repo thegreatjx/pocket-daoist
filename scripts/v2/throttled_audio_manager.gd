@@ -4,7 +4,7 @@ extends Node
 @export var sfx_bus_name: String = "SFX"
 @export var pool_size: int = 16
 @export var density_window_ms: int = 500
-@export var lpf_min_hz: float = 3800.0
+@export var lpf_min_hz: float = 5500.0
 @export var lpf_max_hz: float = 20000.0
 
 var _players: Array[AudioStreamPlayer] = []
@@ -20,6 +20,7 @@ const PENTATONIC: Array[float] = [1.0, 1.122, 1.260, 1.498, 1.682, 2.0, 2.245, 2
 
 var cue_rules: Dictionary = {
 	"default_hit": {"icd_ms": 60, "max_voices": 3, "base_db": -6.0, "jitter": 0.06, "priority": 1},
+	"hit":         {"icd_ms": 42, "max_voices": 4, "base_db": -5.0, "jitter": 0.09, "priority": 2, "atten_scale": 0.55},
 	"crit_hit":    {"icd_ms": 95, "max_voices": 2, "base_db": -3.5, "jitter": 0.08, "priority": 2},
 	"reaction":    {"icd_ms": 110, "max_voices": 4, "base_db": -2.0, "jitter": 0.04, "priority": 3},
 	"xp_orb":      {"icd_ms": 45, "max_voices": 3, "base_db": -9.0, "jitter": 0.0, "priority": 2},
@@ -68,7 +69,7 @@ func _on_player_finished(p: AudioStreamPlayer) -> void:
 	if p != null and is_instance_valid(p):
 		p.stream = null
 
-func play_cue(cue_id: String, stream: AudioStream, category: String = "default_hit") -> void:
+func play_cue(cue_id: String, stream: AudioStream, category: String = "default_hit", pitch: float = 1.0) -> void:
 	if stream == null:
 		return
 	var rule: Dictionary = cue_rules.get(category, cue_rules["default_hit"])
@@ -100,7 +101,8 @@ func play_cue(cue_id: String, stream: AudioStream, category: String = "default_h
 		return
 
 	var density: float = float(maxi(1, pruned.size()))
-	var atten_db: float = -6.0 * (log(density) / log(2.0))
+	var atten_scale: float = float(rule.get("atten_scale", 1.0))
+	var atten_db: float = -6.0 * atten_scale * (log(density) / log(2.0))
 	player.volume_db = clampf(float(rule["base_db"]) + atten_db, -28.0, 0.0)
 
 	if category == "xp_orb":
@@ -112,7 +114,7 @@ func play_cue(cue_id: String, stream: AudioStream, category: String = "default_h
 		player.pitch_scale = PENTATONIC[_xp_step]
 	else:
 		var j: float = float(rule["jitter"])
-		player.pitch_scale = 1.0 + randf_range(-j, j)
+		player.pitch_scale = pitch * (1.0 + randf_range(-j, j))
 
 	player.set_meta("cue_id", cue_id)
 	player.set_meta("priority", priority)

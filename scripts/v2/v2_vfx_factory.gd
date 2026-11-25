@@ -60,6 +60,8 @@ const TEX_TWIRL_02: Texture2D = preload("res://addons/kenney_particle_pack/twirl
 const TEX_TWIRL_03: Texture2D = preload("res://addons/kenney_particle_pack/twirl_03.png")
 
 const MAX_ACTIVE_TRANSIENT := 36
+const MAX_ACTIVE_HIT_SPARK := 28
+const MAX_ACTIVE_DEATH_VFX := 56
 
 const HIT_VFX_TABLE := {
 	"default": {"color": "#FFF5D6", "duration": 0.055, "boost": 1.75},
@@ -242,13 +244,13 @@ static func make_gpu_particles(tex: Texture2D, cfg: Dictionary) -> GPUParticles2
 	p.emitting = bool(cfg.get("emitting", true))
 	return p
 
-static func can_spawn_transient(parent: Node) -> bool:
+static func can_spawn_transient(parent: Node, limit: int = MAX_ACTIVE_TRANSIENT) -> bool:
 	if parent == null or not is_instance_valid(parent):
 		return false
 	var tree := parent.get_tree()
 	if tree == null:
 		return false
-	return tree.get_nodes_in_group("v2_transient_vfx").size() < MAX_ACTIVE_TRANSIENT
+	return tree.get_nodes_in_group("v2_transient_vfx").size() < limit
 
 static func elem_glyph_texture(elem: String) -> Texture2D:
 	match elem:
@@ -262,7 +264,7 @@ static func elem_glyph_texture(elem: String) -> Texture2D:
 		_: return TEX_FLARE_01
 
 static func spawn_hit_spark(parent: Node, world_pos: Vector2, element: String = "", is_crit: bool = false, reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0)) -> void:
-	if not can_spawn_transient(parent):
+	if not can_spawn_transient(parent, MAX_ACTIVE_HIT_SPARK):
 		return
 	var spec := get_hit_vfx_spec(element, reaction_color)
 	var base_c: Color = spec.get("base_color", Color(1.0, 0.94, 0.78, 1.0)) as Color
@@ -300,7 +302,7 @@ static func spawn_hit_spark(parent: Node, world_pos: Vector2, element: String = 
 	tw.chain().tween_callback(root.queue_free)
 
 static func spawn_enemy_death_vfx(parent: Node, world_pos: Vector2, accent_col: Color, is_elite: bool = false, is_boss: bool = false) -> void:
-	if not is_boss and not is_elite and not can_spawn_transient(parent):
+	if not is_boss and not is_elite and not can_spawn_transient(parent, MAX_ACTIVE_DEATH_VFX):
 		return
 	if parent == null or not is_instance_valid(parent):
 		return
