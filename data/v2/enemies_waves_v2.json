@@ -3,7 +3,7 @@
   "base_constants": {
     "player_speed": 250.0,
     "enemy_speed": 110.0,
-    "unit_hp": 58.0
+    "unit_hp": 16.0
   },
   "global_limits": {
     "max_active_enemies": 220,

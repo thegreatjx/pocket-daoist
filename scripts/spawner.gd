@@ -706,7 +706,7 @@ func _scale_to_chapter(enemy: Node) -> void:
 	var time_ramp := 1.0 + _stage_hp_ramp_per_min * (_chapter_elapsed / 60.0)
 	var hp := base_hp * _stage_hp_mult * _wave_hp_scale * time_ramp
 	if enemy.enemy_type == Enemy.Type.ELITE:
-		hp = 720.0 * _stage_hp_mult * _wave_hp_scale * time_ramp
+		hp = 110.0 * _stage_hp_mult * _wave_hp_scale * time_ramp
 		enemy.exp_gem_value = maxf(20.0, _wave_exp_val * 2.4)
 		enemy.exp_gem_count = 4
 	else:

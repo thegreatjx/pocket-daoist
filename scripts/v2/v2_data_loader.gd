@@ -3,7 +3,7 @@ extends Node
 
 const BASE_PLAYER_SPEED := 250.0
 const BASE_ENEMY_SPEED := 110.0
-const BASE_UNIT_HP := 40.0
+const BASE_UNIT_HP := 16.0
 
 var weapons_by_id: Dictionary = {}
 var fusion_recipes: Array = []

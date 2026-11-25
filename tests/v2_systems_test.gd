@@ -755,7 +755,7 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 	)
 	var imp_hp := float(loader.enemy_archetypes.get("enemy_swarm_imp", {}).get("base_hp", 0.0))
 	var golem_hp := float(loader.enemy_archetypes.get("enemy_bulwark_golem", {}).get("base_hp", 0.0))
-	check("t2c_enemy_hp_scaled_up", imp_hp >= 35.0 and golem_hp >= 200.0, "imp=%.1f golem=%.1f" % [imp_hp, golem_hp])
+	check("t2c_enemy_hp_scaled_up", imp_hp >= 10.0 and golem_hp >= imp_hp * 8.0, "imp=%.1f golem=%.1f" % [imp_hp, golem_hp])
 
 	var p := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
 	add_child(p)
@@ -986,7 +986,7 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 
 	check(
 		"t3_base_constants",
-		is_equal_approx(loader.get_unit_hp(), 58.0) and is_equal_approx(loader.get_base_enemy_speed(), 110.0) and is_equal_approx(loader.get_base_player_speed(), 250.0),
+		is_equal_approx(loader.get_unit_hp(), 16.0) and is_equal_approx(loader.get_base_enemy_speed(), 110.0) and is_equal_approx(loader.get_base_player_speed(), 250.0),
 		"unit_hp=%.1f enemy_spd=%.1f player_spd=%.1f" % [loader.get_unit_hp(), loader.get_base_enemy_speed(), loader.get_base_player_speed()]
 	)
 	var scale_ok := true
@@ -1031,7 +1031,7 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 	)
 
 	p.set_stage_speed_mult(float(m5.get("player_speed", 1.15)))
-	check("t3_stage5_player_speed_mod", p.speed > 250.0, "speed=%.1f" % p.speed)
+	check("t3_stage5_player_speed_mod", is_equal_approx(p.speed, p.base_speed * 1.15), "speed=%.1f base=%.1f" % [p.speed, p.base_speed])
 	sp.apply_chapter(all_chs[4])
 	sp._chapter_elapsed = 0.0
 	sp._evaluate_wave_schedule()
@@ -1679,7 +1679,7 @@ func _test_batch8a_chest_never_empty() -> void:
 		String(first_reward.get("title", "")) != "" and String(first_reward.get("desc", "")) != "" and String(first_reward.get("icon", "")) != "",
 		str(first_reward)
 	)
-	var guarantee_titles := ["天机灵石袋", "九转还魂丹", "天机洗髓"]
+	var guarantee_titles := ["道心淬炼", "九转还魂丹", "天机洗髓"]
 	var probe_rewards: Array[Dictionary] = um.roll_v2_chest_rewards(p)
 	var has_guarantee := false
 	for r in probe_rewards:
