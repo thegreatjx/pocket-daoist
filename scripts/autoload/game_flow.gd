@@ -14,6 +14,7 @@ signal state_changed(from_state: int, to_state: int)
 
 const TITLE_SCENE := "res://scenes/title.tscn"
 const GAME_SCENE := "res://scenes/main.tscn"
+const DEBUG_SCENE := "res://scenes/debug_sandbox.tscn"
 # 启动保护：窗口刚获得焦点时若玩家手上正按着 ESC，会被误判成退出意图
 const ESC_GUARD_SECONDS := 0.8
 
@@ -130,6 +131,10 @@ func is_paused_state() -> bool:
 func start_game() -> void:
 	_enter_run()
 	get_tree().change_scene_to_file(GAME_SCENE)
+
+func start_debug_sandbox() -> void:
+	_enter_run()
+	get_tree().change_scene_to_file(DEBUG_SCENE)
 
 func start_game_packed(packed_scene: PackedScene) -> void:
 	if packed_scene == null:

@@ -21,9 +21,10 @@ var _tilt: float = 0.0
 var _squash: Vector2 = Vector2.ONE
 
 var _anim_idle: HeroFrameAnim = null
+var _anim_run: HeroFrameAnim = null
 var _anim_attack: HeroFrameAnim = null
 var _anim_state: String = "idle"
-var _anim_scale: float = 1.0
+var _attack_anim_timer: float = 0.0
 
 var _flash_timer: float = 0.0
 var _invuln_timer: float = 0.0
@@ -51,16 +52,22 @@ func setup(cfg: Dictionary) -> void:
 
 func _setup_animations(cfg: Dictionary) -> void:
 	_anim_idle = null
+	_anim_run = null
 	_anim_attack = null
 	_anim_state = "idle"
-	_anim_scale = 1.0
+	_attack_anim_timer = 0.0
 	var idle_atlas := str(cfg.get("anim_idle_atlas", ""))
 	var idle_meta := str(cfg.get("anim_idle_meta", ""))
 	if idle_atlas != "" and idle_meta != "":
 		var idle := HeroFrameAnim.new()
 		if idle.load_clip(idle_atlas, idle_meta):
 			_anim_idle = idle
-			_anim_scale = _draw_height / maxf(1.0, idle.cell.y)
+	var run_atlas := str(cfg.get("anim_run_atlas", ""))
+	var run_meta := str(cfg.get("anim_run_meta", ""))
+	if run_atlas != "" and run_meta != "":
+		var run_clip := HeroFrameAnim.new()
+		if run_clip.load_clip(run_atlas, run_meta):
+			_anim_run = run_clip
 	var attack_atlas := str(cfg.get("anim_attack_atlas", ""))
 	var attack_meta := str(cfg.get("anim_attack_meta", ""))
 	if attack_atlas != "" and attack_meta != "":
@@ -139,26 +146,32 @@ func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, ai
 		if speed > 12.0:
 			_walk_phase += safe_delta * clampf(speed / 245.0, 0.75, 1.45) / 0.48
 			var u := fmod(_walk_phase, 1.0)
-			var key_sq := Vector2.ONE
-			var key_y := 0.0
-			if u < 0.25:
-				var kt := u / 0.25
-				key_sq = Vector2(lerpf(1.0, 1.12, kt), lerpf(1.0, 0.88, kt))
-				key_y = lerpf(0.0, 1.5, kt)
-			elif u < 0.65:
-				var kt := (u - 0.25) / 0.40
-				key_sq = Vector2(lerpf(1.12, 0.92, kt), lerpf(0.88, 1.08, kt))
-				key_y = lerpf(1.5, -7.5, kt)
-			else:
-				var kt := (u - 0.65) / 0.35
-				key_sq = Vector2(lerpf(0.92, 1.0, kt), lerpf(1.08, 1.0, kt))
-				key_y = lerpf(-7.5, 0.0, kt)
-
-			_body_y = lerpf(_body_y, key_y, 1.0 - exp(-22.0 * safe_delta))
-			_hover_y = _body_y
 			var s := sin(u * TAU)
-			_tilt = lerpf(_tilt, s * 0.065 + clampf(velocity.x / 260.0, -1.0, 1.0) * 0.06, 1.0 - exp(-18.0 * safe_delta))
-			_squash = Vector2(1.20, 0.84) if is_dashing else _squash.lerp(key_sq, 1.0 - exp(-22.0 * safe_delta))
+			if _anim_run != null:
+				_body_y = lerpf(_body_y, 0.0, 1.0 - exp(-18.0 * safe_delta))
+				_hover_y = _body_y
+				_tilt = lerpf(_tilt, clampf(velocity.x / 260.0, -1.0, 1.0) * 0.05, 1.0 - exp(-18.0 * safe_delta))
+				_squash = _squash.lerp(Vector2(1.08, 0.94) if is_dashing else Vector2.ONE, 1.0 - exp(-18.0 * safe_delta))
+			else:
+				var key_sq := Vector2.ONE
+				var key_y := 0.0
+				if u < 0.25:
+					var kt := u / 0.25
+					key_sq = Vector2(lerpf(1.0, 1.12, kt), lerpf(1.0, 0.88, kt))
+					key_y = lerpf(0.0, 1.5, kt)
+				elif u < 0.65:
+					var kt := (u - 0.25) / 0.40
+					key_sq = Vector2(lerpf(1.12, 0.92, kt), lerpf(0.88, 1.08, kt))
+					key_y = lerpf(1.5, -7.5, kt)
+				else:
+					var kt := (u - 0.65) / 0.35
+					key_sq = Vector2(lerpf(0.92, 1.0, kt), lerpf(1.08, 1.0, kt))
+					key_y = lerpf(-7.5, 0.0, kt)
+
+				_body_y = lerpf(_body_y, key_y, 1.0 - exp(-22.0 * safe_delta))
+				_hover_y = _body_y
+				_tilt = lerpf(_tilt, s * 0.065 + clampf(velocity.x / 260.0, -1.0, 1.0) * 0.06, 1.0 - exp(-18.0 * safe_delta))
+				_squash = Vector2(1.20, 0.84) if is_dashing else _squash.lerp(key_sq, 1.0 - exp(-22.0 * safe_delta))
 
 			var cur_sign := 1 if s >= 0.0 else -1
 			if cur_sign != _prev_sin_sign:
@@ -179,7 +192,24 @@ func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, ai
 			_tilt = lerpf(_tilt, 0.0, 1.0 - exp(-14.0 * safe_delta))
 			_squash = _squash.lerp(Vector2(1.0 + breath, 1.0 - breath), 1.0 - exp(-12.0 * safe_delta))
 
-	if _anim_idle != null:
+	if _attack_anim_timer > 0.0:
+		_attack_anim_timer = maxf(0.0, _attack_anim_timer - safe_delta)
+		if _anim_attack != null:
+			_anim_attack.update(safe_delta)
+			if _anim_attack.finished():
+				_attack_anim_timer = 0.0
+
+	if _attack_anim_timer > 0.0 and _anim_attack != null:
+		_anim_state = "attack"
+	elif speed > 14.0 and _anim_run != null:
+		_anim_state = "run"
+	else:
+		_anim_state = "idle"
+
+	if _anim_state == "run" and _anim_run != null:
+		var run_rate := clampf(speed / 245.0, 0.8, 1.5) * (1.45 if is_dashing else 1.0)
+		_anim_run.update(safe_delta * run_rate)
+	elif _anim_idle != null:
 		var anim_rate := 1.8 if is_dashing else (1.35 if speed > 14.0 else 1.0)
 		_anim_idle.update(safe_delta * anim_rate)
 
@@ -200,6 +230,9 @@ func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, ai
 func trigger_attack(dir: Vector2 = Vector2.ZERO) -> void:
 	if dir.length_squared() > 0.001:
 		_aim_dir = dir.normalized()
+	if _anim_attack != null:
+		_anim_attack.reset()
+		_attack_anim_timer = _anim_attack.duration
 
 func trigger_hurt_feedback(invuln_sec: float = 0.45) -> void:
 	_flash_timer = 0.09
@@ -263,13 +296,17 @@ func _draw() -> void:
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	var feet_y := -3.0 if (_motion_mode == "hover_ride" and _mount_type != "none") else 0.0
-	var body := _anim_attack if _anim_state == "attack" else _anim_idle
+	var body: HeroFrameAnim = _anim_idle
+	if _anim_state == "attack" and _anim_attack != null:
+		body = _anim_attack
+	elif _anim_state == "run" and _anim_run != null:
+		body = _anim_run
 	if body != null:
 		var idx := body.frame()
 		var col := idx % body.columns
 		var row := idx / body.columns
 		var src := Rect2(float(col) * body.cell.x, float(row) * body.cell.y, body.cell.x, body.cell.y)
-		var s := _anim_scale
+		var s := _draw_height / maxf(1.0, body.cell.y)
 		var dest := Rect2(-body.anchor.x * s, -body.anchor.y * s, body.cell.x * s, body.cell.y * s)
 		draw_set_transform(
 			anchor_pos + Vector2(0.0, feet_y),

@@ -16,7 +16,12 @@
 - 全部界面样式必须通过 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`）创建或扩展（`make_hud_plate`、`make_scroll_panel`、`make_card_style`、`style_button`、`style_progress_bar`）。
 - 禁止在业务 UI 脚本里直接手写新的 `StyleBoxFlat.new()` 配色和圆角，确需新变体时先沉淀到 `XianxiaUITheme`。
 
-## 4. 改完必巡检与测试
+## 4. 状态必须显式（禁止隐式状态机）
+- 流程、界面、战斗阶段必须有单一显式状态字段（enum 或专用状态变量）。禁止用多个 bool、计数器、计时器互相推断“现在处于哪一步”，例如靠 `pending_level_ups`、`pending_chests`、`pending_shop_wave`、`is_game_over` 拼出“该弹哪个面板”。
+- 同一状态只允许一个写入点，其余代码只读。状态迁移集中在一个函数或一处 `match`，禁止散落在多个信号回调里各改一半。
+- 新增流程分支时先加状态值再写逻辑；改动已有流程时若发现隐式状态，先收敛成显式状态，再改功能，不顺手留“以后再理”的补丁。
+
+## 5. 改完必巡检与测试
 - 修改 `data/v2/*.json`、`assets/`、`scripts/story.gd` 或 UI 脚本后，执行：
   ```powershell
   python tools/studio_audit.py

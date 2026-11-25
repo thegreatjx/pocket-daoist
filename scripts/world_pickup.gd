@@ -154,18 +154,14 @@ func _collect(player: Node) -> void:
 			Sfx.play("level_up", -10.0, 1.35)
 			get_tree().call_group("ui", "show_banner", "拾得【仙林蟠桃】· 恢复 35 气血")
 		"spirit_stone":
-			var gained := gold_amount
-			if "v2_combat" in player and player.v2_combat != null and player.v2_combat.has_method("add_run_gold"):
-				gained = int(player.v2_combat.add_run_gold(gold_amount))
-				if player.v2_combat.has_method("_spawn_text_popup"):
-					player.v2_combat._spawn_text_popup(global_position + Vector2(0.0, -18.0), "+%d灵石" % gained, Color(1.0, 0.88, 0.36))
+			if player.has_method("gain_exp"):
+				player.gain_exp(18.0)
 			Sfx.play("gem_pickup", -8.0, 1.32)
 		"spirit_pouch":
-			var pouch_gain := 5
-			if "v2_combat" in player and player.v2_combat != null and player.v2_combat.has_method("add_run_gold"):
-				pouch_gain = int(player.v2_combat.add_run_gold(5))
+			if player.has_method("gain_exp"):
+				player.gain_exp(45.0)
 			Sfx.play_gem_pickup()
-			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 局内灵石 +%d（天机阁购宝）" % pouch_gain)
+			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 修为 +45")
 		"qiankun_bag":
 			_collect_qiankun_bag(player)
 		"taixu_talisman":

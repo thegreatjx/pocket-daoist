@@ -1,0 +1,918 @@
+{
+  "schemaVersion": "3.0",
+  "name": "hero_gourd_daoist_idle",
+  "sourceSize": [
+    512,
+    512
+  ],
+  "sourceAnchor": [
+    261.5,
+    484.0
+  ],
+  "inputFrameSize": [
+    512,
+    512
+  ],
+  "sourceRect": [
+    82.0,
+    23.0,
+    358.0,
+    462.0
+  ],
+  "sourceRectFormat": "x,y,width,height",
+  "encodedSize": [
+    198,
+    256
+  ],
+  "contentSize": [
+    198,
+    256
+  ],
+  "encodedAnchor": [
+    99.27653631284916,
+    255.44588744588745
+  ],
+  "registration": {
+    "mode": "construction",
+    "registrationSha256": "9b61af06254f09881f982c1bb570a3016069d597395002cd9e34039b51ee5e9c",
+    "jobSha256": "46c27e3f33a9ac99909b461e1777207331646b0630a4a49721dc85990d139f53",
+    "baseSize": [
+      512,
+      512
+    ],
+    "baseAnchor": [
+      261.5,
+      484.0
+    ],
+    "padding": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sourceSize": [
+      512,
+      512
+    ],
+    "sourceAnchor": [
+      261.5,
+      484.0
+    ],
+    "legacyMode": "fixed-union-envelope"
+  },
+  "fps": 24.0,
+  "fpsRational": "24/1",
+  "frameCount": 90,
+  "durationSeconds": 3.75,
+  "loop": true,
+  "reviewStatus": "needs-visual-review",
+  "hitEvents": [],
+  "poster": {
+    "file": "hero_gourd_daoist_idle-poster.png",
+    "bytes": 96432,
+    "sha256": "f5a1e720026bb3a9e8e219cf258e917de50877976d98603a667151fb15145580"
+  },
+  "fallback": {
+    "type": "png-atlas",
+    "cellSize": [
+      198,
+      256
+    ],
+    "pages": [
+      {
+        "file": "hero_gourd_daoist_idle-atlas-00.png",
+        "bytes": 8485451,
+        "sha256": "5d5cdb27b592bb7df21af5f7179f0caad47161f1f5332dd57cf81d1b9395315f",
+        "firstFrame": 0,
+        "frameCount": 90,
+        "columns": 8
+      }
+    ]
+  },
+  "qa": {
+    "status": "needs-visual-review",
+    "method": "engine_export package: forge_matte.matte_qa key-residue gate on every packaged source frame (alpha <= 16 cleared, D18; key from registration, D17); body-bounds and premultiplied seam diagnostics; selection, registration and review bound by sha256; forge_av encoders verify packet counts and keyframes; every encoded file is decoded completely",
+    "notProven": [
+      "Visual identity, contact and gait quality: a low seam ratio or stable bounds do not prove a seamless cycle or a planted foot.",
+      "Playback of the encoded files: run engine_export.py verify to decode them and compare them with the atlas, then validate_animation.py.",
+      "Browser, Safari, WebGL or iPhone playback, decoder throughput and memory on target devices.",
+      "Key-residue thresholds were set on one clip (report v2); unusual keys or costumes need a look."
+    ],
+    "checks": [
+      {
+        "id": "opaque_key_px",
+        "value": 0,
+        "threshold": 0,
+        "status": "pass"
+      },
+      {
+        "id": "outer_ring_spill_fraction",
+        "value": 0.002666,
+        "threshold": 0.01,
+        "status": "pass"
+      },
+      {
+        "id": "semitransparent_fraction",
+        "status": "pass",
+        "value": 0.164364,
+        "threshold": null
+      },
+      {
+        "id": "enclosed_key_pockets",
+        "value": 0,
+        "threshold": 0,
+        "status": "pass"
+      },
+      {
+        "id": "blank_frames",
+        "status": "pass",
+        "value": [],
+        "threshold": []
+      },
+      {
+        "id": "edge_touch_frames",
+        "status": "pass",
+        "value": [],
+        "threshold": []
+      },
+      {
+        "id": "loop_seam_over_p95",
+        "value": 0.712425,
+        "threshold": 1.1,
+        "status": "pass"
+      },
+      {
+        "id": "selection_hashes",
+        "status": "pass",
+        "value": "a615a96390aadfe81e9c6e132d53791475d185a699566f01de0a1c41e3307918",
+        "threshold": null
+      },
+      {
+        "id": "registration",
+        "status": "pass",
+        "value": "construction",
+        "threshold": null
+      },
+      {
+        "id": "fps_cap",
+        "status": "pass",
+        "value": "24/1",
+        "threshold": "60/1"
+      },
+      {
+        "id": "review_verdict",
+        "status": "needs-visual-review",
+        "value": null,
+        "threshold": "accepted"
+      }
+    ],
+    "inputs": [
+      {
+        "path": "frame_000000.png",
+        "sha256": "15f40ad11bb44fa31458a78cc0481e5acdf0451c7e94a2ed1111fb8264e3bf74",
+        "bytes": 239082
+      },
+      {
+        "path": "frame_000001.png",
+        "sha256": "22dc2841cbdfd51af44a7bb2f850b84f4e1c4c28cf6631c74d4cf2fe14269c2f",
+        "bytes": 241735
+      },
+      {
+        "path": "frame_000002.png",
+        "sha256": "c566de540d4458716caf614d1ed387c7309ec274e5b5625eb3b46f7bfb2abbac",
+        "bytes": 243879
+      },
+      {
+        "path": "frame_000003.png",
+        "sha256": "4b8257e8bddd5412d37408a21e23557ffc7f5b3365cd8f56ccdc049c407b63c5",
+        "bytes": 242240
+      },
+      {
+        "path": "frame_000004.png",
+        "sha256": "4cceec17e2a7c5ff61b62ac4c4bc58d48a266a45d28b456cdd094f24ef57a110",
+        "bytes": 241305
+      },
+      {
+        "path": "frame_000005.png",
+        "sha256": "a9562a207494d3b69b07393c6cfb6777b7ec697aed575383e83a9321737e248d",
+        "bytes": 242010
+      },
+      {
+        "path": "frame_000006.png",
+        "sha256": "1861f9ab5161d3b6bcf6d2641a8e0d0c8b2fc98a51feb7e26f2afc68263021d2",
+        "bytes": 241684
+      },
+      {
+        "path": "frame_000007.png",
+        "sha256": "48306ad3fe173cfd78516dde30b686e46b22f175a1f14895cfd0c4ebfef473d1",
+        "bytes": 240647
+      },
+      {
+        "path": "frame_000008.png",
+        "sha256": "84ffe376ec5b6a88aded0d79d01b6418481e6c5501d5213eff92952dd29cb8a6",
+        "bytes": 239125
+      },
+      {
+        "path": "frame_000009.png",
+        "sha256": "3d636d76dbdbb9bcdb87f4f7a1b46c9d2d4b0fbe921796b119e0615146285c90",
+        "bytes": 242215
+      },
+      {
+        "path": "frame_000010.png",
+        "sha256": "5c6a6b72364ac4a38e8bed209839730bd99a528770fae80cbeb2f7e0c94bfd4a",
+        "bytes": 244665
+      },
+      {
+        "path": "frame_000011.png",
+        "sha256": "a958bb1950aca542566fb8d47fbbe928ce7091b346a0f2c048a9af78983da6c2",
+        "bytes": 242834
+      },
+      {
+        "path": "frame_000012.png",
+        "sha256": "4593b7cb81691e3347b67a45c910220a0c5e2756bdc792c125052d5002d4e2f0",
+        "bytes": 242262
+      },
+      {
+        "path": "frame_000013.png",
+        "sha256": "0f0d5a9778c97c9d59d9e736ec09c61217857940bbe9c48f491ed5e9c48217a2",
+        "bytes": 243401
+      },
+      {
+        "path": "frame_000014.png",
+        "sha256": "5a6ce42a93e3cb0266f1c813aa88be6f5fd1e391e04b838bd56594946320f50e",
+        "bytes": 245022
+      },
+      {
+        "path": "frame_000015.png",
+        "sha256": "e0b32f9072784cc46c95cde49b1edd13312c4d9462fdedba0e90c1c46b34a8a4",
+        "bytes": 244609
+      },
+      {
+        "path": "frame_000016.png",
+        "sha256": "b23b03fa2507a2b2c744501987b055b96555301b7e2b6e46510123f4a2d52561",
+        "bytes": 244150
+      },
+      {
+        "path": "frame_000017.png",
+        "sha256": "cec431677b23032500534ff7d3a585cc5e4b8e95467f48478fc62f4112063007",
+        "bytes": 245059
+      },
+      {
+        "path": "frame_000018.png",
+        "sha256": "ec2c5d0bc56681144a1027dc242bc6c64787fbca01c2f6a03e989e99ddee6ba6",
+        "bytes": 245680
+      },
+      {
+        "path": "frame_000019.png",
+        "sha256": "dd85431500656317d1700bd53f5e986bcb701b319c1bdea6438844a823457fa5",
+        "bytes": 244985
+      },
+      {
+        "path": "frame_000020.png",
+        "sha256": "74a77ace0ecb673505001dd9e7ca6ea659e907fee5e0bb67af3abf9080c07876",
+        "bytes": 244058
+      },
+      {
+        "path": "frame_000021.png",
+        "sha256": "1a2eae0dda10a8efe3a67be86146f34842999dcf6cf008a45b99fd47ee235b23",
+        "bytes": 244899
+      },
+      {
+        "path": "frame_000022.png",
+        "sha256": "c4d44eee01cb70e4026289869d5942f36657f77ddee3b1837915345777fc2c25",
+        "bytes": 245247
+      },
+      {
+        "path": "frame_000023.png",
+        "sha256": "cdd2d44af7be44fe487a3a743f434fbf7e7dc79c020eb3db5fcca05c1acaf9b6",
+        "bytes": 245047
+      },
+      {
+        "path": "frame_000024.png",
+        "sha256": "e9ea18a2a0bb4330a7ade1db94b43c253d3de841d47403665fd7dc458fb5a99a",
+        "bytes": 243866
+      },
+      {
+        "path": "frame_000025.png",
+        "sha256": "e358aa6176017bccc89939cba4f1202f5139c9d344a21b906f8ce1b0c61ee2ce",
+        "bytes": 244951
+      },
+      {
+        "path": "frame_000026.png",
+        "sha256": "7261e0d70f51c107b556880a59b8c5045ece9d41a4683bbe5d61bef767925b62",
+        "bytes": 245895
+      },
+      {
+        "path": "frame_000027.png",
+        "sha256": "1e8fd78dbe582ebf285c039bf587fd3b6bb16ed8e04ce671d8b51112c042b2a3",
+        "bytes": 244813
+      },
+      {
+        "path": "frame_000028.png",
+        "sha256": "e45d7d2641102a0b21daba3c12a5d488d53a23a2751072ef01083101e48c13d3",
+        "bytes": 244466
+      },
+      {
+        "path": "frame_000029.png",
+        "sha256": "a87f8b4234769900e56d7b4e31f8da1ba421300b15bacf8a761601ca496a0052",
+        "bytes": 245680
+      },
+      {
+        "path": "frame_000030.png",
+        "sha256": "1f88be2c2cd19eb188d3e14052e40cc90197b3bcd252dba7c96f3b07bdd58df9",
+        "bytes": 246078
+      },
+      {
+        "path": "frame_000031.png",
+        "sha256": "87909d87bcc775dcf4f6577028e2a746fd9ceaa281c8026c534b188e176501d5",
+        "bytes": 246398
+      },
+      {
+        "path": "frame_000032.png",
+        "sha256": "6aaa4d51c3bc716b68e148bc6979a96c8c110a89e97d3334525ef9c30e04ff15",
+        "bytes": 246907
+      },
+      {
+        "path": "frame_000033.png",
+        "sha256": "2c2e3a821fe4af74caa45d51be4c4f294b4f01c3af909c3ed26a568ef2ef3336",
+        "bytes": 245920
+      },
+      {
+        "path": "frame_000034.png",
+        "sha256": "6384eefd88c6cec83a1b45cc7485a61f89ba44a75ff5c20411b0f98c44811606",
+        "bytes": 245518
+      },
+      {
+        "path": "frame_000035.png",
+        "sha256": "c01a7de98778177ca534c6bfc83cb51f33ad6a7c39f240446dee034b81d27739",
+        "bytes": 246344
+      },
+      {
+        "path": "frame_000036.png",
+        "sha256": "7c76714885f8d1564dffcb9dad3f2bfe6712e339f443a7ff3ee39b3986b613c8",
+        "bytes": 248509
+      },
+      {
+        "path": "frame_000037.png",
+        "sha256": "f1c1bd33adcb2146203f2ce42c341c7c76513e79682eeb9c1349bc6d9258f065",
+        "bytes": 247944
+      },
+      {
+        "path": "frame_000038.png",
+        "sha256": "b9f35fb0751111a7b8a525db26e959463659348a096c584c77431ad960ca6ab2",
+        "bytes": 248800
+      },
+      {
+        "path": "frame_000039.png",
+        "sha256": "0541b31aae61346aa8409450e190151c9d8238ef9b4ca65016b98e3be33bc682",
+        "bytes": 248897
+      },
+      {
+        "path": "frame_000040.png",
+        "sha256": "d4dfdabd6b22bad0586c2694a3b323e33c1e7b6b2a47f3be3a0fa098de0f0428",
+        "bytes": 247409
+      },
+      {
+        "path": "frame_000041.png",
+        "sha256": "15c421df42b930c507f746957c9293ca4f6e505208626f598eea3431fea05e44",
+        "bytes": 248768
+      },
+      {
+        "path": "frame_000042.png",
+        "sha256": "ce6cec8f0683b1992421833922d2f46332121f971b45916d82df36b389ee9742",
+        "bytes": 249266
+      },
+      {
+        "path": "frame_000043.png",
+        "sha256": "4b0e73c9c8d745b491ce3df7f53622620907cefa87d41f77e6b77653db7c60b9",
+        "bytes": 249213
+      },
+      {
+        "path": "frame_000044.png",
+        "sha256": "0c29bddd2ad4475967c5601792d9332307ee6382154eadb4b0a24300a123865f",
+        "bytes": 249046
+      },
+      {
+        "path": "frame_000045.png",
+        "sha256": "190855eff5f263ab9ab64959aa8c138b6054e02b513ec229a0ae6a182911a3f8",
+        "bytes": 249518
+      },
+      {
+        "path": "selection.json",
+        "sha256": "a615a96390aadfe81e9c6e132d53791475d185a699566f01de0a1c41e3307918",
+        "bytes": 6365
+      },
+      {
+        "path": "registration.json",
+        "sha256": "9b61af06254f09881f982c1bb570a3016069d597395002cd9e34039b51ee5e9c",
+        "bytes": 37426
+      }
+    ],
+    "outputs": [
+      {
+        "path": "hero_gourd_daoist_idle-poster.png",
+        "sha256": "f5a1e720026bb3a9e8e219cf258e917de50877976d98603a667151fb15145580",
+        "bytes": 96432
+      },
+      {
+        "path": "hero_gourd_daoist_idle-atlas-00.png",
+        "sha256": "5d5cdb27b592bb7df21af5f7179f0caad47161f1f5332dd57cf81d1b9395315f",
+        "bytes": 8485451
+      }
+    ],
+    "tool": {
+      "name": "engine_export.py",
+      "version": "0.6.0"
+    },
+    "loopRequested": true,
+    "frameCount": 90,
+    "durationSeconds": 3.75,
+    "blankFrames": [],
+    "edgeTouchFrames": [],
+    "boundsBottomSpanPx": 1,
+    "boundsCenterXSpanPx": 11.5,
+    "seamPremultipliedMAE": 0.016173,
+    "adjacentMedianMAE": 0.013869,
+    "seamToMedianRatio": 1.166,
+    "adjacentMaxMAE": 0.04822,
+    "notes": [
+      "Bounds bottom is a contact-drift proxy, not a tracked foot/root.",
+      "A similar first/last frame does not prove a seamless cycle or stable identity.",
+      "Airborne poses may legitimately change bottom position; review at runtime scale."
+    ],
+    "keyResidue": {
+      "key": [
+        255,
+        0,
+        255
+      ],
+      "framesMeasured": 46,
+      "opaqueKeyPx": 0,
+      "framesWithOpaqueKey": [],
+      "maxOuterRingSpillFraction": 0.002666,
+      "framesOverRingSpill": [],
+      "maxSemitransparentFraction": 0.164364,
+      "minSemitransparentFraction": 0.139191,
+      "enclosedKeyPockets": 0,
+      "keyHuedPx": 0,
+      "limits": {
+        "opaqueKeyPx": 0,
+        "outerRingSpillFraction": 0.01
+      },
+      "thresholds": {
+        "key_tolerance": 48.0,
+        "spill_threshold": 20.0,
+        "min_pocket_area": 16,
+        "opaque_alpha": 128,
+        "spill_hue_balance": 0.5,
+        "alpha_floor": 16
+      },
+      "method": "forge_matte.matte_qa v1: straight-colour key distance and dominance on the keyed image; two-channel keys count spill only where the key channels are balanced; each frame measured on a copy with alpha <= 16 cleared, so invisible resampling halo is not counted (D18)"
+    },
+    "allowKeyResidue": true,
+    "keySource": "registration",
+    "seamReport": {
+      "frames": 90,
+      "seam": 9.557205,
+      "adjacent_median": 8.140612,
+      "adjacent_p95": 13.415025,
+      "adjacent_max": 22.65811,
+      "seam_over_median": 1.174015,
+      "seam_over_p95": 0.712425,
+      "method": "premultiplied RGBA mean absolute difference (0-255); seam = last -> first"
+    }
+  },
+  "inputFrames": [
+    {
+      "file": "frame_000000.png",
+      "bytes": 239082,
+      "sha256": "15f40ad11bb44fa31458a78cc0481e5acdf0451c7e94a2ed1111fb8264e3bf74"
+    },
+    {
+      "file": "frame_000001.png",
+      "bytes": 241735,
+      "sha256": "22dc2841cbdfd51af44a7bb2f850b84f4e1c4c28cf6631c74d4cf2fe14269c2f"
+    },
+    {
+      "file": "frame_000002.png",
+      "bytes": 243879,
+      "sha256": "c566de540d4458716caf614d1ed387c7309ec274e5b5625eb3b46f7bfb2abbac"
+    },
+    {
+      "file": "frame_000003.png",
+      "bytes": 242240,
+      "sha256": "4b8257e8bddd5412d37408a21e23557ffc7f5b3365cd8f56ccdc049c407b63c5"
+    },
+    {
+      "file": "frame_000004.png",
+      "bytes": 241305,
+      "sha256": "4cceec17e2a7c5ff61b62ac4c4bc58d48a266a45d28b456cdd094f24ef57a110"
+    },
+    {
+      "file": "frame_000005.png",
+      "bytes": 242010,
+      "sha256": "a9562a207494d3b69b07393c6cfb6777b7ec697aed575383e83a9321737e248d"
+    },
+    {
+      "file": "frame_000006.png",
+      "bytes": 241684,
+      "sha256": "1861f9ab5161d3b6bcf6d2641a8e0d0c8b2fc98a51feb7e26f2afc68263021d2"
+    },
+    {
+      "file": "frame_000007.png",
+      "bytes": 240647,
+      "sha256": "48306ad3fe173cfd78516dde30b686e46b22f175a1f14895cfd0c4ebfef473d1"
+    },
+    {
+      "file": "frame_000008.png",
+      "bytes": 239125,
+      "sha256": "84ffe376ec5b6a88aded0d79d01b6418481e6c5501d5213eff92952dd29cb8a6"
+    },
+    {
+      "file": "frame_000009.png",
+      "bytes": 242215,
+      "sha256": "3d636d76dbdbb9bcdb87f4f7a1b46c9d2d4b0fbe921796b119e0615146285c90"
+    },
+    {
+      "file": "frame_000010.png",
+      "bytes": 244665,
+      "sha256": "5c6a6b72364ac4a38e8bed209839730bd99a528770fae80cbeb2f7e0c94bfd4a"
+    },
+    {
+      "file": "frame_000011.png",
+      "bytes": 242834,
+      "sha256": "a958bb1950aca542566fb8d47fbbe928ce7091b346a0f2c048a9af78983da6c2"
+    },
+    {
+      "file": "frame_000012.png",
+      "bytes": 242262,
+      "sha256": "4593b7cb81691e3347b67a45c910220a0c5e2756bdc792c125052d5002d4e2f0"
+    },
+    {
+      "file": "frame_000013.png",
+      "bytes": 243401,
+      "sha256": "0f0d5a9778c97c9d59d9e736ec09c61217857940bbe9c48f491ed5e9c48217a2"
+    },
+    {
+      "file": "frame_000014.png",
+      "bytes": 245022,
+      "sha256": "5a6ce42a93e3cb0266f1c813aa88be6f5fd1e391e04b838bd56594946320f50e"
+    },
+    {
+      "file": "frame_000015.png",
+      "bytes": 244609,
+      "sha256": "e0b32f9072784cc46c95cde49b1edd13312c4d9462fdedba0e90c1c46b34a8a4"
+    },
+    {
+      "file": "frame_000016.png",
+      "bytes": 244150,
+      "sha256": "b23b03fa2507a2b2c744501987b055b96555301b7e2b6e46510123f4a2d52561"
+    },
+    {
+      "file": "frame_000017.png",
+      "bytes": 245059,
+      "sha256": "cec431677b23032500534ff7d3a585cc5e4b8e95467f48478fc62f4112063007"
+    },
+    {
+      "file": "frame_000018.png",
+      "bytes": 245680,
+      "sha256": "ec2c5d0bc56681144a1027dc242bc6c64787fbca01c2f6a03e989e99ddee6ba6"
+    },
+    {
+      "file": "frame_000019.png",
+      "bytes": 244985,
+      "sha256": "dd85431500656317d1700bd53f5e986bcb701b319c1bdea6438844a823457fa5"
+    },
+    {
+      "file": "frame_000020.png",
+      "bytes": 244058,
+      "sha256": "74a77ace0ecb673505001dd9e7ca6ea659e907fee5e0bb67af3abf9080c07876"
+    },
+    {
+      "file": "frame_000021.png",
+      "bytes": 244899,
+      "sha256": "1a2eae0dda10a8efe3a67be86146f34842999dcf6cf008a45b99fd47ee235b23"
+    },
+    {
+      "file": "frame_000022.png",
+      "bytes": 245247,
+      "sha256": "c4d44eee01cb70e4026289869d5942f36657f77ddee3b1837915345777fc2c25"
+    },
+    {
+      "file": "frame_000023.png",
+      "bytes": 245047,
+      "sha256": "cdd2d44af7be44fe487a3a743f434fbf7e7dc79c020eb3db5fcca05c1acaf9b6"
+    },
+    {
+      "file": "frame_000024.png",
+      "bytes": 243866,
+      "sha256": "e9ea18a2a0bb4330a7ade1db94b43c253d3de841d47403665fd7dc458fb5a99a"
+    },
+    {
+      "file": "frame_000025.png",
+      "bytes": 244951,
+      "sha256": "e358aa6176017bccc89939cba4f1202f5139c9d344a21b906f8ce1b0c61ee2ce"
+    },
+    {
+      "file": "frame_000026.png",
+      "bytes": 245895,
+      "sha256": "7261e0d70f51c107b556880a59b8c5045ece9d41a4683bbe5d61bef767925b62"
+    },
+    {
+      "file": "frame_000027.png",
+      "bytes": 244813,
+      "sha256": "1e8fd78dbe582ebf285c039bf587fd3b6bb16ed8e04ce671d8b51112c042b2a3"
+    },
+    {
+      "file": "frame_000028.png",
+      "bytes": 244466,
+      "sha256": "e45d7d2641102a0b21daba3c12a5d488d53a23a2751072ef01083101e48c13d3"
+    },
+    {
+      "file": "frame_000029.png",
+      "bytes": 245680,
+      "sha256": "a87f8b4234769900e56d7b4e31f8da1ba421300b15bacf8a761601ca496a0052"
+    },
+    {
+      "file": "frame_000030.png",
+      "bytes": 246078,
+      "sha256": "1f88be2c2cd19eb188d3e14052e40cc90197b3bcd252dba7c96f3b07bdd58df9"
+    },
+    {
+      "file": "frame_000031.png",
+      "bytes": 246398,
+      "sha256": "87909d87bcc775dcf4f6577028e2a746fd9ceaa281c8026c534b188e176501d5"
+    },
+    {
+      "file": "frame_000032.png",
+      "bytes": 246907,
+      "sha256": "6aaa4d51c3bc716b68e148bc6979a96c8c110a89e97d3334525ef9c30e04ff15"
+    },
+    {
+      "file": "frame_000033.png",
+      "bytes": 245920,
+      "sha256": "2c2e3a821fe4af74caa45d51be4c4f294b4f01c3af909c3ed26a568ef2ef3336"
+    },
+    {
+      "file": "frame_000034.png",
+      "bytes": 245518,
+      "sha256": "6384eefd88c6cec83a1b45cc7485a61f89ba44a75ff5c20411b0f98c44811606"
+    },
+    {
+      "file": "frame_000035.png",
+      "bytes": 246344,
+      "sha256": "c01a7de98778177ca534c6bfc83cb51f33ad6a7c39f240446dee034b81d27739"
+    },
+    {
+      "file": "frame_000036.png",
+      "bytes": 248509,
+      "sha256": "7c76714885f8d1564dffcb9dad3f2bfe6712e339f443a7ff3ee39b3986b613c8"
+    },
+    {
+      "file": "frame_000037.png",
+      "bytes": 247944,
+      "sha256": "f1c1bd33adcb2146203f2ce42c341c7c76513e79682eeb9c1349bc6d9258f065"
+    },
+    {
+      "file": "frame_000038.png",
+      "bytes": 248800,
+      "sha256": "b9f35fb0751111a7b8a525db26e959463659348a096c584c77431ad960ca6ab2"
+    },
+    {
+      "file": "frame_000039.png",
+      "bytes": 248897,
+      "sha256": "0541b31aae61346aa8409450e190151c9d8238ef9b4ca65016b98e3be33bc682"
+    },
+    {
+      "file": "frame_000040.png",
+      "bytes": 247409,
+      "sha256": "d4dfdabd6b22bad0586c2694a3b323e33c1e7b6b2a47f3be3a0fa098de0f0428"
+    },
+    {
+      "file": "frame_000041.png",
+      "bytes": 248768,
+      "sha256": "15c421df42b930c507f746957c9293ca4f6e505208626f598eea3431fea05e44"
+    },
+    {
+      "file": "frame_000042.png",
+      "bytes": 249266,
+      "sha256": "ce6cec8f0683b1992421833922d2f46332121f971b45916d82df36b389ee9742"
+    },
+    {
+      "file": "frame_000043.png",
+      "bytes": 249213,
+      "sha256": "4b0e73c9c8d745b491ce3df7f53622620907cefa87d41f77e6b77653db7c60b9"
+    },
+    {
+      "file": "frame_000044.png",
+      "bytes": 249046,
+      "sha256": "0c29bddd2ad4475967c5601792d9332307ee6382154eadb4b0a24300a123865f"
+    },
+    {
+      "file": "frame_000045.png",
+      "bytes": 249518,
+      "sha256": "190855eff5f263ab9ab64959aa8c138b6054e02b513ec229a0ae6a182911a3f8"
+    }
+  ],
+  "runtimeNotes": [
+    "Game logic owns hit timings, damage and root motion.",
+    "Packed MP4 has no native alpha; reconstruct RGB and alpha before displaying.",
+    "Keep sourceSize/sourceAnchor for world geometry when selecting smaller media.",
+    "Use the PNG poster until a decoded first frame exists; preload only current scene actions.",
+    "Packed halves are padded to even sizes: crop RGB at (0, 0, width, height) and alpha (red) at (halfWidth, 0, width, height).",
+    "durationsMs is the timeline; fps/fpsRational is the constant rate of the video transports."
+  ],
+  "sourceIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    44,
+    43,
+    42,
+    41,
+    40,
+    39,
+    38,
+    37,
+    36,
+    35,
+    34,
+    33,
+    32,
+    31,
+    30,
+    29,
+    28,
+    27,
+    26,
+    25,
+    24,
+    23,
+    22,
+    21,
+    20,
+    19,
+    18,
+    17,
+    16,
+    15,
+    14,
+    13,
+    12,
+    11,
+    10,
+    9,
+    8,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "durationsMs": [
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42,
+    42,
+    41,
+    42
+  ],
+  "loopPolicy": "cycle",
+  "events": [],
+  "cycles": 1,
+  "sampling": "linear",
+  "pixelArt": false,
+  "pingpongBaked": true,
+  "provenanceFile": "provenance.json",
+  "artSource": "video",
+  "placeholder": false
+}

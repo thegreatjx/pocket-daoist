@@ -7,6 +7,8 @@ const SHADER_SWORD_GLINT_TRAIL: Shader = preload("res://shaders/sword_glint_trai
 const SHADER_BAGUA_DOMAIN_WAVE: Shader = preload("res://shaders/bagua_domain_wave.gdshader")
 const SHADER_BOSS_SHOCKWAVE: Shader = preload("res://shaders/boss_shockwave_ring.gdshader")
 const SHADER_FIRE_FLAME_2D: Shader = preload("res://shaders/fire_flame_2d.gdshader")
+const SHADER_GROUND_SCORCH: Shader = preload("res://shaders/ground_scorch.gdshader")
+const SHADER_FLAME_TONGUE: Shader = preload("res://shaders/flame_tongue.gdshader")
 
 const TEX_FIRE_01: Texture2D = preload("res://addons/kenney_particle_pack/fire_01.png")
 const TEX_FIRE_02: Texture2D = preload("res://addons/kenney_particle_pack/fire_02.png")

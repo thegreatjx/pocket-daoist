@@ -318,9 +318,8 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 		var cur_lv := v2.orbit_rig.get_weapon_tier(sid)
 		if cur_lv >= OrbitWeaponRig.MAX_WEAPON_TIER:
 			continue
-		if cur_lv == 0:
-			if not is_breakthrough or not v2.can_add_weapon(sid, 1):
-				continue
+		if cur_lv == 0 and not v2.can_add_weapon(sid, 1):
+			continue
 
 		var next_lv := maxi(1, cur_lv + 1)
 		var tiers: Array = w.get("tiers", [])
@@ -404,6 +403,37 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 			"weight": 110,
 		})
 
+	var item_candidates: Array[Dictionary] = []
+	if v2.loader != null:
+		for iid in v2.loader.items_by_id.keys():
+			var item_id := String(iid)
+			if banished_ids.has("v2_item:" + item_id):
+				continue
+			if v2.has_item(item_id):
+				continue
+			var it: Dictionary = v2.loader.items_by_id[iid]
+			item_candidates.append({
+				"id": "v2_item:" + item_id,
+				"tag": "【秘宝】",
+				"title": String(it.get("name", item_id)),
+				"desc": String(it.get("desc", "")),
+				"level": 0,
+				"next_level": 1,
+				"max_level": 1,
+				"icon": String(V2ShopUI.ITEM_ICONS.get(item_id, "res://assets/icons/relic_insight.png")),
+				"synergy_hint": "",
+				"fusion_hint": "",
+				"offer_kind": "item",
+				"is_new": true,
+				"is_relic": true,
+				"is_evo": false,
+				"weight": 100,
+			})
+	item_candidates.shuffle()
+	var item_cards: Array[Dictionary] = []
+	for i in range(mini(3, item_candidates.size())):
+		item_cards.append(item_candidates[i])
+
 	var selected: Array[Dictionary] = []
 	if is_breakthrough:
 		_draw_weighted_cards(new_weapon_cards, count, selected)
@@ -413,9 +443,11 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 		_draw_weighted_cards(fallback, count, selected)
 	else:
 		var combined: Array[Dictionary] = []
+		combined.append_array(new_weapon_cards)
 		combined.append_array(upgrade_weapon_cards)
 		combined.append_array(lb_cards)
 		combined.append_array(stat_cards)
+		combined.append_array(item_cards)
 		_draw_weighted_cards(combined, count, selected)
 
 	return selected
@@ -514,6 +546,9 @@ func apply_v2_upgrade(choice_id: String, player: Node) -> void:
 			var skey := lb_parts[2]
 			var dval := 0.08 if skey == "damage_pct" else (-0.04 if skey == "cooldown_pct" else 1.0)
 			v2.apply_weapon_limit_break(wid, skey, dval, 5)
+		return
+	if choice_id.begins_with("v2_item:"):
+		v2.add_item(choice_id.substr(8))
 		return
 	if choice_id.begins_with("v2_arcana:"):
 		v2.add_arcana(choice_id.substr(10))
@@ -616,21 +651,6 @@ func roll_v2_chest_rewards(player: Node) -> Array[Dictionary]:
 						"icon": String(w["icon"]),
 					})
 					continue
-		var item_keys: Array = []
-		if v2.loader != null:
-			item_keys = v2.loader.items_by_id.keys()
-		if not item_keys.is_empty():
-			var iid := String(item_keys[randi() % item_keys.size()])
-			var it: Dictionary = v2.loader.items_by_id[iid]
-			v2.add_item(iid)
-			rewards.append({
-				"is_evo": false,
-				"title": String(it["name"]),
-				"subtitle": "秘宝现世",
-				"desc": String(it["desc"]),
-				"icon": String(V2ShopUI.ITEM_ICONS.get(iid, "res://assets/icons/relic_insight.png")),
-			})
-
 	if rewards.is_empty() or not upgraded_any:
 		rewards.append(_chest_guarantee_reward(player))
 	return rewards
@@ -651,13 +671,13 @@ func _chest_guarantee_reward(player: Node) -> Dictionary:
 		}
 	var pick := randi() % 3
 	if pick == 0:
-		v2.add_run_gold(40)
+		v2.add_realm_bonus("damage_pct", 0.05)
 		return {
 			"is_evo": false,
-			"title": "天机灵石袋",
-			"subtitle": "保底奇珍 · 灵石满袋",
-			"desc": "获得 40 枚局内灵石，天机阁购宝不虚此行！",
-			"icon": "res://assets/sprites/pickup_spirit_pouch.png",
+			"title": "道心淬炼",
+			"subtitle": "保底奇珍 · 剑意微增",
+			"desc": "所有法宝伤害永久 +5%！",
+			"icon": "res://assets/icons/relic_insight.png",
 		}
 	if pick == 1:
 		if player.has_method("heal"):

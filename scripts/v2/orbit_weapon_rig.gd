@@ -8,6 +8,8 @@ const MAX_WEAPON_TIER := 8
 const FUSION_TIER := 9
 const RECOIL_DURATION := 0.10
 const RECOIL_DISTANCE := 25.0
+const WINDUP_LEAD_SEC := 0.085
+const WINDUP_PULL_DISTANCE := 9.0
 
 @export var max_slots: int = 4
 @export var orbit_radius_x: float = 54.0
@@ -20,6 +22,10 @@ var slots: Array[Dictionary] = []
 var unlocked_slots: int = 4
 var _hover_time: float = 0.0
 var _facing: float = 1.0
+var _hurt_scatter: float = 0.0
+
+func trigger_hurt_scatter(strength: float = 1.0) -> void:
+	_hurt_scatter = maxf(_hurt_scatter, clampf(strength, 0.3, 1.5))
 
 func setup(data_loader: V2DataLoader) -> void:
 	loader = data_loader
@@ -403,20 +409,34 @@ func _apply_slot_transform(i: int, slot: Dictionary, count: int, delta: float) -
 		var rx := 1.0 - 0.14 * k
 		recoil_sq = Vector2(rx, 1.0 / rx)
 	var rec_vec: Vector2 = slot.get("recoil", Vector2.ZERO)
+	var windup_u: float = clampf(float(slot.get("windup_u", 0.0)), 0.0, 1.0)
+	var windup_vec := Vector2.ZERO
+	var windup_sq := Vector2.ONE
+	if windup_u > 0.0 and rec_t >= RECOIL_DURATION:
+		var w_dir: Vector2 = slot.get("windup_dir", Vector2.RIGHT)
+		windup_vec = -w_dir * (WINDUP_PULL_DISTANCE * windup_u)
+		windup_sq = Vector2(1.0 - 0.10 * windup_u, 1.0 + 0.10 * windup_u)
+	var scatter_vec := Vector2.ZERO
+	if _hurt_scatter > 0.0:
+		var ang_s: float = TAU * float(i) / float(maxi(1, count)) + _hover_time * 0.45
+		var jitter_s := Vector2(sin(_hover_time * 52.0 + float(i) * 2.1), cos(_hover_time * 47.0 + float(i) * 1.7)) * (3.2 * _hurt_scatter)
+		scatter_vec = Vector2(cos(ang_s), sin(ang_s)) * (18.0 * _hurt_scatter) + jitter_s
 
 	if summon_on_cast_mode:
 		if i == 0:
 			sp.visible = true
 			var poise := Vector2(-_facing * 34.0, -44.0 + sin(_hover_time * 3.0) * 2.5)
-			sp.position = poise + rec_vec
+			sp.position = poise + rec_vec + windup_vec + scatter_vec
 			sp.z_index = 2 if cast_vis > 0.05 else -1
 			var target_rot: float = -0.45 * _facing
 			if cast_vis > 0.0:
 				var cd_dir: Vector2 = slot.get("cast_dir", Vector2.RIGHT)
 				target_rot = clampf(cd_dir.x * 0.35, -0.45, 0.45)
+			elif windup_u > 0.0:
+				target_rot -= _facing * 0.16 * windup_u
 			sp.rotation = lerpf(sp.rotation, target_rot, minf(1.0, delta * 14.0))
-			sp.scale = Vector2(base_sc * recoil_sq.x, base_sc * recoil_sq.y)
-			sp.modulate = Color(1.18, 1.12, 0.98, 0.98) if cast_vis > 0.0 else Color(1.0, 1.0, 1.0, 0.95)
+			sp.scale = Vector2(base_sc * recoil_sq.x * windup_sq.x, base_sc * recoil_sq.y * windup_sq.y)
+			sp.modulate = Color(1.18, 1.12, 0.98, 0.98) if cast_vis > 0.0 else (Color(0.85, 0.65, 0.65, 0.92) if _hurt_scatter > 0.25 else Color(1.0, 1.0, 1.0, 0.95))
 			var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
 			if max_fx != null:
 				max_fx.emitting = true
@@ -456,8 +476,8 @@ func _apply_slot_transform(i: int, slot: Dictionary, count: int, delta: float) -
 		sp.visible = true
 		var angle: float = TAU * float(i) / float(count) + _hover_time * 0.45
 		var rest_pos := Vector2(cos(angle) * orbit_radius_x, sin(angle) * orbit_radius_y - 18.0)
-		sp.position = rest_pos + Vector2(0, sin(_hover_time * 3.0 + float(i)) * 3.0) + rec_vec
-		sp.scale = Vector2(base_sc * recoil_sq.x, base_sc * recoil_sq.y)
+		sp.position = rest_pos + Vector2(0, sin(_hover_time * 3.0 + float(i)) * 3.0) + rec_vec + windup_vec + scatter_vec
+		sp.scale = Vector2(base_sc * recoil_sq.x * windup_sq.x, base_sc * recoil_sq.y * windup_sq.y)
 
 	if is_f and sp.visible:
 		var sec := sp.get_node_or_null("FusionSecondary") as Sprite2D
@@ -475,8 +495,11 @@ func _apply_slot_transform(i: int, slot: Dictionary, count: int, delta: float) -
 
 func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 	_hover_time += delta
+	if _hurt_scatter > 0.0:
+		_hurt_scatter = maxf(0.0, _hurt_scatter - delta * 3.6)
 	_update_facing()
 	var count: int = maxi(1, slots.size())
+	var windup_lead: float = WINDUP_LEAD_SEC * maxf(0.35, attack_speed_mult)
 	for i in range(slots.size()):
 		var slot: Dictionary = slots[i]
 		var sp: Sprite2D = slot["sprite"]
@@ -491,6 +514,21 @@ func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 		else:
 			slot["recoil"] = Vector2.ZERO
 
+		var cd_before: float = float(slot["cd_left"])
+		if cd_before > 0.0 and cd_before <= windup_lead and not enemies.is_empty():
+			var w_def_pre: Dictionary = _get_def(slot)
+			var stats_pre: Dictionary = _get_stats(slot, w_def_pre)
+			var max_r_pre: float = float(stats_pre.get("range", stats_pre.get("aoe_radius", 320.0)))
+			var origin_pre: Vector2 = global_position + Vector2(0.0, -24.0)
+			var target_pre: Node2D = _find_nearest_enemy(origin_pre, enemies, max_r_pre)
+			if target_pre != null:
+				slot["windup_u"] = clampf(1.0 - cd_before / maxf(0.001, windup_lead), 0.0, 1.0)
+				slot["windup_dir"] = (target_pre.global_position - origin_pre).normalized()
+			else:
+				slot["windup_u"] = 0.0
+		else:
+			slot["windup_u"] = 0.0
+
 		_apply_slot_transform(i, slot, count, delta)
 
 		slot["cd_left"] = float(slot["cd_left"]) - delta * attack_speed_mult
@@ -503,6 +541,7 @@ func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 			if target != null:
 				var dir: Vector2 = (target.global_position - origin_pos).normalized()
 				slot["cast_dir"] = dir
+				slot["windup_u"] = 0.0
 				slot["cast_vis"] = 0.28 if i == 0 else 0.56
 				if not summon_on_cast_mode:
 					sp.rotation = dir.angle()

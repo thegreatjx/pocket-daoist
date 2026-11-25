@@ -4,6 +4,8 @@ extends Node2D
 enum Mode { BOOMERANG, BURN_LOB, CHAIN_BOLT, ICE_SHARD, PULSE_RING, FUSION_DOMAIN, WATER_SPLASH }
 
 const TEX_JADE_SWORD: Texture2D = preload("res://assets/v2/weapons/wpn_jade_sword.png")
+const TEX_THUNDER_ARC_STRIP: Texture2D = preload("res://assets/sprites/fx_thunder_arc_strip.png")
+const THUNDER_ARC_FRAMES := 8
 const ALPHA_SCALE_THRESHOLD := 1.30
 const ALPHA_SCALE_MIN_FACTOR := 0.48
 const AWAKENED_TIER := 8
@@ -60,14 +62,14 @@ static func alpha_from_scale(base_alpha: float, area_mult: float) -> float:
 	var factor := 1.0 if area_mult <= ALPHA_SCALE_THRESHOLD else clampf(ALPHA_SCALE_THRESHOLD / maxf(0.01, area_mult), ALPHA_SCALE_MIN_FACTOR, 1.0)
 	return clampf(base_alpha * factor, 0.05, 1.0)
 
+enum SwordPhase { FLYING, RAIN_TRAILING }
+
 var dir: Vector2 = Vector2.RIGHT
 var speed: float = 600.0
 var max_range: float = 340.0
 var pierce_left: int = 2
-var returning: bool = false
 var travelled: float = 0.0
 var hit_out: Dictionary = {}
-var hit_back: Dictionary = {}
 var spin_ang: float = 0.0
 var trail: Array[Vector2] = []
 var is_afterimage: bool = false
@@ -89,6 +91,7 @@ var _bolt_anchors: PackedVector2Array = PackedVector2Array()
 var _bolt_core: Line2D = null
 var _bolt_sky_core: Line2D = null
 var _bolt_sub_branches: Array[Line2D] = []
+var _bolt_arc_sprites: Array[Dictionary] = []
 var _bolt_flicker_acc: float = 0.0
 
 var slow_pct: float = 0.0
@@ -107,15 +110,15 @@ var awakened: bool = false
 var awakened_effect: String = ""
 var awaken_layers: int = 0
 var _trail_limit: int = 10
-var _boomerang_done: bool = false
-var _sword_rain_active: bool = false
+var _sword_phase: int = SwordPhase.FLYING
 var _awaken_core: Line2D = null
 var _awaken_formation: Sprite2D = null
 var _awaken_swords: Array[Dictionary] = []
 var _awaken_flames: Array[Dictionary] = []
 var _awaken_pillars: Array[Dictionary] = []
+var _scorch_sprite: Sprite2D = null
 var _fire_tongues: Array[Dictionary] = []
-var _fire_boiling: Sprite2D = null
+var _smoke_particles: GPUParticles2D = null
 var _awaken_crests: Array[Dictionary] = []
 var _awaken_runes: Array[Dictionary] = []
 var _awaken_orbit: Array[Dictionary] = []
@@ -132,7 +135,6 @@ var _trail_particles: GPUParticles2D = null
 var _main_sprite: Sprite2D = null
 var _glow_sprite: Sprite2D = null
 var _perk_sprite: Sprite2D = null
-var _zone_sprite: Sprite2D = null
 var _zone_particles: GPUParticles2D = null
 var _lotus_particles: GPUParticles2D = null
 var _bolt_main: Line2D = null
@@ -218,6 +220,7 @@ func setup_boomerang(
 	_main_sprite = Sprite2D.new()
 	_main_sprite.texture = TEX_JADE_SWORD
 	_main_sprite.scale = Vector2(0.18, 0.18)
+	_main_sprite.rotation = dir.angle() + PI * 0.25
 	if is_flame_fusion:
 		_main_sprite.modulate = Color(1.25, 0.84, 0.55, 0.92 if not is_afterimage else 0.70)
 	elif is_afterimage:
@@ -275,7 +278,6 @@ func _build_awakened_sword_rain(origin: Vector2, direction: Vector2) -> void:
 	var base_dir := direction.normalized() if direction.length_squared() > 0.001 else Vector2.RIGHT
 	var back_dir := -base_dir
 	var side_dir := Vector2(-base_dir.y, base_dir.x)
-	_sword_rain_active = true
 	for i in range(sword_count):
 		var fan_norm := float(i) / float(sword_count - 1) * 2.0 - 1.0
 		var spread_ang := fan_norm * 0.42
@@ -284,7 +286,7 @@ func _build_awakened_sword_rain(origin: Vector2, direction: Vector2) -> void:
 		var sp := V2VfxFactory.make_sprite(TEX_JADE_SWORD, 54.0, Color(1.0, 0.94, 0.58, 0.96), true)
 		sp.top_level = true
 		sp.global_position = hover_pos
-		sp.rotation = launch_dir.angle()
+		sp.rotation = launch_dir.angle() + PI * 0.25
 		sp.z_index = 5
 		add_child(sp)
 		var sw_trail := V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, 8.5, {
@@ -548,6 +550,38 @@ func setup_chain_bolt(pts: PackedVector2Array, bolt_col: Color, gold_core: bool 
 	_bolt_core = V2VfxFactory.make_sharp_lightning_line(4.0 if awakened else 2.8, Color(1.0, 0.99, 0.92, 0.98))
 	_bolt_core.points = jag_pts
 	add_child(_bolt_core)
+
+	if TEX_THUNDER_ARC_STRIP != null and pts.size() >= 2:
+		var arc_step := 2 if pts.size() >= 3 else 1
+		var max_arc_segs := 4
+		var seg_idx := 0
+		var spawned := 0
+		var arc_tint := bolt_col.lerp(Color.WHITE, 0.55)
+		var base_a := 0.68 if (is_gold_core or awakened) else 0.54
+		var add_mat := CanvasItemMaterial.new()
+		add_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		while seg_idx < pts.size() - 1 and spawned < max_arc_segs:
+			var next_idx := mini(seg_idx + arc_step, pts.size() - 1)
+			var a := pts[seg_idx]
+			var b := pts[next_idx]
+			var span := b - a
+			var dist := span.length()
+			if dist >= 28.0:
+				var arc_sp := Sprite2D.new()
+				arc_sp.texture = TEX_THUNDER_ARC_STRIP
+				arc_sp.hframes = THUNDER_ARC_FRAMES
+				arc_sp.frame = (spawned * 2 + randi() % THUNDER_ARC_FRAMES) % THUNDER_ARC_FRAMES
+				arc_sp.material = add_mat
+				arc_sp.position = (a + b) * 0.5
+				arc_sp.rotation = span.angle()
+				var sx := dist / 356.0
+				var sy := clampf(sx * (0.95 if awakened else 0.78), 0.28, 0.88)
+				arc_sp.scale = Vector2(sx, sy)
+				arc_sp.modulate = Color(arc_tint.r, arc_tint.g, arc_tint.b, base_a)
+				add_child(arc_sp)
+				_bolt_arc_sprites.append({"sprite": arc_sp, "base_alpha": base_a})
+				spawned += 1
+			seg_idx += arc_step
 
 	if pts.size() >= 2:
 		var br_count := 3 if (is_gold_core or awakened) else 2
@@ -1464,7 +1498,15 @@ func _physics_process(delta: float) -> void:
 			if _bolt_flicker_acc >= 0.045:
 				_bolt_flicker_acc -= 0.045
 				_refresh_lightning_geometry()
+				for entry in _bolt_arc_sprites:
+					var sp := entry.get("sprite", null) as Sprite2D
+					if sp != null and is_instance_valid(sp):
+						sp.frame = (sp.frame + 1) % THUNDER_ARC_FRAMES
 			var fade := clampf(1.0 - elapsed / duration, 0.0, 1.0)
+			for entry in _bolt_arc_sprites:
+				var sp := entry.get("sprite", null) as Sprite2D
+				if sp != null and is_instance_valid(sp):
+					sp.modulate.a = float(entry.get("base_alpha", 0.56)) * fade
 			if _bolt_main != null and _bolt_main.material is ShaderMaterial:
 				(_bolt_main.material as ShaderMaterial).set_shader_parameter("fade", fade)
 			if _bolt_core != null and is_instance_valid(_bolt_core):
@@ -1503,56 +1545,50 @@ func _step_boomerang(delta: float) -> void:
 	if controller == null or not is_instance_valid(controller):
 		queue_free()
 		return
-	if awakened:
-		_step_awakened_blade(delta)
+	var rain_alive := _step_awakened_blade(delta) if awakened else false
 
-	if _boomerang_done:
-		if not _sword_rain_active:
-			queue_free()
-		return
-
-	spin_ang += delta * 18.0
-	if _main_sprite != null:
-		_main_sprite.rotation = spin_ang
-	if _glow_sprite != null:
-		_glow_sprite.rotation = -spin_ang * 0.5
-
-	trail.append(global_position)
-	if trail.size() > _trail_limit:
-		trail.remove_at(0)
-	if _trail_line != null and trail.size() >= 2:
-		_trail_line.points = PackedVector2Array(trail)
-	if _awaken_core != null and trail.size() >= 2:
-		_awaken_core.points = PackedVector2Array(trail)
-
-	if not returning:
-		var step := speed * delta
-		global_position += dir * step
-		travelled += step
-		_hit_nearby_boomerang(hit_out, true)
-		if travelled >= max_range or pierce_left <= 0:
-			returning = true
-	else:
-		var dest := player_node.global_position if (player_node != null and is_instance_valid(player_node)) else global_position - dir * 120.0
-		var to_p := dest - global_position
-		if to_p.length() <= 28.0 or elapsed > 2.4:
-			if _sword_rain_active:
-				_boomerang_done = true
-				if _main_sprite != null:
-					_main_sprite.visible = false
-				if _glow_sprite != null:
-					_glow_sprite.visible = false
-				if _trail_line != null:
-					_trail_line.visible = false
-				if _awaken_core != null:
-					_awaken_core.visible = false
-				if _trail_particles != null:
-					_trail_particles.emitting = false
-				return
-			queue_free()
+	match _sword_phase:
+		SwordPhase.RAIN_TRAILING:
+			if not rain_alive:
+				queue_free()
 			return
-		global_position += to_p.normalized() * (speed * 1.18) * delta
-		_hit_nearby_boomerang(hit_back, false)
+		SwordPhase.FLYING:
+			spin_ang += delta * 18.0
+			if _main_sprite != null:
+				_main_sprite.rotation = dir.angle() + PI * 0.25
+			if _glow_sprite != null:
+				_glow_sprite.rotation = -spin_ang * 0.5
+
+			trail.append(global_position)
+			if trail.size() > _trail_limit:
+				trail.remove_at(0)
+			if _trail_line != null and trail.size() >= 2:
+				_trail_line.points = PackedVector2Array(trail)
+			if _awaken_core != null and trail.size() >= 2:
+				_awaken_core.points = PackedVector2Array(trail)
+
+			var step := speed * delta
+			global_position += dir * step
+			travelled += step
+			_hit_nearby_boomerang(hit_out, true)
+			if travelled >= max_range or pierce_left <= 0 or elapsed > 2.4:
+				_finish_boomerang_flight(rain_alive)
+
+func _finish_boomerang_flight(rain_alive: bool) -> void:
+	if not rain_alive:
+		queue_free()
+		return
+	_sword_phase = SwordPhase.RAIN_TRAILING
+	if _main_sprite != null:
+		_main_sprite.visible = false
+	if _glow_sprite != null:
+		_glow_sprite.visible = false
+	if _trail_line != null:
+		_trail_line.visible = false
+	if _awaken_core != null:
+		_awaken_core.visible = false
+	if _trail_particles != null:
+		_trail_particles.emitting = false
 
 func _hit_nearby_boomerang(hit_map: Dictionary, dec_pierce: bool) -> void:
 	for raw_e in CombatGrid.query(global_position, 28.0):
@@ -1573,10 +1609,9 @@ func _hit_nearby_boomerang(hit_map: Dictionary, dec_pierce: bool) -> void:
 		if dec_pierce:
 			pierce_left -= 1
 			if pierce_left <= 0:
-				returning = true
 				break
 
-func _step_awakened_blade(delta: float) -> void:
+func _step_awakened_blade(delta: float) -> bool:
 	if _awaken_formation != null:
 		_awaken_formation.rotation += delta * 2.2
 		_awaken_formation.modulate.a = clampf(1.0 - maxf(0.0, elapsed - 0.58) / 0.36, 0.0, 1.0)
@@ -1636,7 +1671,6 @@ func _step_awakened_blade(delta: float) -> void:
 			sp.visible = false
 			if sw_trail != null and is_instance_valid(sw_trail):
 				sw_trail.visible = false
-	_sword_rain_active = alive
 	for item in _awaken_flames:
 		var fl := item.get("node") as Sprite2D
 		if fl == null or not is_instance_valid(fl):
@@ -1646,6 +1680,7 @@ func _step_awakened_blade(delta: float) -> void:
 		var pulse := 1.0 + 0.16 * sin(elapsed * 12.0 + phase)
 		fl.scale = base_sc * pulse
 		fl.rotation += float(item.get("spin", 0.0)) * delta
+	return alive
 
 func _step_burn_lob(delta: float) -> void:
 	if controller == null or not is_instance_valid(controller):
@@ -1677,19 +1712,19 @@ func _step_burn_lob(delta: float) -> void:
 		_tick_burn_zone()
 
 	var fade := clampf(1.0 - maxf(0.0, elapsed - (zone_dur - 0.45)) / 0.45, 0.0, 1.0)
-	if _zone_sprite != null and _zone_sprite.material is ShaderMaterial:
-		var zmat := _zone_sprite.material as ShaderMaterial
-		zmat.set_shader_parameter("fade", fade)
-		zmat.set_shader_parameter("ring_progress", 0.86 + 0.14 * fade)
-	if _fire_boiling != null and _fire_boiling.material is ShaderMaterial:
-		(_fire_boiling.material as ShaderMaterial).set_shader_parameter("fade", fade)
+	var grow := clampf(elapsed / 0.30, 0.0, 1.0)
+	if _scorch_sprite != null and _scorch_sprite.material is ShaderMaterial:
+		var smat := _scorch_sprite.material as ShaderMaterial
+		smat.set_shader_parameter("progress", grow)
+		smat.set_shader_parameter("fade", fade)
 	for item in _fire_tongues:
 		var tg := item.get("node") as Sprite2D
 		if tg == null or not is_instance_valid(tg):
 			continue
 		var base_sc := item.get("base", Vector2.ONE) as Vector2
 		var ph := float(item.get("phase", 0.0))
-		tg.scale = Vector2(base_sc.x * (1.0 + 0.08 * sin(elapsed * 9.0 + ph)), base_sc.y * (1.0 + 0.14 * sin(elapsed * 12.0 + ph))) * (0.75 + 0.25 * fade)
+		var pulse := 1.0 + 0.13 * sin(elapsed * 9.0 + ph) + 0.06 * sin(elapsed * 17.0 + ph * 1.7)
+		tg.scale = Vector2(base_sc.x * (0.92 + 0.08 * sin(elapsed * 7.0 + ph)), base_sc.y * pulse) * (0.70 + 0.30 * fade)
 		if tg.material is ShaderMaterial:
 			(tg.material as ShaderMaterial).set_shader_parameter("fade", fade)
 	if _perk_sprite != null:
@@ -1702,6 +1737,20 @@ func _step_burn_lob(delta: float) -> void:
 			_detonate_lotus_implosion()
 		queue_free()
 		return
+
+func _add_fire_tongue(base: Vector2, h_px: float, tall: bool, zone_seed: float, idx: int) -> void:
+	var tex: Texture2D = V2VfxFactory.TEX_FLAME_06 if tall else V2VfxFactory.TEX_FLAME_05
+	var tongue := V2VfxFactory.make_shader_sprite(tex, V2VfxFactory.SHADER_FLAME_TONGUE, {
+		"hot_color": Color(1.0, 0.80, 0.34, 1.0),
+		"mid_color": Color(1.0, 0.42, 0.07, 1.0),
+		"outer_color": Color(0.55, 0.10, 0.03, 1.0),
+		"alpha_limit": clampf(effective_alpha_limit * 2.4, 0.70, 0.95),
+		"seed": zone_seed + float(idx) * 3.7,
+	}, h_px)
+	tongue.position = base + Vector2(0.0, -h_px * 0.12)
+	tongue.scale = Vector2(tongue.scale.x * randf_range(0.78, 1.12), tongue.scale.y)
+	add_child(tongue)
+	_fire_tongues.append({"node": tongue, "base": tongue.scale, "phase": float(idx) * 1.3})
 
 func _enter_burn_zone_visuals() -> void:
 	if _main_sprite != null:
@@ -1725,63 +1774,68 @@ func _enter_burn_zone_visuals() -> void:
 		_build_awakened_fire_zone()
 
 	var z_alpha_factor := alpha_from_scale(1.0, area_scale)
-	_zone_sprite = V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-		"core_color": Color(1.0, 0.92, 0.56, 1.0),
-		"mid_color": Color(0.98, 0.44, 0.10, 1.0),
-		"outer_color": Color(0.68, 0.12, 0.04, 1.0),
-		"speed": 2.6,
-		"noise_scale": 3.8,
-		"flame_shape": 0.0,
-		"intensity": 1.15,
-		"alpha_limit": clampf(effective_alpha_limit * 1.85, 0.45, 0.72),
-		"ring_progress": 1.0,
-	}, radius * 2.04)
-	add_child(_zone_sprite)
-
-	_fire_boiling = V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_CIRCLE_02, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
-		"primary_color": Color(0.98, 0.46, 0.10, 0.85),
-		"accent_color": Color(1.0, 0.88, 0.46, 0.95),
-		"petal_count": 8.0,
-		"spin_speed": 1.4,
-		"alpha_limit": effective_alpha_limit * 0.55,
-		"is_wave": 0.0,
-	}, radius * 1.38)
-	add_child(_fire_boiling)
+	var zone_seed := float(randi() % 1024) * 0.37
+	_scorch_sprite = V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SCORCH_03, V2VfxFactory.SHADER_GROUND_SCORCH, {
+		"char_color": Color(0.10, 0.075, 0.055, 1.0),
+		"ash_color": Color(0.32, 0.29, 0.25, 1.0),
+		"progress": 0.0,
+		"alpha_limit": clampf(effective_alpha_limit * 1.25, 0.30, 0.48),
+		"noise_scale": 5.0,
+		"seed": zone_seed,
+	}, radius * 2.35)
+	_scorch_sprite.z_index = -1
+	add_child(_scorch_sprite)
 
 	_fire_tongues.clear()
+	var tongue_total := 12
+	for i in range(tongue_total):
+		var ang := TAU * float(i) / float(tongue_total) + randf_range(-0.16, 0.16)
+		var base := Vector2(cos(ang), sin(ang) * 0.78) * radius * 0.92
+		var tall := (i % 3) != 1
+		var h_px := radius * (randf_range(0.95, 1.35) if tall else randf_range(0.62, 0.85))
+		_add_fire_tongue(base, h_px, tall, zone_seed, i)
 	for i in range(4):
-		var ang := TAU * float(i) / 4.0 + 0.45
-		var tongue := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-			"core_color": Color(1.0, 0.94, 0.64, 1.0),
-			"mid_color": Color(1.0, 0.46, 0.10, 1.0),
-			"outer_color": Color(0.70, 0.12, 0.04, 1.0),
-			"speed": 3.4 + float(i) * 0.35,
-			"noise_scale": 4.0,
-			"flame_shape": 1.0,
-			"intensity": 1.18,
-			"alpha_limit": 0.82 * z_alpha_factor,
-		}, radius * 0.44)
-		tongue.scale = Vector2(tongue.scale.x * 0.85, tongue.scale.y * 1.05)
-		tongue.position = Vector2(cos(ang), sin(ang) * 0.84) * (radius * 0.76) + Vector2(0.0, -radius * 0.08)
-		add_child(tongue)
-		_fire_tongues.append({"node": tongue, "base": tongue.scale, "phase": float(i) * 1.5})
+		var ang := TAU * float(i) / 4.0 + randf_range(-0.35, 0.35)
+		var base := Vector2(cos(ang), sin(ang) * 0.78) * radius * randf_range(0.30, 0.52)
+		_add_fire_tongue(base, radius * randf_range(0.45, 0.70), false, zone_seed, i + tongue_total)
 
 	_zone_particles = V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_SPARK_01, {
-		"amount": 10,
-		"lifetime": 0.55,
+		"amount": 18,
+		"lifetime": 0.85,
 		"one_shot": false,
 		"local_coords": true,
 		"shape": "sphere",
-		"shape_radius": radius * 0.78,
-		"gravity": Vector3(0.0, -65.0, 0.0),
-		"vel_min": 8.0,
-		"vel_max": 24.0,
-		"scale_min": 0.028,
-		"scale_max": 0.055,
-		"color_start": Color(1.0, 0.84, 0.36, 0.85 * z_alpha_factor),
-		"color_end": Color(0.92, 0.25, 0.05, 0.0),
+		"shape_radius": radius * 0.72,
+		"gravity": Vector3(0.0, -78.0, 0.0),
+		"vel_min": 12.0,
+		"vel_max": 34.0,
+		"scale_min": 0.03,
+		"scale_max": 0.06,
+		"color_start": Color(1.0, 0.80, 0.32, 0.90 * z_alpha_factor),
+		"color_end": Color(0.88, 0.20, 0.04, 0.0),
 	})
 	add_child(_zone_particles)
+
+	_smoke_particles = V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_SMOKE_08, {
+		"amount": 6,
+		"lifetime": 1.2,
+		"one_shot": false,
+		"additive": false,
+		"local_coords": true,
+		"shape": "sphere",
+		"shape_radius": radius * 0.68,
+		"gravity": Vector3(0.0, -20.0, 0.0),
+		"vel_min": 5.0,
+		"vel_max": 16.0,
+		"damping_min": 6.0,
+		"damping_max": 14.0,
+		"scale_min": 0.10,
+		"scale_max": 0.22,
+		"color_start": Color(0.30, 0.28, 0.26, 0.20 * z_alpha_factor),
+		"color_end": Color(0.18, 0.17, 0.16, 0.0),
+	})
+	_smoke_particles.z_index = -1
+	add_child(_smoke_particles)
 
 	if implode_perk:
 		_perk_sprite = V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_TWIRL_02, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
@@ -1819,65 +1873,50 @@ func _build_awakened_fire_zone() -> void:
 		if old == null or not is_instance_valid(old):
 			continue
 		old.visible = false
-	var scorch := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-		"core_color": Color(1.0, 0.96, 0.68, 1.0),
-		"mid_color": Color(1.0, 0.38, 0.16, 1.0),
-		"outer_color": Color(0.66, 0.08, 0.04, 1.0),
-		"speed": 3.0,
-		"noise_scale": 3.6,
-		"flame_shape": 0.0,
-		"intensity": 1.18,
-		"alpha_limit": 0.76,
-		"ring_progress": 1.0,
-	}, radius * 2.12)
-	scorch.z_index = -1
-	add_child(scorch)
-	_awaken_flames.append({"node": scorch, "base": scorch.scale, "phase": 0.4, "spin": 0.0})
+	_awaken_flames.clear()
+	var zone_seed := float(randi() % 1024) * 0.31
+	for i in range(16):
+		var ang := TAU * float(i) / 16.0 + randf_range(-0.12, 0.12)
+		var base := Vector2(cos(ang), sin(ang) * 0.78) * radius * 0.94
+		var h_px := radius * randf_range(1.05, 1.55)
+		var tongue := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_FLAME_06, V2VfxFactory.SHADER_FLAME_TONGUE, {
+			"hot_color": Color(1.0, 0.84, 0.40, 1.0),
+			"mid_color": Color(1.0, 0.40, 0.06, 1.0),
+			"outer_color": Color(0.50, 0.08, 0.02, 1.0),
+			"alpha_limit": 0.92,
+			"seed": zone_seed + float(i) * 2.9,
+		}, h_px)
+		tongue.position = base + Vector2(0.0, -h_px * 0.12)
+		tongue.scale = Vector2(tongue.scale.x * randf_range(0.8, 1.15), tongue.scale.y)
+		add_child(tongue)
+		_awaken_flames.append({"node": tongue, "base": tongue.scale, "phase": float(i) * 1.1, "spin": 0.0})
 
-	var core := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-		"core_color": Color(1.0, 0.98, 0.80, 1.0),
-		"mid_color": Color(1.0, 0.56, 0.14, 1.0),
-		"outer_color": Color(0.76, 0.14, 0.04, 1.0),
-		"speed": 3.8,
-		"noise_scale": 3.6,
-		"flame_shape": 1.0,
-		"intensity": 1.22,
-		"alpha_limit": 0.88,
-	}, radius * 0.52)
-	core.position = Vector2(0.0, -radius * 0.14)
-	add_child(core)
-	_awaken_flames.append({"node": core, "base": core.scale, "phase": 1.2, "spin": 0.0})
-
-	for i in range(6):
-		var ang := TAU * float(i) / 6.0
-		var fl := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-			"core_color": Color(1.0, 0.94, 0.64, 1.0),
-			"mid_color": Color(1.0, 0.40, 0.10, 1.0),
-			"outer_color": Color(0.72, 0.10, 0.04, 1.0),
-			"speed": 3.6 + float(i % 3) * 0.45,
-			"noise_scale": 4.0,
-			"flame_shape": 1.0,
-			"intensity": 1.18,
-			"alpha_limit": 0.82,
-		}, radius * 0.36)
-		fl.position = Vector2(cos(ang), sin(ang) * 0.84) * radius * 0.84 + Vector2(0.0, -radius * 0.08)
-		add_child(fl)
-		_awaken_flames.append({"node": fl, "base": fl.scale, "phase": float(i) * 1.3, "spin": 0.0})
+	for i in range(8):
+		var ang := TAU * float(i) / 8.0 + randf_range(-0.3, 0.3)
+		var base := Vector2(cos(ang), sin(ang) * 0.78) * radius * randf_range(0.25, 0.62)
+		var h_px := radius * randf_range(0.65, 1.0)
+		var tongue := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_FLAME_05, V2VfxFactory.SHADER_FLAME_TONGUE, {
+			"hot_color": Color(1.0, 0.82, 0.38, 1.0),
+			"mid_color": Color(1.0, 0.36, 0.05, 1.0),
+			"outer_color": Color(0.46, 0.06, 0.02, 1.0),
+			"alpha_limit": 0.86,
+			"seed": zone_seed + float(i) * 4.3,
+		}, h_px)
+		tongue.position = base + Vector2(0.0, -h_px * 0.12)
+		add_child(tongue)
+		_awaken_flames.append({"node": tongue, "base": tongue.scale, "phase": float(i) * 1.7, "spin": 0.0})
 
 	for i in range(3):
-		var pil := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_FIRE_FLAME_2D, {
-			"core_color": Color(1.0, 0.98, 0.82, 1.0),
-			"mid_color": Color(1.0, 0.52, 0.12, 1.0),
-			"outer_color": Color(0.78, 0.12, 0.04, 1.0),
-			"speed": 4.6,
-			"noise_scale": 3.4,
-			"flame_shape": 1.0,
-			"intensity": 1.25,
-			"alpha_limit": 0.86,
-		}, radius * 0.72)
-		pil.scale = Vector2(pil.scale.x * 0.72, pil.scale.y * 1.15)
 		var pa := TAU * float(i) / 3.0 + 0.4
-		pil.position = Vector2(cos(pa), sin(pa) * 0.76) * radius * 0.50 + Vector2(0.0, -radius * 0.22)
+		var h_px := radius * randf_range(1.25, 1.50)
+		var pil := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_FLAME_06, V2VfxFactory.SHADER_FLAME_TONGUE, {
+			"hot_color": Color(1.0, 0.88, 0.46, 1.0),
+			"mid_color": Color(1.0, 0.44, 0.07, 1.0),
+			"outer_color": Color(0.54, 0.09, 0.02, 1.0),
+			"alpha_limit": 0.95,
+			"seed": zone_seed + 11.0 + float(i) * 5.1,
+		}, h_px)
+		pil.position = Vector2(cos(pa), sin(pa) * 0.76) * radius * 0.50 + Vector2(0.0, -h_px * 0.12)
 		add_child(pil)
 		_awaken_pillars.append({"node": pil, "base": pil.scale, "life": 0.0, "delay": float(i) * 0.08})
 
@@ -1920,6 +1959,7 @@ func _build_awakened_fire_zone() -> void:
 	awaken_layers = 5
 
 func _animate_awakened_fire(delta: float) -> void:
+	var fade := clampf(1.0 - maxf(0.0, elapsed - (zone_dur - 0.45)) / 0.45, 0.0, 1.0)
 	for item in _awaken_flames:
 		var fl := item.get("node") as Sprite2D
 		if fl == null or not is_instance_valid(fl) or not fl.visible:
@@ -1928,6 +1968,8 @@ func _animate_awakened_fire(delta: float) -> void:
 		var phase := float(item.get("phase", 0.0))
 		var wobble := 1.0 + 0.12 * sin(elapsed * 11.0 + phase) + 0.06 * sin(elapsed * 23.0 + phase * 0.7)
 		fl.scale = base_sc * wobble
+		if fl.material is ShaderMaterial:
+			(fl.material as ShaderMaterial).set_shader_parameter("fade", fade)
 		var spin_v := float(item.get("spin", 0.0))
 		if absf(spin_v) > 0.001:
 			fl.rotation += spin_v * delta
@@ -1940,12 +1982,12 @@ func _animate_awakened_fire(delta: float) -> void:
 		var delay := float(item.get("delay", 0.0))
 		var base_sc := item.get("base", Vector2.ONE) as Vector2
 		var grow := clampf((life - delay) / 0.18, 0.0, 1.0)
-		var fade := clampf(1.0 - maxf(0.0, life - 0.34) / 0.36, 0.0, 1.0)
+		var pil_fade := clampf(1.0 - maxf(0.0, life - 0.34) / 0.36, 0.0, 1.0)
 		pil.scale = base_sc * (0.4 + 0.6 * grow) * Vector2(1.0, 1.0 + 0.22 * sin(life * 9.0))
 		if pil.material is ShaderMaterial:
-			(pil.material as ShaderMaterial).set_shader_parameter("fade", clampf(grow, 0.0, 1.0) * fade)
+			(pil.material as ShaderMaterial).set_shader_parameter("fade", clampf(grow, 0.0, 1.0) * pil_fade)
 		else:
-			pil.modulate.a = clampf(grow, 0.0, 1.0) * fade * 0.88
+			pil.modulate.a = clampf(grow, 0.0, 1.0) * pil_fade * 0.88
 
 
 func _detonate_burn_impact() -> void:

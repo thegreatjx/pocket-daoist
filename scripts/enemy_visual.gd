@@ -323,9 +323,9 @@ func set_tier_variant(variant: int) -> void:
 		tier_variant = nv
 		queue_redraw()
 
-func trigger_hit_pop() -> void:
+func trigger_hit_pop(intensity: float = 1.0, hit_dir: Vector2 = Vector2.ZERO) -> void:
 	if rig != null:
-		rig.trigger_hit()
+		rig.trigger_hit(intensity, hit_dir)
 
 func trigger_attack_lunge(dir: Vector2 = Vector2.ZERO) -> void:
 	if rig != null:

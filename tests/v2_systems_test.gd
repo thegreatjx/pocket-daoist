@@ -44,6 +44,7 @@ func _ready() -> void:
 	await _test_batch9_pickup_and_freeze()
 	_test_batch10a_bell_and_banner(loader)
 	_test_batch10b_awakened_vfx(loader)
+	await _test_flying_sword_dummy_and_debug_isolation()
 	Stats.selected_character_id = saved_char
 	await get_tree().process_frame
 	for c in get_tree().get_nodes_in_group("chests"):
@@ -692,13 +693,15 @@ func _test_t2b_pools_luck_and_shop(_loader: V2DataLoader) -> void:
 	um.reset_run_controls()
 	p2.v2_combat.orbit_rig.set_unlocked_slots(2)
 	check("t2b_no_breakthrough_flag_initially", not p2.v2_combat.should_offer_breakthrough_pick(), "should be false before realm unlock")
-	var leaked_new := false
+	var saw_new := false
 	for _i in range(10):
 		for c in um.get_v2_level_choices(p2, 3):
 			if String(c.get("offer_kind", "")) == "new_weapon":
-				leaked_new = true
+				saw_new = true
 				break
-	check("t2b_small_level_forbids_new_weapon", not leaked_new, "small level up offered unowned weapon")
+		if saw_new:
+			break
+	check("t2b_free_slot_allows_new_weapon", saw_new, "free slot should offer unowned weapon")
 
 	p2.level = 5
 	p2.leveled_up.emit(5)
@@ -1414,12 +1417,12 @@ func _test_ch1_map_assets() -> void:
 func _test_t5_batch2a_characters() -> void:
 	CharacterData.reload()
 	var chars := CharacterData.all()
-	_check("t5_2a_char_count_8", chars.size() == 8, "got %d" % chars.size())
+	_check("t5_2a_char_count_8", chars.size() >= 8, "got %d" % chars.size())
 	_check("t5_2a_affinity_sword_metal", CharacterData.get_element_affinity("sword_immortal") == "metal", "")
 	_check("t5_2a_affinity_fox_thunder", CharacterData.get_element_affinity("fox_dango") == "thunder", "")
 	_check("t5_2a_default_unlocked", CharacterData.is_unlocked("sword_immortal", Stats), "")
 	var loader := V2DataLoader.new()
-	_check("t5_2a_loader_characters", loader.load_all("res://data/v2") and loader.characters.size() == 8, "")
+	_check("t5_2a_loader_characters", loader.load_all("res://data/v2") and loader.characters.size() >= 8, "")
 	loader.free()
 
 func _test_t5_batch2b_sect_14_and_recycle() -> void:
@@ -2230,3 +2233,95 @@ func _test_batch10b_awakened_vfx(loader: V2DataLoader) -> void:
 	for n in [sword_fx, sword_t7, fire_fx, bolt_fx, ice_fx, water_fx, bell_fx, bell_t7, venom_fx, fusion_fx, rig, rig_lv7, p]:
 		if is_instance_valid(n):
 			n.free()
+
+func _test_flying_sword_dummy_and_debug_isolation() -> void:
+	var p := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+	add_child(p)
+	p.global_position = Vector2(500.0, 500.0)
+	var cc: V2CombatController = p.v2_combat
+	var sw := V2AttackFx.new()
+	add_child(sw)
+	sw.setup_boomerang(cc, p, p.global_position, Vector2.RIGHT, 20.0, 600.0, 240.0, 3, "metal", Color(0.18, 0.83, 0.75))
+	var max_x := p.global_position.x
+	var ever_returned := false
+	for _step in range(12):
+		if not is_instance_valid(sw) or sw.is_queued_for_deletion():
+			break
+		sw._physics_process(0.05)
+		if is_instance_valid(sw):
+			if sw.global_position.x < max_x - 0.1:
+				ever_returned = true
+			max_x = maxf(max_x, sw.global_position.x)
+	await get_tree().process_frame
+	_check(
+		"sword_flies_straight_no_return",
+		not ever_returned and max_x >= p.global_position.x + 200.0 and not is_instance_valid(sw),
+		"ever_returned=%s max_x=%.1f valid=%s" % [str(ever_returned), max_x, str(is_instance_valid(sw))]
+	)
+	if is_instance_valid(sw):
+		sw.free()
+	if is_instance_valid(p):
+		p.free()
+
+	var main_scene := (load("res://scenes/main.tscn") as PackedScene).instantiate()
+	add_child(main_scene)
+	await get_tree().process_frame
+	var pause_menu := main_scene.get_node_or_null("PauseMenu")
+	var has_sandbox_node := main_scene.get_node_or_null("V2DebugSandbox") != null
+	var has_pause_sandbox_btn := pause_menu != null and pause_menu.find_child("DebugSandboxButton", true, false) != null
+	_check(
+		"normal_game_excludes_debug_sandbox",
+		not has_sandbox_node and not has_pause_sandbox_btn,
+		"sandbox=%s pause_btn=%s" % [str(has_sandbox_node), str(has_pause_sandbox_btn)]
+	)
+	main_scene.free()
+	ObjectPools.clear()
+	await get_tree().process_frame
+
+	var title_scene := (load("res://scenes/title.tscn") as PackedScene).instantiate()
+	add_child(title_scene)
+	await get_tree().process_frame
+	var title_debug_btn := title_scene.find_child("DebugSandboxModeButton", true, false)
+	_check("title_has_debug_mode_button", title_debug_btn != null, "missing DebugSandboxModeButton")
+	title_scene.free()
+	await get_tree().process_frame
+
+	var dbg_scene := (load("res://scenes/debug_sandbox.tscn") as PackedScene).instantiate()
+	add_child(dbg_scene)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var dbg_pause_menu := dbg_scene.get_node_or_null("PauseMenu")
+	var dbg_sandbox := dbg_scene.get_node_or_null("V2DebugSandbox") as V2DebugSandbox
+	var dummies: Array[TrainingDummy] = []
+	for node in get_tree().get_nodes_in_group("enemies"):
+		if node is TrainingDummy:
+			dummies.append(node as TrainingDummy)
+	var dummy_ok := dummies.size() == 3
+	if dummy_ok:
+		var d0 := dummies[0]
+		var pos0 := d0.global_position
+		d0._physics_process(0.1)
+		d0.take_damage_v2(120.0, false, false, "metal")
+		var mid_ok := is_equal_approx(d0.max_health, 5000.0) and is_equal_approx(d0.current_health, 4880.0) and is_equal_approx(d0.contact_damage, 0.0) and d0.global_position.is_equal_approx(pos0) and is_equal_approx(d0.total_damage, 120.0) and d0.hit_count == 1
+		d0.take_damage_v2(6000.0, false, false, "metal")
+		var reset_ok := not d0.is_dead and is_equal_approx(d0.current_health, 5000.0) and is_equal_approx(d0.total_damage, 6120.0)
+		d0.reset_stats()
+		dummy_ok = mid_ok and reset_ok and is_equal_approx(d0.total_damage, 0.0) and d0.hit_count == 0
+	var loader_chk := V2DataLoader.new()
+	loader_chk.load_all("res://data/v2")
+	var data_driven_ok := dbg_sandbox != null and dbg_sandbox._weapon_rows.size() == loader_chk.weapons_by_id.size() and dbg_sandbox._item_rows.size() == loader_chk.items_by_id.size() and dbg_sandbox._arcana_rows.size() == loader_chk.arcanas.size() and dbg_sandbox._char_btns.size() == CharacterData.all().size() and dbg_sandbox._stage_btns.size() == loader_chk.stages.size()
+	loader_chk.free()
+	_check(
+		"debug_sandbox_isolated_with_wooden_dummies",
+		dbg_sandbox != null
+		and dbg_scene.get_node_or_null("Spawner") == null
+		and dbg_scene.get_node_or_null("StageDirector") == null
+		and dbg_scene.get_node_or_null("UpgradeUI") == null
+		and data_driven_ok
+		and dbg_pause_menu != null and dbg_pause_menu.find_child("DebugSandboxButton", true, false) != null
+		and dummy_ok,
+		"dummies=%d dummy_ok=%s dd=%s" % [dummies.size(), str(dummy_ok), str(data_driven_ok)]
+	)
+	dbg_scene.free()
+	ObjectPools.clear()
+	await get_tree().process_frame

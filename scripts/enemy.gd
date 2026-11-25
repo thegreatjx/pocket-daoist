@@ -43,6 +43,7 @@ var _slow_ratio: float = 0.0
 var _slow_timer: float = 0.0
 var _stun_timer: float = 0.0
 var _freeze_timer: float = 0.0
+var _hitstop_timer: float = 0.0
 var _freeze_marker: Node2D = null
 var _spawn_elapsed: float = 0.0
 var _cached_bg: Node = null
@@ -154,6 +155,9 @@ func _reset_state() -> void:
 	_stun_timer = 0.0
 	_clear_freeze_visual()
 	_freeze_timer = 0.0
+	_hitstop_timer = 0.0
+	if visual_node != null:
+		visual_node.position = Vector2.ZERO
 	_spawn_elapsed = 0.0
 	_elite_skill_cd = 4.5
 	_elite_state = 0
@@ -507,6 +511,15 @@ func _physics_process(delta: float) -> void:
 			visual_node.set_process(false)
 		if _freeze_timer <= 0.0:
 			_clear_freeze_visual()
+		return
+
+	if _hitstop_timer > 0.0:
+		_hitstop_timer = maxf(0.0, _hitstop_timer - delta)
+		velocity = Vector2.ZERO
+		if visual_node != null and not is_visual_culled:
+			visual_node.position = Vector2(randf_range(-2.2, 2.2), randf_range(-1.6, 1.6))
+			if _hitstop_timer <= 0.0:
+				visual_node.position = Vector2.ZERO
 		return
 
 	if _slow_timer > 0.0:
@@ -954,14 +967,28 @@ func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = fa
 		if not _boss_enraged and current_health > 0.0 and current_health <= max_health * 0.50:
 			_enter_boss_phase2()
 
+	var is_reaction_hit := reaction_color.a > 0.01
+	var hit_intensity := 1.55 if (is_crit and is_reaction_hit) else (1.42 if is_crit else (1.28 if is_reaction_hit else 0.78))
+	var hit_dir := Vector2.RIGHT
+	if target != null and is_instance_valid(target):
+		var away := global_position - target.global_position
+		if away.length_squared() > 0.001:
+			hit_dir = away.normalized()
+
 	if not is_visual_culled and Settings.get_bool("video/hit_flash"):
 		var hit_spec := V2VfxFactory.get_hit_vfx_spec(element, reaction_color)
-		var flash_dur := float(hit_spec.get("duration", 0.055))
+		var flash_dur := float(hit_spec.get("duration", 0.055)) * (1.25 if is_crit else 1.0)
 		_last_hit_flash_key = String(hit_spec.get("key", "default"))
 		_last_hit_flash_duration = flash_dur
-		modulate = hit_spec.get("flash_color", Color(1.75, 1.65, 1.45, 1.0)) as Color
+		var flash_col: Color = hit_spec.get("flash_color", Color(1.75, 1.65, 1.45, 1.0)) as Color
+		if is_crit:
+			flash_col = Color(flash_col.r * 1.18, flash_col.g * 1.18, flash_col.b * 1.18, 1.0)
+		modulate = flash_col
 		if visual_node != null and visual_node.has_method("trigger_hit_pop"):
-			visual_node.trigger_hit_pop()
+			visual_node.trigger_hit_pop(hit_intensity, hit_dir)
+		if is_crit or is_reaction_hit:
+			var stop_sec := 0.018 if is_boss else (0.045 if (is_crit and is_reaction_hit) else 0.032)
+			_hitstop_timer = maxf(_hitstop_timer, stop_sec)
 		if _flash_tween != null and _flash_tween.is_valid():
 			_flash_tween.kill()
 		_flash_tween = create_tween()
@@ -976,6 +1003,9 @@ func die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	_hitstop_timer = 0.0
+	if visual_node != null:
+		visual_node.position = Vector2.ZERO
 	if is_in_group("enemies"):
 		remove_from_group("enemies")
 	if _flash_tween != null and _flash_tween.is_valid():
@@ -994,6 +1024,12 @@ func die() -> void:
 
 	if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:
 		var v2 = target.v2_combat
+		if (is_boss or enemy_type == Type.ELITE) and v2.has_method("trigger_micro_hitstop"):
+			v2.trigger_micro_hitstop(36 if is_boss else 24, 0.18 if is_boss else 0.28)
+		if is_boss and target.has_method("shake_camera"):
+			target.shake_camera(6.5)
+		elif enemy_type == Type.ELITE and target.has_method("shake_camera") and target.shake_amount < 4.5:
+			target.shake_camera(3.2)
 		if v2.reaction_engine != null:
 			v2.reaction_engine.clear_enemy(get_instance_id())
 		if _dot_spread_on_death:

@@ -25,6 +25,7 @@ const OPTIONAL_SOUNDS := {
 	"boss_charge": "res://assets/audio/boss_charge.wav",
 	"boss_slam": "res://assets/audio/boss_slam.wav",
 	"boss_dash": "res://assets/audio/boss_dash.wav",
+	"thunder_arc_snap": "res://assets/audio/thunder_arc_snap.wav",
 }
 
 const PENTATONIC_PITCHES := [1.0, 1.1225, 1.2599, 1.4983, 1.6818, 2.0, 2.2449]

@@ -28,6 +28,8 @@ var last_pose: Dictionary = {}
 var _attack_lunge: float = 0.0
 var _attack_dir: Vector2 = Vector2.RIGHT
 var _hit_pop: float = 0.0
+var _hit_intensity: float = 1.0
+var _hit_dir: Vector2 = Vector2.RIGHT
 var _land_squash: float = 0.0
 var _charge_ratio: float = 0.0
 var _prev_step_index: int = -1
@@ -81,8 +83,14 @@ func trigger_attack(dir: Vector2 = Vector2.ZERO) -> void:
 	else:
 		_attack_dir = Vector2(facing_sign, 0.0)
 
-func trigger_hit() -> void:
+func trigger_hit(intensity: float = 1.0, dir: Vector2 = Vector2.ZERO) -> void:
+	var eff := clampf(intensity, 0.5, 1.85)
 	_hit_pop = 1.0
+	_hit_intensity = eff
+	if dir.length_squared() > 0.001:
+		_hit_dir = dir.normalized()
+	else:
+		_hit_dir = Vector2(-facing_sign, 0.0)
 
 func trigger_land_squash(strength: float = 1.0) -> void:
 	_land_squash = clampf(strength, 0.2, 1.8)
@@ -186,11 +194,15 @@ func update(delta: float, velocity: Vector2, max_speed: float = 220.0, is_dashin
 		sx += l_curve * 0.07
 		sy -= l_curve * 0.05
 
-	# 受击果冻回弹（先横向压扁再纵向回弹）
+	# 受击果冻回弹（先横向压扁再纵向回弹，叠加受击方向冲量偏移）
+	var hit_kick_offset := Vector2.ZERO
 	if _hit_pop > 0.0:
-		var h_wave := sin(_hit_pop * PI * 1.5) * float(profile.get("hit_pop_scale", 0.20))
+		var h_wave := sin(_hit_pop * PI * 1.5) * float(profile.get("hit_pop_scale", 0.20)) * _hit_intensity
 		sx += h_wave
 		sy -= h_wave * 0.72
+		var k_wave := sin(_hit_pop * PI)
+		hit_kick_offset = _hit_dir * (k_wave * 4.2 * _hit_intensity)
+		tilt += _hit_dir.x * facing_sign * k_wave * 0.12 * _hit_intensity
 
 	# 蓄力震颤（Boss / 精英技能前摇）
 	var charge_jitter := Vector2.ZERO
@@ -220,7 +232,7 @@ func update(delta: float, velocity: Vector2, max_speed: float = 220.0, is_dashin
 		"scale": Vector2(sx * facing_sign, sy),
 		"abs_scale": Vector2(sx, sy),
 		"rotation": tilt,
-		"offset": lunge_offset + charge_jitter + Vector2(0.0, bob_y),
+		"offset": lunge_offset + hit_kick_offset + charge_jitter + Vector2(0.0, bob_y),
 		"dir_tint": dir_tint,
 		"shadow_scale": clampf(1.0 - (-bob_y) * 0.025, 0.78, 1.12),
 	}

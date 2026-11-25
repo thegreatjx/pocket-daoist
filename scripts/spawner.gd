@@ -326,9 +326,17 @@ func set_endless_level(lv: int) -> void:
 func finish_wave_and_vacuum() -> Dictionary:
 	return V2SpawnDirector.trigger_wave_end_vacuum(get_tree(), player)
 
-func spawn_chapter_boss(chapter: Dictionary) -> void:
-	if _is_boss_spawned:
-		return
+func spawn_chapter_boss(chapter: Dictionary) -> Node2D:
+	return _spawn_boss(chapter)
+
+func spawn_boss_entry(entry: Dictionary) -> Node2D:
+	return _spawn_boss({
+		"boss_name": String(entry.get("name", "")),
+		"boss_type": String(entry.get("type", "wolf")),
+		"boss_hp": float(entry.get("hp", 4600.0)),
+	})
+
+func _spawn_boss(chapter: Dictionary) -> Node2D:
 	_is_boss_spawned = true
 	_swarm_music_timer = 0.0
 	Music.play_track("boss", 0.55)
@@ -341,7 +349,7 @@ func spawn_chapter_boss(chapter: Dictionary) -> void:
 
 	var boss = ObjectPools.acquire(enemy_scene_path, get_parent())
 	if boss == null:
-		return
+		return null
 	boss.global_position = spawn_pos
 	if boss.has_method("setup_type"):
 		boss.setup_type(Enemy.Type.BOSS, elapsed, _boss_species(chapter))
@@ -357,6 +365,7 @@ func spawn_chapter_boss(chapter: Dictionary) -> void:
 
 	get_tree().call_group("ui", "set_boss_name", boss_name)
 	get_tree().call_group("ui", "activate_boss_bar", boss.max_health)
+	return boss
 
 func _count_active_elites() -> int:
 	var count := _pending_elite_telegraphs
@@ -655,8 +664,7 @@ func _instantiate_enemy_at(
 			enemy.speed = float(eff_arch["move_speed"]) * _stage_enemy_speed_mult * _wave_speed_scale
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:
-	var arena := _get_arena_rect().grow(-56.0)
-	return Vector2(clampf(pos.x, arena.position.x, arena.end.x), clampf(pos.y, arena.position.y, arena.end.y))
+	return pos
 
 func scale_spawned_minion(enemy: Node) -> void:
 	_scale_to_chapter(enemy)

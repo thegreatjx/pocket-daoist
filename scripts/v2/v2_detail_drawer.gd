@@ -930,7 +930,7 @@ func _render_synergy_right(detail: Dictionary) -> void:
 
 		var tip := Label.new()
 		tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		tip.text = "尚未凑齐双元素；破境开槽或在天机阁补入第 2 种元素法宝即可激活反应。"
+		tip.text = "尚未凑齐双元素；破境开槽或在升级三选一中补入第 2 种元素法宝即可激活反应。"
 		tip.add_theme_font_size_override("font_size", 12)
 		tip.add_theme_color_override("font_color", COL_INK_SUB)
 		evb.add_child(tip)

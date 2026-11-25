@@ -19,3 +19,7 @@
   - Open-source MIT/CC0 Godot 4 `canvas_item` polar shockwave & flame energy ring shader inspired by GodotShaders.com 2D shockwave/energy ring implementations, using procedural value noise and dual-color plasma edge modulation.
 - **`fire_flame_2d.gdshader`**
   - Adapted from GodotShaders.com CC0 2D Fire shader concept, using procedural 4-octave FBM upward-scrolling noise and 3-tier thermal color ramp (`core_color` / `mid_color` / `outer_color`) with `flame_shape` switching between rising tongues and boiling ground fire for Godot 4 `gl_compatibility`.
+- **`ground_scorch.gdshader`**
+  - Original: samples the Kenney CC0 `scorch_02.png` alpha as an irregular burn mask, grows it with FBM-modulated threshold, and darkens toward charred center with ash mottling. `blend_mix` for the ground decal layer.
+- **`flame_tongue.gdshader`**
+  - Original: samples a Kenney CC0 flame silhouette (`flame_05` / `flame_06`) as the tongue mask and applies a vertical thermal ramp (hot base → orange body → dark red tip) with FBM flicker. `blend_add` for the flame layer.

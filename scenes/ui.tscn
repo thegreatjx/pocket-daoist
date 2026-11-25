@@ -81,5 +81,5 @@ offset_bottom = -22.0
 grow_vertical = 0
 modulate = Color(1, 1, 1, 0.85)
 theme_override_font_sizes/font_size = 22
-text = "WASD / 方向键  移动  |  空格  纯位移瞬步穿怪\n4 槽法宝自动御使攻击 · 异属性法宝碰撞触发五行元素反应\n击杀妖物掉落灵石，波次完结开启【天机阁】购宝（不清空场上怪物）\nESC  暂停"
+text = "WASD / 方向键  移动  |  空格  纯位移瞬步穿怪\n4 槽法宝自动御使攻击 · 异属性法宝碰撞触发五行元素反应\n升级三选一 · 击杀关内首领掉落宝箱（法宝升阶 / 合体）\nESC  暂停"
 vertical_alignment = 2

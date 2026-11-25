@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-25 13:24:50）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-25 20:47:56）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -43,7 +43,7 @@
 | `GAP` (MISSING_ART_SLOT) | 第 2~5 关缺少地图地标与掩体配置 (4/5 关空缺) | `data/v2/map_arena_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
 | `WARNING` (STORY_STAGE_MISMATCH) | 剧情章节数 (6) 与 V2 关卡数 (5) 不一致 | `scripts/story.gd` |
-| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 48 个未引用媒体文件（含多版本残留） | `assets/` |
+| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 49 个未引用媒体文件（含多版本残留） | `assets/` |
 | `WARNING` (UI_THEME_BYPASS) | 7 个 UI 脚本绕过 XianxiaUITheme 私写 38 处 StyleBoxFlat.new() | `scripts/ui/xianxia_ui_theme.gd` |
 | `WARNING` (DOC_CODE_DRIFT) | 图鉴硬编码计数漂移：五行反应 (15) → 实际应为 五行反应 (7) | `scripts/v2/v2_codex_panel.gd` |
 | `WARNING` (DOC_CODE_DRIFT) | 图鉴硬编码计数漂移：法宝与超武 (7+3) → 实际应为 法宝与超武 (8+3) | `scripts/v2/v2_codex_panel.gd` |
@@ -58,6 +58,7 @@
 - `gourd_spirit` (阿葫 / 灵葫小仙) -> `res://assets/v2/heroes/hero_gourd_blob.png` | 初始法宝 `wpn_venom_banner`
 - `daoist_mochi` (圆圆 / 太极小道童) -> `res://assets/v2/heroes/hero_mochi_daoist.png` | 初始法宝 `wpn_gold_bell`
 - `fox_dango` (白团 / 青丘幼狐) -> `res://assets/v2/heroes/hero_fox_dango.png` | 初始法宝 `wpn_thunder_talisman`
+- `thunder_daoist` (张清霄 / 天雷符师) -> `res://assets/v2/heroes/hero_thunder_daoist.png` | 初始法宝 `wpn_thunder_talisman`
 
 ### 法宝与合体超武（8+3 · 统一存放 `assets/v2/weapons/`）
 - `wpn_jade_sword` (青霜飞剑, metal) -> `res://assets/v2/weapons/wpn_jade_sword.png`
@@ -91,5 +92,5 @@
 - `enemy_bulwark_jinchan` (三足金蟾, species=4) -> `res://assets/sprites/anim_jinchan_run.png`
 
 ### 音频与特效白名单
-- 已接入音频：`res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/music_battle.ogg`, `res://assets/audio/music_boss.ogg`, `res://assets/audio/music_swarm.ogg`, `res://assets/audio/music_title.ogg`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`
+- 已接入音频：`res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/music_battle.ogg`, `res://assets/audio/music_boss.ogg`, `res://assets/audio/music_swarm.ogg`, `res://assets/audio/music_title.ogg`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`, `res://assets/audio/thunder_arc_snap.wav`
 - 归档区 `assets/_legacy_unused/` 共有 0 个历史弃用文件，禁止新代码引用。

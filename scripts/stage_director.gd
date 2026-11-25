@@ -25,6 +25,9 @@ var ui: Node = null
 
 var _pending_bosses: Array[Dictionary] = []
 var _boss_spawned: bool = false
+var _boss_plan: Array[Dictionary] = []
+var _boss_plan_index: int = 0
+var _boss_schedule_cfg: Dictionary = {}
 var _finish_delay: float = 0.0
 var _endless_timer: float = 0.0
 
@@ -47,6 +50,8 @@ func begin_run() -> void:
 	chapter_elapsed = 0.0
 	_pending_bosses.clear()
 	_boss_spawned = false
+	_boss_plan.clear()
+	_boss_plan_index = 0
 	_finish_delay = 0.0
 	_apply_current_stage()
 
@@ -134,8 +139,11 @@ func _process(delta: float) -> void:
 		return
 
 	var duration := float(chapter.get("duration", 480.0))
-	if not _boss_spawned and chapter_elapsed >= duration:
-		_spawn_chapter_boss(chapter)
+	if _boss_plan_index < _boss_plan.size():
+		var plan: Dictionary = _boss_plan[_boss_plan_index]
+		if chapter_elapsed >= float(plan.get("at", duration)):
+			_boss_plan_index += 1
+			_spawn_plan_boss(plan)
 
 func _advance_chapter() -> void:
 	chapter_index += 1
@@ -150,6 +158,7 @@ func _apply_current_stage() -> void:
 	chapter_elapsed = 0.0
 	_boss_spawned = false
 	var chapter := chapters[chapter_index]
+	_build_boss_plan()
 
 	_resolve_nodes()
 	if spawner != null and spawner.has_method("apply_chapter"):
@@ -167,6 +176,61 @@ func _apply_current_stage() -> void:
 			p.set_stage_speed_mult(p_spd)
 
 	chapter_started.emit(chapter)
+
+func _spawn_plan_boss(plan: Dictionary) -> void:
+	_resolve_nodes()
+	var boss_inst: Node = null
+	if spawner != null and spawner.has_method("spawn_boss_entry"):
+		boss_inst = spawner.spawn_boss_entry(plan)
+	_pending_bosses.append({
+		"chapter": current_chapter(),
+		"plan": plan,
+		"boss_name": String(plan.get("name", "")),
+		"wait": 0.0,
+		"instance": boss_inst,
+		"state": "waiting",
+	})
+	chapter_boss_spawned.emit(current_chapter())
+
+func _build_boss_plan() -> void:
+	_boss_plan.clear()
+	_boss_plan_index = 0
+	var chapter := current_chapter()
+	if chapter.is_empty() or chapters.is_empty():
+		return
+	var duration := float(chapter.get("duration", 480.0))
+	var cfg := _load_boss_schedule()
+	var pcts: Array = cfg.get("schedule_pct", [0.55, 0.72, 0.88, 1.0])
+	var mults: Array = cfg.get("hp_mult", [0.42, 0.52, 0.62, 1.0])
+	var total := pcts.size()
+	for k in range(total):
+		var src_index := chapter_index
+		if k < total - 1:
+			src_index = (chapter_index + k + 1) % chapters.size()
+		var src: Dictionary = chapters[src_index]
+		_boss_plan.append({
+			"at": duration * float(pcts[k]),
+			"name": String(src.get("boss_name", "")),
+			"type": String(src.get("boss_type", "wolf")),
+			"hp": float(src.get("boss_hp", 4600.0)) * float(mults[clampi(k, 0, mults.size() - 1)]),
+			"final": k == total - 1,
+		})
+
+func _load_boss_schedule() -> Dictionary:
+	if not _boss_schedule_cfg.is_empty():
+		return _boss_schedule_cfg
+	var path := "res://data/v2/boss_schedule_v2.json"
+	if not FileAccess.file_exists(path):
+		push_error("Boss 调度表缺失：%s" % path)
+		_boss_schedule_cfg = {"schedule_pct": [0.55, 0.72, 0.88, 1.0], "hp_mult": [0.42, 0.52, 0.62, 1.0]}
+		return _boss_schedule_cfg
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if parsed is Dictionary:
+		_boss_schedule_cfg = parsed
+	else:
+		push_error("Boss 调度表解析失败：%s" % path)
+		_boss_schedule_cfg = {"schedule_pct": [0.55, 0.72, 0.88, 1.0], "hp_mult": [0.42, 0.52, 0.62, 1.0]}
+	return _boss_schedule_cfg
 
 func _spawn_chapter_boss(chapter: Dictionary) -> void:
 	_boss_spawned = true
@@ -186,6 +250,8 @@ func _spawn_chapter_boss(chapter: Dictionary) -> void:
 
 func _clear_boss(entry: Dictionary, killed: bool) -> void:
 	var chapter: Dictionary = entry.get("chapter", {})
+	var plan: Dictionary = entry.get("plan", {})
+	var is_final := bool(plan.get("final", true))
 	var ch_id := int(chapter.get("id", 1))
 	chapter_cleared.emit(chapter)
 
@@ -203,6 +269,12 @@ func _clear_boss(entry: Dictionary, killed: bool) -> void:
 			finished = true
 			running = false
 			run_finished.emit(false)
+		return
+
+	if not is_final:
+		if killed:
+			if ui != null and ui.has_method("show_banner"):
+				ui.show_banner("✦ 斩落【%s】· 宝箱已落！ ✦" % String(entry.get("boss_name", "首领")))
 		return
 
 	finished = true

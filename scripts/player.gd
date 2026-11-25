@@ -285,6 +285,8 @@ func take_damage(amount: float) -> void:
 	var vis := get_node_or_null("BodyVisual")
 	if vis != null and vis.has_method("trigger_hurt_feedback"):
 		vis.trigger_hurt_feedback(0.45)
+	if v2_combat != null and v2_combat.orbit_rig != null and v2_combat.orbit_rig.has_method("trigger_hurt_scatter"):
+		v2_combat.orbit_rig.trigger_hurt_scatter(1.0)
 
 	if Settings.get_bool("video/hit_flash"):
 		modulate = Color(1.6, 0.55, 0.55, 1.0)

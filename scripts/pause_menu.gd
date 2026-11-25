@@ -14,6 +14,8 @@ class_name PauseMenu
 @onready var settings_layer: Control = $SettingsLayer
 @onready var status_label: Label = $Root/Panel/VBox/StatusLabel
 
+@export var enable_debug_sandbox: bool = false
+
 var settings_panel: SettingsPanel = null
 var codex_btn: Button = null
 var codex_panel: V2CodexPanel = null
@@ -34,15 +36,16 @@ func _ready() -> void:
 			vbox.move_child(codex_btn, resume_btn.get_index() + 1)
 		codex_btn.pressed.connect(_on_codex_pressed)
 
-		sandbox_btn = Button.new()
-		sandbox_btn.name = "DebugSandboxButton"
-		sandbox_btn.text = "调试沙盒 (F9)"
-		sandbox_btn.custom_minimum_size = Vector2(300, 42)
-		sandbox_btn.add_theme_font_size_override("font_size", 22)
-		vbox.add_child(sandbox_btn)
-		if codex_btn != null:
-			vbox.move_child(sandbox_btn, codex_btn.get_index() + 1)
-		sandbox_btn.pressed.connect(_on_sandbox_pressed)
+		if enable_debug_sandbox:
+			sandbox_btn = Button.new()
+			sandbox_btn.name = "DebugSandboxButton"
+			sandbox_btn.text = "调试沙盒 (F9)"
+			sandbox_btn.custom_minimum_size = Vector2(300, 42)
+			sandbox_btn.add_theme_font_size_override("font_size", 22)
+			vbox.add_child(sandbox_btn)
+			if codex_btn != null:
+				vbox.move_child(sandbox_btn, codex_btn.get_index() + 1)
+			sandbox_btn.pressed.connect(_on_sandbox_pressed)
 	_apply_qinglv_theme()
 	GameFlow.state_changed.connect(_on_state_changed)
 	resume_btn.pressed.connect(_on_resume_pressed)

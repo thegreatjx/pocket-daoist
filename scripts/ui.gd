@@ -357,17 +357,6 @@ func _setup_top_right_hud() -> void:
 	div.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vb.add_child(div)
 
-	_gold_label = Label.new()
-	_gold_label.name = "GoldLabel"
-	_gold_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_gold_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_gold_label.text = "灵石 0"
-	_gold_label.add_theme_font_size_override("font_size", 18)
-	_gold_label.add_theme_color_override("font_color", XianxiaUITheme.COL_GOLD_BRIGHT)
-	XianxiaUITheme.apply_text_outline(_gold_label, 3)
-	vb.add_child(_gold_label)
-
 func _style_overlay_bar(bar: ProgressBar, fill_color: Color, radius: int) -> void:
 	if bar == null:
 		return

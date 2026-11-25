@@ -23,7 +23,7 @@ const CUE_FALLBACK_PATHS := {
 	"sfx_sword_whoosh": "res://assets/audio/sword_cast.wav",
 	"sfx_fusion_sword_array": "res://assets/audio/sword_cast.wav",
 	"sfx_fire_lob": "res://assets/audio/cannon_blast.wav",
-	"sfx_thunder_snap": "res://assets/audio/thunder.wav",
+	"sfx_thunder_snap": "res://assets/audio/thunder_arc_snap.wav",
 	"sfx_fusion_thunder_ice": "res://assets/audio/thunder.wav",
 	"sfx_ice_chime": "res://assets/audio/sword_hit.wav",
 	"sfx_venom_hiss": "res://assets/audio/jar_break.wav",
@@ -37,6 +37,7 @@ const CUE_FALLBACK_PATHS := {
 	"sfx_react_freeze": "res://assets/audio/sword_hit.wav",
 	"sfx_react_slash": "res://assets/audio/sword_cast.wav",
 	"sfx_react_forge": "res://assets/audio/cannon_blast.wav",
+	"sfx_crit_hit": "res://assets/audio/sword_hit.wav",
 	"xp_orb": "res://assets/audio/gem_pickup.wav",
 	"ui_event": "res://assets/audio/chest_open.wav",
 }
@@ -68,6 +69,8 @@ var _shot_hit_counts: Dictionary = {}
 var _fusion_elem_toggle: Dictionary = {}
 var _lifesteal_budget: float = 0.0
 var _orb_counter: int = 0
+var _global_hitstop_end_ms: int = 0
+var _last_global_hitstop_ms: int = -1000
 var _prune_timer: float = 0.0
 var _reaction_pop_budget: int = 12
 var _reaction_pop_timer: float = 0.0
@@ -224,7 +227,25 @@ func play_v2_cue(cue_id: String, category: String = "default_hit") -> void:
 func _on_orbit_loadout_changed(_slots: Array) -> void:
 	v2_loadout_changed.emit()
 
+func _exit_tree() -> void:
+	if _global_hitstop_end_ms > 0:
+		_global_hitstop_end_ms = 0
+		Engine.time_scale = 1.0
+
+func trigger_micro_hitstop(duration_ms: int = 26, slow_scale: float = 0.24) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var now := Time.get_ticks_msec()
+	if now - _last_global_hitstop_ms < 220:
+		return
+	_last_global_hitstop_ms = now
+	_global_hitstop_end_ms = now + clampi(duration_ms, 12, 50)
+	Engine.time_scale = clampf(slow_scale, 0.10, 0.50)
+
 func _physics_process(delta: float) -> void:
+	if _global_hitstop_end_ms > 0 and Time.get_ticks_msec() >= _global_hitstop_end_ms:
+		_global_hitstop_end_ms = 0
+		Engine.time_scale = 1.0
 	if player == null or not is_instance_valid(player) or player.is_dead or orbit_rig == null:
 		_pending_salvos.clear()
 		return
@@ -381,7 +402,7 @@ func get_weapon_offer_weight(weapon_id: String) -> float:
 	var luck := get_luck()
 	var cur_lv := orbit_rig.get_weapon_tier(weapon_id)
 	if cur_lv > 0 and cur_lv < OrbitWeaponRig.MAX_WEAPON_TIER:
-		w *= (1.0 + 0.65 / clampf(luck, 1.0, 2.5))
+		w *= (1.0 + 2.2 / clampf(luck, 1.0, 2.5))
 	var finfo := find_companion_fusion_info(weapon_id)
 	if bool(finfo.get("ready_now", false)):
 		w *= 2.40
@@ -521,6 +542,22 @@ func add_item(item_id: String) -> bool:
 	recompute_player_stats()
 	v2_loadout_changed.emit()
 	return true
+
+func remove_item(item_id: String) -> bool:
+	for i in range(owned_items.size() - 1, -1, -1):
+		if String(owned_items[i].get("id", "")) == item_id:
+			owned_items.remove_at(i)
+			recompute_player_stats()
+			v2_loadout_changed.emit()
+			return true
+	return false
+
+func clear_items() -> void:
+	if owned_items.is_empty():
+		return
+	owned_items.clear()
+	recompute_player_stats()
+	v2_loadout_changed.emit()
 
 func add_realm_bonus(key: String, delta_val: float) -> void:
 	realm_bonuses[key] = float(realm_bonuses.get(key, 0.0)) + delta_val
@@ -1224,7 +1261,12 @@ func deal_v2_damage(enemy: Node, base_dmg: float, element: String, opts: Diction
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(final_dmg)
 
-	var kb := float(opts.get("knockback", 0.0))
+	if is_crit:
+		play_v2_cue("sfx_crit_hit", "crit_hit")
+		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 2.2:
+			player.shake_camera(1.15)
+
+	var kb := float(opts.get("knockback", 0.0)) * (1.35 if is_crit else 1.0)
 	if kb > 0.0 and not bool(enemy.get("is_dead")) and enemy.has_method("apply_knockback"):
 		var kb_dir: Vector2 = opts.get("knockback_dir", Vector2.ZERO)
 		if kb_dir.length_squared() > 0.001:
@@ -1287,6 +1329,8 @@ func _execute_reaction(primary_enemy: Node, rx: Dictionary, trigger_scaled_base:
 		_spawn_reaction_visual(rx_id, center, aoe_r if aoe_r > 0.0 else 65.0, rx_col, {"executed": executed_target})
 		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 3.5:
 			player.shake_camera(1.8)
+		if executed_target or is_guaranteed_crit:
+			trigger_micro_hitstop(24, 0.26)
 
 	if rx_id == "react_miasma_arc" and is_instance_valid(primary_enemy) and primary_enemy.has_method("detonate_remaining_dot"):
 		bonus_dmg += float(primary_enemy.detonate_remaining_dot(float(spec.get("detonate_dot_pct", 0.35))))
@@ -1609,6 +1653,15 @@ func add_arcana(arcana_id: String) -> bool:
 	if arcana_id == "arcana_samsara" and player != null and is_instance_valid(player):
 		player.revivals_left += 1
 	recompute_player_stats()
+	v2_loadout_changed.emit()
+	return true
+
+func remove_arcana(arcana_id: String) -> bool:
+	if not active_arcanas.has(arcana_id):
+		return false
+	active_arcanas.erase(arcana_id)
+	recompute_player_stats()
+	v2_loadout_changed.emit()
 	return true
 
 func get_arcana_choices(count: int = 3) -> Array[Dictionary]:

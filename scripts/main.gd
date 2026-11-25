@@ -9,18 +9,9 @@ extends Node2D
 @onready var stage_director = $StageDirector
 @onready var spawner = $Spawner
 
-const SHOP_LEVEL_INTERVAL := 5
-const CHEST_LEVEL_INTERVAL := 4
-const TREASURE_CHEST_SCENE: PackedScene = preload("res://scenes/treasure_chest.tscn")
-
-var shop_ui: V2ShopUI = null
-var debug_sandbox: V2DebugSandbox = null
 var kill_count: int = 0
 var pending_level_ups: int = 0
 var pending_chests: int = 0
-var pending_shop_wave: int = 0
-var _queued_shop_wave: int = 0
-var _shop_delay_timer: float = 0.0
 var is_game_over: bool = false
 var jars_broken_count: int = 0
 var _show_scheduled: bool = false
@@ -44,19 +35,7 @@ func _ready() -> void:
 			player.weapon_mgr.loadout_changed.connect(_refresh_hud_loadout)
 		if "v2_combat" in player and player.v2_combat != null:
 			player.v2_combat.v2_loadout_changed.connect(_refresh_hud_loadout)
-			player.v2_combat.gold_changed.connect(ui.update_gold)
 			player.v2_combat.realm_slot_unlocked.connect(_on_realm_slot_unlocked)
-			ui.update_gold(player.v2_combat.run_gold)
-
-	shop_ui = V2ShopUI.new()
-	shop_ui.name = "V2ShopUI"
-	add_child(shop_ui)
-	shop_ui.closed.connect(_on_shop_closed)
-
-	debug_sandbox = V2DebugSandbox.new()
-	debug_sandbox.name = "V2DebugSandbox"
-	add_child(debug_sandbox)
-	debug_sandbox.setup(self, player, spawner)
 
 	if spawner != null and spawner.has_signal("wave_completed"):
 		spawner.wave_completed.connect(_on_wave_completed)
@@ -93,29 +72,12 @@ func _refresh_hud_loadout() -> void:
 		ui.refresh_loadout(player.weapon_mgr)
 
 func _process(delta: float) -> void:
-	if _queued_shop_wave > 0 and _shop_delay_timer > 0.0 and not is_game_over:
-		_shop_delay_timer -= delta
-		if _shop_delay_timer <= 0.0:
-			pending_shop_wave = _queued_shop_wave
-			_queued_shop_wave = 0
-			_schedule_modal()
 	if stage_director == null or ui == null:
 		return
 	var chapter: Dictionary = stage_director.current_chapter()
 	if chapter.is_empty():
 		return
 	ui.update_chapter_progress(stage_director.chapter_time(), float(chapter.get("duration", 480.0)))
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		var k := event as InputEventKey
-		if k.pressed and not k.echo and k.keycode == KEY_F9 and not is_game_over:
-			open_debug_sandbox()
-			get_viewport().set_input_as_handled()
-
-func open_debug_sandbox() -> void:
-	if debug_sandbox != null and is_instance_valid(debug_sandbox) and not is_game_over:
-		debug_sandbox.toggle_panel()
 
 func _on_wave_completed(_completed_wave: int, _next_wave: int) -> void:
 	return
@@ -150,14 +112,10 @@ func _on_run_finished(victory: bool) -> void:
 	is_game_over = true
 	pending_level_ups = 0
 	pending_chests = 0
-	pending_shop_wave = 0
-	_queued_shop_wave = 0
 	if upgrade_ui:
 		upgrade_ui.hide_panel()
 	if chest_ui:
 		chest_ui.hide_panel()
-	if shop_ui:
-		shop_ui.hide_panel()
 	Sfx.play("level_up", 0.0)
 	var stone_mult := 1.0
 	if stage_director != null:
@@ -196,19 +154,6 @@ func _on_run_finished(victory: bool) -> void:
 func _on_player_leveled_up(new_lvl: int) -> void:
 	Sfx.play("level_up", -4.0)
 	pending_level_ups += 1
-	if new_lvl > 0 and new_lvl % CHEST_LEVEL_INTERVAL == 0 and player != null and is_instance_valid(player):
-		if TREASURE_CHEST_SCENE != null:
-			var chest := TREASURE_CHEST_SCENE.instantiate() as Node2D
-			if chest != null:
-				chest.global_position = player.global_position + Vector2.from_angle(randf() * TAU) * 78.0
-				add_child(chest)
-		if ui != null and ui.has_method("show_banner"):
-			ui.show_banner("【机缘降世 · Lv.%d 赐福宝箱已落于身侧！】" % new_lvl)
-	if new_lvl > 0 and new_lvl % SHOP_LEVEL_INTERVAL == 0:
-		_queued_shop_wave = maxi(1, new_lvl / SHOP_LEVEL_INTERVAL)
-		_shop_delay_timer = 0.45
-		if ui != null and ui.has_method("show_banner"):
-			ui.show_banner("【境界精进至 Lv.%d · 选卡后开启天机阁！】" % new_lvl)
 	_schedule_modal()
 
 func _on_realm_slot_unlocked(new_slots: int, realm_name: String, reason: String) -> void:
@@ -235,7 +180,7 @@ func _show_next_modal() -> void:
 	_show_scheduled = false
 	if is_game_over:
 		return
-	if (upgrade_ui != null and upgrade_ui.is_showing) or (chest_ui != null and chest_ui.is_showing) or (shop_ui != null and shop_ui.is_showing):
+	if (upgrade_ui != null and upgrade_ui.is_showing) or (chest_ui != null and chest_ui.is_showing):
 		return
 
 	if pending_chests > 0 and chest_ui != null:
@@ -281,15 +226,6 @@ func _show_next_modal() -> void:
 			)
 			return
 
-	if pending_shop_wave > 0 and shop_ui != null and "v2_combat" in player and player.v2_combat != null:
-		if GameFlow.state != GameFlow.State.UPGRADE:
-			if not GameFlow.request_upgrade():
-				return
-		var w := pending_shop_wave
-		pending_shop_wave = 0
-		shop_ui.open_shop(w, player.v2_combat, upgrade_mgr.banished_ids if upgrade_mgr != null else {})
-		return
-
 	_finish_upgrade_queue()
 
 func _on_upgrade_chosen(upgrade_id: String) -> void:
@@ -298,7 +234,7 @@ func _on_upgrade_chosen(upgrade_id: String) -> void:
 	_current_upgrade_is_breakthrough = false
 	upgrade_mgr.apply_v2_upgrade(upgrade_id, player)
 	_refresh_hud_loadout()
-	if (pending_chests > 0 or pending_level_ups > 0 or pending_shop_wave > 0) and not is_game_over:
+	if (pending_chests > 0 or pending_level_ups > 0) and not is_game_over:
 		_show_next_modal()
 	else:
 		_finish_upgrade_queue()
@@ -335,7 +271,7 @@ func _on_banish_selected(upgrade_id: String) -> void:
 		player.v2_combat.consume_breakthrough_pick()
 	_current_upgrade_is_breakthrough = false
 	upgrade_mgr.banish_choice(upgrade_id)
-	if (pending_chests > 0 or pending_level_ups > 0 or pending_shop_wave > 0) and not is_game_over:
+	if (pending_chests > 0 or pending_level_ups > 0) and not is_game_over:
 		_show_next_modal()
 	else:
 		_finish_upgrade_queue()
@@ -348,21 +284,14 @@ func _on_skip_requested() -> void:
 		upgrade_mgr.skips_left -= 1
 		if player != null and player.has_method("heal"):
 			player.heal(15.0)
-	if (pending_chests > 0 or pending_level_ups > 0 or pending_shop_wave > 0) and not is_game_over:
+	if (pending_chests > 0 or pending_level_ups > 0) and not is_game_over:
 		_show_next_modal()
 	else:
 		_finish_upgrade_queue()
 
 func _on_chest_closed() -> void:
 	_refresh_hud_loadout()
-	if (pending_chests > 0 or pending_level_ups > 0 or pending_shop_wave > 0) and not is_game_over:
-		_show_next_modal()
-	else:
-		_finish_upgrade_queue()
-
-func _on_shop_closed() -> void:
-	_refresh_hud_loadout()
-	if (pending_chests > 0 or pending_level_ups > 0 or pending_shop_wave > 0) and not is_game_over:
+	if (pending_chests > 0 or pending_level_ups > 0) and not is_game_over:
 		_show_next_modal()
 	else:
 		_finish_upgrade_queue()

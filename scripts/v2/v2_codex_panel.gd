@@ -297,7 +297,7 @@ func _render_realms_items_tab() -> void:
 		card.add_child(l)
 
 	var h2 := Label.new()
-	h2.text = "天机阁奇珍秘宝录（共 16 件 · 含权衡代价词条）"
+	h2.text = "奇珍秘宝录（共 16 件 · 含权衡代价词条）"
 	h2.add_theme_font_size_override("font_size", 15)
 	h2.add_theme_color_override("font_color", Color(0.10, 0.36, 0.30))
 	_content_vb.add_child(h2)

@@ -15,6 +15,7 @@ var _char_meta_lbl: Label = null
 var _char_trait_lbl: Label = null
 var _char_portrait: TextureRect = null
 var _sect_btn: Button = null
+var _debug_btn: Button = null
 var _stone_lbl: Label = null
 var _preload_started: bool = false
 var _starting_game: bool = false
@@ -290,14 +291,31 @@ func _build_stage_selector() -> void:
 	vbox.move_child(card, start_btn.get_index())
 
 func _build_sect_button() -> void:
+	var row := HBoxContainer.new()
+	row.name = "SectDebugRow"
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	row.custom_minimum_size = Vector2(360, 42)
+	row.add_theme_constant_override("separation", 10)
+
 	_sect_btn = Button.new()
 	_sect_btn.name = "SectButton"
-	_sect_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_sect_btn.custom_minimum_size = Vector2(360, 42)
-	_sect_btn.add_theme_font_size_override("font_size", 21)
+	_sect_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sect_btn.custom_minimum_size = Vector2(0, 42)
+	_sect_btn.add_theme_font_size_override("font_size", 19)
 	_sect_btn.pressed.connect(_on_sect_pressed)
-	vbox.add_child(_sect_btn)
-	vbox.move_child(_sect_btn, start_btn.get_index() + 1)
+	row.add_child(_sect_btn)
+
+	_debug_btn = Button.new()
+	_debug_btn.name = "DebugSandboxModeButton"
+	_debug_btn.text = "演武调试模式"
+	_debug_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_debug_btn.custom_minimum_size = Vector2(0, 42)
+	_debug_btn.add_theme_font_size_override("font_size", 19)
+	_debug_btn.pressed.connect(_on_debug_mode_pressed)
+	row.add_child(_debug_btn)
+
+	vbox.add_child(row)
+	vbox.move_child(row, start_btn.get_index() + 1)
 
 func _shift_stage(delta_idx: int) -> void:
 	var total := ChapterData.count()
@@ -323,6 +341,8 @@ func _apply_qinglv_theme() -> void:
 	XianxiaUITheme.style_button(start_btn, "cinnabar")
 	if _sect_btn != null:
 		XianxiaUITheme.style_button(_sect_btn, "primary")
+	if _debug_btn != null:
+		XianxiaUITheme.style_button(_debug_btn, "dark_gold")
 	XianxiaUITheme.style_button(settings_btn, "dark_gold")
 	XianxiaUITheme.style_button(quit_btn, "dark_gold")
 
@@ -350,6 +370,14 @@ func _on_start_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	GameFlow.quit_game()
+
+func _on_debug_mode_pressed() -> void:
+	if _starting_game:
+		return
+	_close_settings()
+	_close_sect()
+	Music.play_track("battle")
+	GameFlow.start_debug_sandbox()
 
 func _on_settings_pressed() -> void:
 	_close_sect()

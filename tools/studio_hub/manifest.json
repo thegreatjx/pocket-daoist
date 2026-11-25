@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-25 13:24:50",
-    "active_media_count": 216,
-    "used_media_count": 168,
-    "orphan_media_count": 48,
+    "generated_at": "2026-11-25 20:47:56",
+    "active_media_count": 224,
+    "used_media_count": 175,
+    "orphan_media_count": 49,
     "legacy_count": 0,
-    "usage_rate_pct": 77.8,
+    "usage_rate_pct": 78.1,
     "error_count": 3,
     "gap_count": 5,
     "warning_count": 5,
@@ -216,8 +216,8 @@
       "id": "ISS-010",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 48 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 48 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：trace(11), muzzle(10), smoke(5), star(4), window(4), spark(3)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 49 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 49 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：trace(11), muzzle(10), smoke(5), star(4), window(4), spark(3)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -788,7 +788,7 @@
         },
         "trait_summary": "+10% 攻速 · +4% 暴击 · 金系亲和 +15%",
         "max_health": 120.0,
-        "speed": 250.0,
+        "speed": 190.0,
         "crit_chance": 0.12,
         "magnet_radius": 170.0,
         "active_name": "御剑瞬步",
@@ -819,7 +819,7 @@
         },
         "trait_summary": "+18% 元素精通 · +12% 范围 · -10 气血 · 水系亲和 +15%",
         "max_health": 115.0,
-        "speed": 258.0,
+        "speed": 196.0,
         "crit_chance": 0.12,
         "magnet_radius": 180.0,
         "active_name": "云露清波",
@@ -851,7 +851,7 @@
         },
         "trait_summary": "+16% 持续伤 · +0.8/s 回血 · +2% 吸血 · -8% 直伤 · 木系亲和 +15%",
         "max_health": 115.0,
-        "speed": 252.0,
+        "speed": 192.0,
         "crit_chance": 0.1,
         "magnet_radius": 185.0,
         "active_name": "万木逢春",
@@ -883,11 +883,15 @@
         },
         "trait_summary": "+10 气血 · +2 护甲 · +15% 持续伤 · -4% 移速 · 火系亲和 +15%",
         "max_health": 125.0,
-        "speed": 245.0,
+        "speed": 186.0,
         "crit_chance": 0.11,
         "magnet_radius": 180.0,
         "active_name": "青葫御火",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
+        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。",
+        "anim_idle_atlas": "res://assets/v2/hero/anim/hero_gourd_daoist_idle-atlas-00.png",
+        "anim_idle_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_idle.json",
+        "anim_run_atlas": "res://assets/v2/hero/anim/hero_gourd_daoist_run-atlas-00.png",
+        "anim_run_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_run.json"
       },
       {
         "id": "jinyiwei_gunner",
@@ -915,7 +919,7 @@
         },
         "trait_summary": "+14% 全伤害 · +20% 暴伤 · -15 气血 · 火系亲和 +15%",
         "max_health": 115.0,
-        "speed": 256.0,
+        "speed": 195.0,
         "crit_chance": 0.15,
         "magnet_radius": 180.0,
         "active_name": "滑铲爆弹",
@@ -948,7 +952,7 @@
         },
         "trait_summary": "+18% 持续伤 · +0.8/s 回血 · +15% 拾取 · -5% 暴击 · 木系亲和 +15%",
         "max_health": 120.0,
-        "speed": 248.0,
+        "speed": 188.0,
         "crit_chance": 0.12,
         "magnet_radius": 185.0,
         "active_name": "飞葫撞岳",
@@ -981,7 +985,7 @@
         },
         "trait_summary": "+4 护甲 · +20 气血 · +14% 范围 · -4% 移速 · 金系亲和 +15%",
         "max_health": 135.0,
-        "speed": 240.0,
+        "speed": 182.0,
         "crit_chance": 0.1,
         "magnet_radius": 175.0,
         "active_name": "太极挪移",
@@ -1014,10 +1018,45 @@
         },
         "trait_summary": "+12% 闪避 · +8% 移速 · +5% 暴击 · -12 气血 · 雷系亲和 +15%",
         "max_health": 108.0,
-        "speed": 266.0,
+        "speed": 202.0,
         "crit_chance": 0.16,
         "magnet_radius": 190.0,
         "active_name": "霜雪灵跃",
+        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
+      },
+      {
+        "id": "thunder_daoist",
+        "name": "张清霄",
+        "role": "天雷符师",
+        "desc": "黄袍紫绶束太极金冠的符箓宗师，左手展天雷秘卷、右手掐剑诀步罡踏斗，引九霄神雷破邪除妖。",
+        "sprite": "res://assets/v2/heroes/hero_thunder_daoist.png",
+        "motion_mode": "brotato_bounce",
+        "mount_type": "none",
+        "draw_height": 88.0,
+        "anim_idle_atlas": "res://assets/v2/hero/anim/hero_thunder_daoist_idle-atlas-00.png",
+        "anim_idle_meta": "res://assets/v2/hero/anim/hero_thunder_daoist_idle.json",
+        "anim_run_atlas": "res://assets/v2/hero/anim/hero_thunder_daoist_run-atlas-00.png",
+        "anim_run_meta": "res://assets/v2/hero/anim/hero_thunder_daoist_run.json",
+        "start_weapon": "thunder_seal",
+        "v2_start_weapon": "wpn_thunder_talisman",
+        "element_affinity": "thunder",
+        "affinity_bonus_pct": 0.15,
+        "unlock_condition": {
+          "type": "default",
+          "desc": "初始可用"
+        },
+        "accent_color": "#F5D042",
+        "trait_mods": {
+          "mastery_pct": 0.12,
+          "crit_chance": 0.05,
+          "area_pct": 0.08
+        },
+        "trait_summary": "+12% 元素精通 · +5% 暴击 · +8% 范围 · 雷系亲和 +15%",
+        "max_health": 115.0,
+        "speed": 193.0,
+        "crit_chance": 0.14,
+        "magnet_radius": 185.0,
+        "active_name": "步罡雷遁",
         "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
       }
     ],
@@ -3644,6 +3683,27 @@
       "cluster": "thunder"
     },
     {
+      "path": "assets/audio/thunder_arc_snap.wav",
+      "res_path": "res://assets/audio/thunder_arc_snap.wav",
+      "name": "thunder_arc_snap.wav",
+      "category": "audio_sfx",
+      "ext": ".wav",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 58290,
+      "width": null,
+      "height": null,
+      "duration_sec": 0.66,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/sfx.gd",
+        "scripts/v2/v2_combat_controller.gd"
+      ],
+      "status": "used",
+      "cluster": "thunder"
+    },
+    {
       "path": "assets/icons/icon_jiutian_thunder.png",
       "res_path": "res://assets/icons/icon_jiutian_thunder.png",
       "name": "icon_jiutian_thunder.png",
@@ -4845,6 +4905,29 @@
       "cluster": "fx"
     },
     {
+      "path": "assets/sprites/fx_thunder_arc_strip.png",
+      "res_path": "res://assets/sprites/fx_thunder_arc_strip.png",
+      "name": "fx_thunder_arc_strip.png",
+      "category": "vfx_particles",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 569635,
+      "width": 3072,
+      "height": 192,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 16,
+        "rows": 1
+      },
+      "used_by": [
+        "scripts/v2/v2_attack_fx.gd"
+      ],
+      "status": "used",
+      "cluster": "fx"
+    },
+    {
       "path": "assets/sprites/pickup_magnet.png",
       "res_path": "res://assets/sprites/pickup_magnet.png",
       "name": "pickup_magnet.png",
@@ -4923,7 +5006,6 @@
       "spritesheet": null,
       "used_by": [
         "data/v2/pickups_v2.json",
-        "scripts/upgrade_manager.gd",
         "scripts/v2/v2_shop_ui.gd",
         "scripts/world_pickup.gd"
       ],
@@ -5105,6 +5187,122 @@
       "cluster": "ui"
     },
     {
+      "path": "assets/v2/hero/anim/hero_cloud_danxia_idle-atlas-00.png",
+      "res_path": "res://assets/v2/hero/anim/hero_cloud_danxia_idle-atlas-00.png",
+      "name": "hero_cloud_danxia_idle-atlas-00.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 6722466,
+      "width": 1728,
+      "height": 2688,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_cloud_danxia_idle.json",
+      "res_path": "res://assets/v2/hero/anim/hero_cloud_danxia_idle.json",
+      "name": "hero_cloud_danxia_idle.json",
+      "category": "heroes",
+      "ext": ".json",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 23799,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "doc_meta",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_gourd_daoist_idle-atlas-00.png",
+      "res_path": "res://assets/v2/hero/anim/hero_gourd_daoist_idle-atlas-00.png",
+      "name": "hero_gourd_daoist_idle-atlas-00.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 8485451,
+      "width": 1584,
+      "height": 3072,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_gourd_daoist_idle.json",
+      "res_path": "res://assets/v2/hero/anim/hero_gourd_daoist_idle.json",
+      "name": "hero_gourd_daoist_idle.json",
+      "category": "heroes",
+      "ext": ".json",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 23713,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_gourd_daoist_run-atlas-00.png",
+      "res_path": "res://assets/v2/hero/anim/hero_gourd_daoist_run-atlas-00.png",
+      "name": "hero_gourd_daoist_run-atlas-00.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 6328445,
+      "width": 1616,
+      "height": 2304,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_gourd_daoist_run.json",
+      "res_path": "res://assets/v2/hero/anim/hero_gourd_daoist_run.json",
+      "name": "hero_gourd_daoist_run.json",
+      "category": "heroes",
+      "ext": ".json",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 20572,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
       "path": "assets/v2/hero/anim/hero_sword_qwen_idle-atlas-00.png",
       "res_path": "res://assets/v2/hero/anim/hero_sword_qwen_idle-atlas-00.png",
       "name": "hero_sword_qwen_idle-atlas-00.png",
@@ -5134,6 +5332,86 @@
       "is_image": false,
       "is_audio": false,
       "size_bytes": 22147,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_thunder_daoist_idle-atlas-00.png",
+      "res_path": "res://assets/v2/hero/anim/hero_thunder_daoist_idle-atlas-00.png",
+      "name": "hero_thunder_daoist_idle-atlas-00.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 6316123,
+      "width": 1712,
+      "height": 2412,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_thunder_daoist_idle.json",
+      "res_path": "res://assets/v2/hero/anim/hero_thunder_daoist_idle.json",
+      "name": "hero_thunder_daoist_idle.json",
+      "category": "heroes",
+      "ext": ".json",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 18802,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_thunder_daoist_run-atlas-00.png",
+      "res_path": "res://assets/v2/hero/anim/hero_thunder_daoist_run-atlas-00.png",
+      "name": "hero_thunder_daoist_run-atlas-00.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 2115637,
+      "width": 1632,
+      "height": 804,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/hero/anim/hero_thunder_daoist_run.json",
+      "res_path": "res://assets/v2/hero/anim/hero_thunder_daoist_run.json",
+      "name": "hero_thunder_daoist_run.json",
+      "category": "heroes",
+      "ext": ".json",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 14571,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5461,6 +5739,26 @@
       "used_by": [
         "data/v2/characters_v2.json",
         "scripts/data/character_data.gd"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/heroes/hero_thunder_daoist.png",
+      "res_path": "res://assets/v2/heroes/hero_thunder_daoist.png",
+      "name": "hero_thunder_daoist.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 269638,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
       ],
       "status": "used",
       "cluster": "hero"
@@ -7782,7 +8080,7 @@
     {
       "file": "scripts/ui.gd",
       "stylebox_new": 9,
-      "theme_calls": 62,
+      "theme_calls": 60,
       "status": "partial_bypass"
     },
     {
@@ -7812,8 +8110,14 @@
     {
       "file": "scripts/title.gd",
       "stylebox_new": 1,
-      "theme_calls": 37,
+      "theme_calls": 38,
       "status": "partial_bypass"
+    },
+    {
+      "file": "scripts/debug_sandbox_main.gd",
+      "stylebox_new": 0,
+      "theme_calls": 12,
+      "status": "compliant"
     },
     {
       "file": "scripts/game_over_ui.gd",
@@ -7836,7 +8140,7 @@
     {
       "file": "scripts/v2/v2_debug_sandbox.gd",
       "stylebox_new": 0,
-      "theme_calls": 20,
+      "theme_calls": 27,
       "status": "compliant"
     }
   ],
@@ -7897,6 +8201,21 @@
         "sub_scenes": [],
         "scripts": [
           "res://scripts/damage_number.gd"
+        ]
+      },
+      {
+        "path": "scenes/debug_sandbox.tscn",
+        "name": "debug_sandbox",
+        "role": "entity",
+        "sub_scenes": [
+          "res://scenes/pause_menu.tscn",
+          "res://scenes/player.tscn",
+          "res://scenes/ui.tscn"
+        ],
+        "scripts": [
+          "res://scripts/background.gd",
+          "res://scripts/debug_sandbox_main.gd",
+          "res://scripts/v2/arena_landmarks_controller.gd"
         ]
       },
       {
@@ -8040,6 +8359,16 @@
         ]
       },
       {
+        "path": "scenes/training_dummy.tscn",
+        "name": "training_dummy",
+        "role": "entity",
+        "sub_scenes": [],
+        "scripts": [
+          "res://scripts/v2/training_dummy.gd",
+          "res://scripts/v2/training_dummy_visual.gd"
+        ]
+      },
+      {
         "path": "scenes/treasure_chest.tscn",
         "name": "treasure_chest",
         "role": "entity",
@@ -8087,6 +8416,8 @@
       "scripts/v2/reaction_engine.gd",
       "scripts/v2/spawn_telegraph.gd",
       "scripts/v2/throttled_audio_manager.gd",
+      "scripts/v2/training_dummy.gd",
+      "scripts/v2/training_dummy_visual.gd",
       "scripts/v2/v2_attack_fx.gd",
       "scripts/v2/v2_codex_panel.gd",
       "scripts/v2/v2_combat_controller.gd",
@@ -8105,6 +8436,8 @@
       "shaders/burn_dissolve.gdshader",
       "shaders/electric_arc.gdshader",
       "shaders/fire_flame_2d.gdshader",
+      "shaders/flame_tongue.gdshader",
+      "shaders/ground_scorch.gdshader",
       "shaders/sword_glint_trail.gdshader"
     ],
     "data_graph": {
@@ -8152,7 +8485,7 @@
         {
           "id": "characters_v2",
           "label": "characters_v2.json",
-          "count": 8,
+          "count": 9,
           "group": "meta",
           "x": 340,
           "y": 250

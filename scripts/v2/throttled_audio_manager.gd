@@ -20,6 +20,7 @@ const PENTATONIC: Array[float] = [1.0, 1.122, 1.260, 1.498, 1.682, 2.0, 2.245, 2
 
 var cue_rules: Dictionary = {
 	"default_hit": {"icd_ms": 60, "max_voices": 3, "base_db": -6.0, "jitter": 0.06, "priority": 1},
+	"crit_hit":    {"icd_ms": 95, "max_voices": 2, "base_db": -3.5, "jitter": 0.08, "priority": 2},
 	"reaction":    {"icd_ms": 110, "max_voices": 4, "base_db": -2.0, "jitter": 0.04, "priority": 3},
 	"xp_orb":      {"icd_ms": 45, "max_voices": 3, "base_db": -9.0, "jitter": 0.0, "priority": 2},
 	"ui_event":    {"icd_ms": 20, "max_voices": 2, "base_db": -1.0, "jitter": 0.0, "priority": 4}

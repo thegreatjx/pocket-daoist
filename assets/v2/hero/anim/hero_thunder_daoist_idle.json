@@ -1,0 +1,722 @@
+{
+  "schemaVersion": "3.0",
+  "name": "hero_thunder_daoist_idle",
+  "sourceSize": [
+    1280,
+    720
+  ],
+  "sourceAnchor": [
+    674.5,
+    707.0
+  ],
+  "inputFrameSize": [
+    1280,
+    720
+  ],
+  "sourceRect": [
+    402.0,
+    8.0,
+    559.0,
+    700.0
+  ],
+  "sourceRectFormat": "x,y,width,height",
+  "encodedSize": [
+    214,
+    268
+  ],
+  "contentSize": [
+    214,
+    268
+  ],
+  "encodedAnchor": [
+    104.32021466905188,
+    267.6171428571429
+  ],
+  "registration": {
+    "mode": "fixed-envelope",
+    "legacyMode": "fixed-union-envelope"
+  },
+  "fps": 12.0,
+  "fpsRational": "12/1",
+  "frameCount": 66,
+  "durationSeconds": 5.5,
+  "loop": true,
+  "reviewStatus": "needs-visual-review",
+  "hitEvents": [],
+  "poster": {
+    "file": "hero_thunder_daoist_idle-poster.png",
+    "bytes": 98782,
+    "sha256": "db39674e759f6583a2fdfca00f9f8c7e8a8bf728aa43563bede2d97cc2531b6b"
+  },
+  "fallback": {
+    "type": "png-atlas",
+    "cellSize": [
+      214,
+      268
+    ],
+    "pages": [
+      {
+        "file": "hero_thunder_daoist_idle-atlas-00.png",
+        "bytes": 6316123,
+        "sha256": "55496a05682e97ea45d83ea4911436ec8c6653deabe9a40df22e11a0b8a3e14f",
+        "firstFrame": 0,
+        "frameCount": 66,
+        "columns": 8
+      }
+    ]
+  },
+  "qa": {
+    "status": "needs-visual-review",
+    "method": "engine_export package: forge_matte.matte_qa key-residue gate on every packaged source frame (alpha <= 16 cleared, D18; key from flag, D17); body-bounds and premultiplied seam diagnostics; selection, registration and review bound by sha256; forge_av encoders verify packet counts and keyframes; every encoded file is decoded completely",
+    "notProven": [
+      "Visual identity, contact and gait quality: a low seam ratio or stable bounds do not prove a seamless cycle or a planted foot.",
+      "Playback of the encoded files: run engine_export.py verify to decode them and compare them with the atlas, then validate_animation.py.",
+      "Browser, Safari, WebGL or iPhone playback, decoder throughput and memory on target devices.",
+      "Key-residue thresholds were set on one clip (report v2); unusual keys or costumes need a look."
+    ],
+    "checks": [
+      {
+        "id": "opaque_key_px",
+        "value": 0,
+        "threshold": 0,
+        "status": "pass"
+      },
+      {
+        "id": "outer_ring_spill_fraction",
+        "value": 0.0,
+        "threshold": 0.01,
+        "status": "pass"
+      },
+      {
+        "id": "semitransparent_fraction",
+        "status": "pass",
+        "value": 0.056704,
+        "threshold": null
+      },
+      {
+        "id": "enclosed_key_pockets",
+        "value": 0,
+        "threshold": 0,
+        "status": "pass"
+      },
+      {
+        "id": "blank_frames",
+        "status": "pass",
+        "value": [],
+        "threshold": []
+      },
+      {
+        "id": "edge_touch_frames",
+        "status": "pass",
+        "value": [],
+        "threshold": []
+      },
+      {
+        "id": "loop_seam_over_p95",
+        "value": 0.846879,
+        "threshold": 1.1,
+        "status": "pass"
+      },
+      {
+        "id": "selection_hashes",
+        "status": "pass",
+        "value": "226e4d2f488d996c28a93b60e47d0df47fd3dec3f93d68beedbf7dcf50c79726",
+        "threshold": null
+      },
+      {
+        "id": "registration",
+        "status": "skipped",
+        "value": null,
+        "threshold": null
+      },
+      {
+        "id": "fps_cap",
+        "status": "pass",
+        "value": "12/1",
+        "threshold": "60/1"
+      },
+      {
+        "id": "review_verdict",
+        "status": "needs-visual-review",
+        "value": null,
+        "threshold": "accepted"
+      }
+    ],
+    "inputs": [
+      {
+        "path": "clean_0000.png",
+        "sha256": "d1a1a348f45ea58e54fac76f79bfa447a1e9386b0532b8cd8b5918507f9cd21b",
+        "bytes": 481048
+      },
+      {
+        "path": "clean_0001.png",
+        "sha256": "25dc70958af2e5504212608bb3ab47fb4e485248c05ecd4b3851250e515d9edb",
+        "bytes": 484850
+      },
+      {
+        "path": "clean_0002.png",
+        "sha256": "e04969f4d2632cb71b8957f3c6befc8248ce4dfe84b95bb6ff3c9d3895f6af68",
+        "bytes": 490173
+      },
+      {
+        "path": "clean_0003.png",
+        "sha256": "cfb5374e5660fe81096d5fda5578542869c1f61e9b9847b32d8f4737b48983ac",
+        "bytes": 487286
+      },
+      {
+        "path": "clean_0004.png",
+        "sha256": "a7a785ccbe6733dea44296ff58029151cb840adfc479d04ffdc8571b6e53c6bb",
+        "bytes": 486260
+      },
+      {
+        "path": "clean_0005.png",
+        "sha256": "a025be761ab02581456d0aa907f03b47a2f97f5af06827e1342fa91b039f4860",
+        "bytes": 483016
+      },
+      {
+        "path": "clean_0006.png",
+        "sha256": "0e6540edc84833ab6364e2215a1604ec2c405f1b12132e23f7c08815ce037350",
+        "bytes": 478804
+      },
+      {
+        "path": "clean_0007.png",
+        "sha256": "7baec3c24ac6436684b695d4f82104f36d57023102c2925ee6f120a2b07af81c",
+        "bytes": 492029
+      },
+      {
+        "path": "clean_0008.png",
+        "sha256": "f699dde15679984000a2966d25bfd63a7b64d4e681fa6a8c740aeaf92b85ae4b",
+        "bytes": 484031
+      },
+      {
+        "path": "clean_0009.png",
+        "sha256": "539deef9087c4332bf46bdc1b6bcb83f490c9a3a4ef6a23317e4d08a7f99f5c5",
+        "bytes": 484429
+      },
+      {
+        "path": "clean_0010.png",
+        "sha256": "ff715ffca13d6ff853d36d24303804394c434e7be5eef357354e84189335097e",
+        "bytes": 498976
+      },
+      {
+        "path": "clean_0011.png",
+        "sha256": "35c77a3500fbec1373e362ebcb72894fb78774fbd7737343525a968b75f0557a",
+        "bytes": 495101
+      },
+      {
+        "path": "clean_0012.png",
+        "sha256": "6a22be80bded7f19defbab6f55987332714e8942c16ef1a033ac8faf842f2b12",
+        "bytes": 501814
+      },
+      {
+        "path": "clean_0013.png",
+        "sha256": "6e7044faa279b2b4d6ba474727c5afb6a56291ec5fe46cf0a400547eaeac5a43",
+        "bytes": 488899
+      },
+      {
+        "path": "clean_0014.png",
+        "sha256": "88f230ebd8bbaf1c59169d75ffc9d764c09030171046304bc300f41d2db05bf4",
+        "bytes": 496591
+      },
+      {
+        "path": "clean_0015.png",
+        "sha256": "e0aba419b6fece25af70f6ea1885e4ff59c0ddf75e939e0d7814d05f5f83a53a",
+        "bytes": 493532
+      },
+      {
+        "path": "clean_0016.png",
+        "sha256": "c995cce7b36b9042e31a294024cb60504c27a7c3acfa8cec693171912e413142",
+        "bytes": 501130
+      },
+      {
+        "path": "clean_0017.png",
+        "sha256": "4cf4f15ec7976d78747abacdf33686dd7990ff2619363e78fb8343e174b49520",
+        "bytes": 502204
+      },
+      {
+        "path": "clean_0018.png",
+        "sha256": "814ee94c066aa106e2884f47c9ea3811b9cd022236a65eaef9efa1b51c7738e2",
+        "bytes": 508746
+      },
+      {
+        "path": "clean_0019.png",
+        "sha256": "7a6ef20c87ca4f3242daa4257245ab4c7288bee26610160ecb1d7c52df45cd78",
+        "bytes": 495873
+      },
+      {
+        "path": "clean_0020.png",
+        "sha256": "9ba0e01f6c098c4d604723384ae2d59f5cf2a11b45cfddb56757bc61d3c1105d",
+        "bytes": 492276
+      },
+      {
+        "path": "clean_0021.png",
+        "sha256": "60af63170ff9ce776a151ee18acef01799da2447080b4828ce143ec74203174f",
+        "bytes": 503662
+      },
+      {
+        "path": "clean_0022.png",
+        "sha256": "9cb5ef0c72a81994a3b0718f5bcfc66fddc3e4092a082e0deac1aa3ca3c673d4",
+        "bytes": 501950
+      },
+      {
+        "path": "clean_0023.png",
+        "sha256": "f984c66e8abd6291a948cb99e08e516e73ae7e14ad12d0f33ec9127de8ae587c",
+        "bytes": 500802
+      },
+      {
+        "path": "clean_0024.png",
+        "sha256": "aefba2f8bc8fb9168a093d3672c401391319f023ced31444fc5b97f7349133b6",
+        "bytes": 507164
+      },
+      {
+        "path": "clean_0025.png",
+        "sha256": "57e461f6ed5afb37cc60e7d3f6c461cc523429ff6bf680c0a2cd2877dba32120",
+        "bytes": 492672
+      },
+      {
+        "path": "clean_0026.png",
+        "sha256": "7cf979810ee9692a3dfa39941c50ffe1f727822f7f6e6cd699e0db7e72da4f7d",
+        "bytes": 504470
+      },
+      {
+        "path": "clean_0027.png",
+        "sha256": "2be9345d7f7f8c14d5685f5125e80fab4739f51533e9a712d4cc692a5a1b61d9",
+        "bytes": 497791
+      },
+      {
+        "path": "clean_0028.png",
+        "sha256": "93c63fc249597eb4d1ae70f6115b83f882138aec642de766ad507b21c9deb7e4",
+        "bytes": 499454
+      },
+      {
+        "path": "clean_0029.png",
+        "sha256": "ed0cedc79e59ef4b9dbac1d2847cad573606f4279a558089373d86b9e57344e4",
+        "bytes": 496216
+      },
+      {
+        "path": "clean_0030.png",
+        "sha256": "49b43453993c49ef008ec2c1db5f977facaf04cca88b8c2b3e472c484088ec2d",
+        "bytes": 494496
+      },
+      {
+        "path": "clean_0031.png",
+        "sha256": "8fc2a6c106af1a781587353097156e0c1da71401e7a4d31cc64a36bce3ddaf8f",
+        "bytes": 488291
+      },
+      {
+        "path": "clean_0032.png",
+        "sha256": "88e0d876db781ea0b7cbcbe0fe2a1ef886b0345035dfd7f9aa94e7b889aab913",
+        "bytes": 500109
+      },
+      {
+        "path": "clean_0033.png",
+        "sha256": "c0aafc64f46966611172ca6e39d0609a8a5652439b77bfa799809292b66f6cec",
+        "bytes": 493862
+      },
+      {
+        "path": "selection.json",
+        "sha256": "226e4d2f488d996c28a93b60e47d0df47fd3dec3f93d68beedbf7dcf50c79726",
+        "bytes": 4949
+      }
+    ],
+    "outputs": [
+      {
+        "path": "hero_thunder_daoist_idle-poster.png",
+        "sha256": "db39674e759f6583a2fdfca00f9f8c7e8a8bf728aa43563bede2d97cc2531b6b",
+        "bytes": 98782
+      },
+      {
+        "path": "hero_thunder_daoist_idle-atlas-00.png",
+        "sha256": "55496a05682e97ea45d83ea4911436ec8c6653deabe9a40df22e11a0b8a3e14f",
+        "bytes": 6316123
+      }
+    ],
+    "tool": {
+      "name": "engine_export.py",
+      "version": "0.6.0"
+    },
+    "loopRequested": true,
+    "frameCount": 66,
+    "durationSeconds": 5.5,
+    "blankFrames": [],
+    "edgeTouchFrames": [],
+    "boundsBottomSpanPx": 0,
+    "boundsCenterXSpanPx": 17.5,
+    "seamPremultipliedMAE": 0.005234,
+    "adjacentMedianMAE": 0.005175,
+    "seamToMedianRatio": 1.011,
+    "adjacentMaxMAE": 0.007589,
+    "notes": [
+      "Bounds bottom is a contact-drift proxy, not a tracked foot/root.",
+      "A similar first/last frame does not prove a seamless cycle or stable identity.",
+      "Airborne poses may legitimately change bottom position; review at runtime scale."
+    ],
+    "keyResidue": {
+      "key": [
+        0,
+        255,
+        0
+      ],
+      "framesMeasured": 34,
+      "opaqueKeyPx": 0,
+      "framesWithOpaqueKey": [],
+      "maxOuterRingSpillFraction": 0.0,
+      "framesOverRingSpill": [],
+      "maxSemitransparentFraction": 0.056704,
+      "minSemitransparentFraction": 0.044489,
+      "enclosedKeyPockets": 0,
+      "keyHuedPx": 0,
+      "limits": {
+        "opaqueKeyPx": 0,
+        "outerRingSpillFraction": 0.01
+      },
+      "thresholds": {
+        "key_tolerance": 48.0,
+        "spill_threshold": 20.0,
+        "min_pocket_area": 16,
+        "opaque_alpha": 128,
+        "spill_hue_balance": 0.5,
+        "alpha_floor": 16
+      },
+      "method": "forge_matte.matte_qa v1: straight-colour key distance and dominance on the keyed image; two-channel keys count spill only where the key channels are balanced; each frame measured on a copy with alpha <= 16 cleared, so invisible resampling halo is not counted (D18)"
+    },
+    "allowKeyResidue": false,
+    "keySource": "flag",
+    "seamReport": {
+      "frames": 66,
+      "seam": 5.276487,
+      "adjacent_median": 5.08177,
+      "adjacent_p95": 6.230506,
+      "adjacent_max": 6.417518,
+      "seam_over_median": 1.038317,
+      "seam_over_p95": 0.846879,
+      "method": "premultiplied RGBA mean absolute difference (0-255); seam = last -> first"
+    }
+  },
+  "inputFrames": [
+    {
+      "file": "clean_0000.png",
+      "bytes": 481048,
+      "sha256": "d1a1a348f45ea58e54fac76f79bfa447a1e9386b0532b8cd8b5918507f9cd21b"
+    },
+    {
+      "file": "clean_0001.png",
+      "bytes": 484850,
+      "sha256": "25dc70958af2e5504212608bb3ab47fb4e485248c05ecd4b3851250e515d9edb"
+    },
+    {
+      "file": "clean_0002.png",
+      "bytes": 490173,
+      "sha256": "e04969f4d2632cb71b8957f3c6befc8248ce4dfe84b95bb6ff3c9d3895f6af68"
+    },
+    {
+      "file": "clean_0003.png",
+      "bytes": 487286,
+      "sha256": "cfb5374e5660fe81096d5fda5578542869c1f61e9b9847b32d8f4737b48983ac"
+    },
+    {
+      "file": "clean_0004.png",
+      "bytes": 486260,
+      "sha256": "a7a785ccbe6733dea44296ff58029151cb840adfc479d04ffdc8571b6e53c6bb"
+    },
+    {
+      "file": "clean_0005.png",
+      "bytes": 483016,
+      "sha256": "a025be761ab02581456d0aa907f03b47a2f97f5af06827e1342fa91b039f4860"
+    },
+    {
+      "file": "clean_0006.png",
+      "bytes": 478804,
+      "sha256": "0e6540edc84833ab6364e2215a1604ec2c405f1b12132e23f7c08815ce037350"
+    },
+    {
+      "file": "clean_0007.png",
+      "bytes": 492029,
+      "sha256": "7baec3c24ac6436684b695d4f82104f36d57023102c2925ee6f120a2b07af81c"
+    },
+    {
+      "file": "clean_0008.png",
+      "bytes": 484031,
+      "sha256": "f699dde15679984000a2966d25bfd63a7b64d4e681fa6a8c740aeaf92b85ae4b"
+    },
+    {
+      "file": "clean_0009.png",
+      "bytes": 484429,
+      "sha256": "539deef9087c4332bf46bdc1b6bcb83f490c9a3a4ef6a23317e4d08a7f99f5c5"
+    },
+    {
+      "file": "clean_0010.png",
+      "bytes": 498976,
+      "sha256": "ff715ffca13d6ff853d36d24303804394c434e7be5eef357354e84189335097e"
+    },
+    {
+      "file": "clean_0011.png",
+      "bytes": 495101,
+      "sha256": "35c77a3500fbec1373e362ebcb72894fb78774fbd7737343525a968b75f0557a"
+    },
+    {
+      "file": "clean_0012.png",
+      "bytes": 501814,
+      "sha256": "6a22be80bded7f19defbab6f55987332714e8942c16ef1a033ac8faf842f2b12"
+    },
+    {
+      "file": "clean_0013.png",
+      "bytes": 488899,
+      "sha256": "6e7044faa279b2b4d6ba474727c5afb6a56291ec5fe46cf0a400547eaeac5a43"
+    },
+    {
+      "file": "clean_0014.png",
+      "bytes": 496591,
+      "sha256": "88f230ebd8bbaf1c59169d75ffc9d764c09030171046304bc300f41d2db05bf4"
+    },
+    {
+      "file": "clean_0015.png",
+      "bytes": 493532,
+      "sha256": "e0aba419b6fece25af70f6ea1885e4ff59c0ddf75e939e0d7814d05f5f83a53a"
+    },
+    {
+      "file": "clean_0016.png",
+      "bytes": 501130,
+      "sha256": "c995cce7b36b9042e31a294024cb60504c27a7c3acfa8cec693171912e413142"
+    },
+    {
+      "file": "clean_0017.png",
+      "bytes": 502204,
+      "sha256": "4cf4f15ec7976d78747abacdf33686dd7990ff2619363e78fb8343e174b49520"
+    },
+    {
+      "file": "clean_0018.png",
+      "bytes": 508746,
+      "sha256": "814ee94c066aa106e2884f47c9ea3811b9cd022236a65eaef9efa1b51c7738e2"
+    },
+    {
+      "file": "clean_0019.png",
+      "bytes": 495873,
+      "sha256": "7a6ef20c87ca4f3242daa4257245ab4c7288bee26610160ecb1d7c52df45cd78"
+    },
+    {
+      "file": "clean_0020.png",
+      "bytes": 492276,
+      "sha256": "9ba0e01f6c098c4d604723384ae2d59f5cf2a11b45cfddb56757bc61d3c1105d"
+    },
+    {
+      "file": "clean_0021.png",
+      "bytes": 503662,
+      "sha256": "60af63170ff9ce776a151ee18acef01799da2447080b4828ce143ec74203174f"
+    },
+    {
+      "file": "clean_0022.png",
+      "bytes": 501950,
+      "sha256": "9cb5ef0c72a81994a3b0718f5bcfc66fddc3e4092a082e0deac1aa3ca3c673d4"
+    },
+    {
+      "file": "clean_0023.png",
+      "bytes": 500802,
+      "sha256": "f984c66e8abd6291a948cb99e08e516e73ae7e14ad12d0f33ec9127de8ae587c"
+    },
+    {
+      "file": "clean_0024.png",
+      "bytes": 507164,
+      "sha256": "aefba2f8bc8fb9168a093d3672c401391319f023ced31444fc5b97f7349133b6"
+    },
+    {
+      "file": "clean_0025.png",
+      "bytes": 492672,
+      "sha256": "57e461f6ed5afb37cc60e7d3f6c461cc523429ff6bf680c0a2cd2877dba32120"
+    },
+    {
+      "file": "clean_0026.png",
+      "bytes": 504470,
+      "sha256": "7cf979810ee9692a3dfa39941c50ffe1f727822f7f6e6cd699e0db7e72da4f7d"
+    },
+    {
+      "file": "clean_0027.png",
+      "bytes": 497791,
+      "sha256": "2be9345d7f7f8c14d5685f5125e80fab4739f51533e9a712d4cc692a5a1b61d9"
+    },
+    {
+      "file": "clean_0028.png",
+      "bytes": 499454,
+      "sha256": "93c63fc249597eb4d1ae70f6115b83f882138aec642de766ad507b21c9deb7e4"
+    },
+    {
+      "file": "clean_0029.png",
+      "bytes": 496216,
+      "sha256": "ed0cedc79e59ef4b9dbac1d2847cad573606f4279a558089373d86b9e57344e4"
+    },
+    {
+      "file": "clean_0030.png",
+      "bytes": 494496,
+      "sha256": "49b43453993c49ef008ec2c1db5f977facaf04cca88b8c2b3e472c484088ec2d"
+    },
+    {
+      "file": "clean_0031.png",
+      "bytes": 488291,
+      "sha256": "8fc2a6c106af1a781587353097156e0c1da71401e7a4d31cc64a36bce3ddaf8f"
+    },
+    {
+      "file": "clean_0032.png",
+      "bytes": 500109,
+      "sha256": "88e0d876db781ea0b7cbcbe0fe2a1ef886b0345035dfd7f9aa94e7b889aab913"
+    },
+    {
+      "file": "clean_0033.png",
+      "bytes": 493862,
+      "sha256": "c0aafc64f46966611172ca6e39d0609a8a5652439b77bfa799809292b66f6cec"
+    }
+  ],
+  "runtimeNotes": [
+    "Game logic owns hit timings, damage and root motion.",
+    "Packed MP4 has no native alpha; reconstruct RGB and alpha before displaying.",
+    "Keep sourceSize/sourceAnchor for world geometry when selecting smaller media.",
+    "Use the PNG poster until a decoded first frame exists; preload only current scene actions.",
+    "Packed halves are padded to even sizes: crop RGB at (0, 0, width, height) and alpha (red) at (halfWidth, 0, width, height).",
+    "durationsMs is the timeline; fps/fpsRational is the constant rate of the video transports."
+  ],
+  "sourceIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    32,
+    31,
+    30,
+    29,
+    28,
+    27,
+    26,
+    25,
+    24,
+    23,
+    22,
+    21,
+    20,
+    19,
+    18,
+    17,
+    16,
+    15,
+    14,
+    13,
+    12,
+    11,
+    10,
+    9,
+    8,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "durationsMs": [
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83,
+    83,
+    84,
+    83
+  ],
+  "loopPolicy": "cycle",
+  "events": [],
+  "cycles": 1,
+  "sampling": "linear",
+  "pixelArt": false,
+  "bodyHeightPx": 258.0,
+  "pingpongBaked": true,
+  "provenanceFile": "provenance.json",
+  "artSource": "video",
+  "placeholder": false
+}
