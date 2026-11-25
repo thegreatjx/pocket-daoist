@@ -924,7 +924,7 @@ func test_title_scene() -> void:
 	await _frame()
 	var panel = t.settings_panel
 	check("panel_has_sliders", panel._sliders.size() == 3, "sliders=%d expect 3" % panel._sliders.size())
-	check("panel_has_toggles", panel._toggles.size() == 3, "toggles=%d expect 3" % panel._toggles.size())
+	check("panel_has_toggles", panel._toggles.size() == 4, "toggles=%d expect 4" % panel._toggles.size())
 	check("panel_slider_synced", absf(panel._sliders["audio/music_volume_db"].value - Settings.db_to_linear(Settings.get_float("audio/music_volume_db"))) < 0.02, "slider out of sync")
 	check("panel_toggle_synced", panel._toggles["video/screen_shake"].button_pressed == Settings.get_bool("video/screen_shake"), "toggle out of sync")
 

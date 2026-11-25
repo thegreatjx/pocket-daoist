@@ -529,7 +529,7 @@ func _physics_process(delta: float) -> void:
 		_dot_tick_acc += delta
 		if _dot_tick_acc >= 0.5:
 			_dot_tick_acc -= 0.5
-			take_damage_v2(_dot_dps * 0.5, false, false, _dot_elem)
+			take_damage_v2(_dot_dps * 0.5, false, false, _dot_elem, Color(0.0, 0.0, 0.0, 0.0), Vector2.ZERO, true)
 			if is_dead:
 				return
 		if _dot_timer <= 0.0:
@@ -938,7 +938,7 @@ func get_element_damage_mult(element: String) -> float:
 func take_damage(amount: float) -> void:
 	take_damage_v2(amount, false, false, "")
 
-func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0)) -> void:
+func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), hit_dir: Vector2 = Vector2.ZERO, is_dot: bool = false) -> void:
 	if is_dead:
 		return
 	var elem_mult := get_element_damage_mult(element)
@@ -968,6 +968,9 @@ func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = fa
 		_flash_tween.tween_property(self, "modulate", Color.WHITE, flash_dur)
 		if get_parent() != null:
 			V2VfxFactory.spawn_hit_spark(get_parent(), global_position + Vector2(0.0, -10.0), element, is_crit, reaction_color)
+
+	if not is_dot and not is_visual_culled:
+		HitFeel.on_hit(global_position + Vector2(0.0, -8.0), hit_dir, element, is_crit, int(enemy_type), current_health <= 0.0, get_parent())
 
 	if current_health <= 0:
 		die()

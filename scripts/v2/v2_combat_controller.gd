@@ -26,6 +26,7 @@ const CUE_FALLBACK_PATHS := {
 	"sfx_thunder_snap": "res://assets/audio/thunder.wav",
 	"sfx_fusion_thunder_ice": "res://assets/audio/thunder.wav",
 	"sfx_ice_chime": "res://assets/audio/sword_hit.wav",
+	"sfx_hit": "res://assets/audio/sword_hit.wav",
 	"sfx_venom_hiss": "res://assets/audio/jar_break.wav",
 	"sfx_bell_gong": "res://assets/audio/cannon_blast.wav",
 	"sfx_fusion_zen_bell": "res://assets/audio/cannon_blast.wav",
@@ -214,12 +215,12 @@ func _preload_cues() -> void:
 			if st != null:
 				_streams[cue_id] = st
 
-func play_v2_cue(cue_id: String, category: String = "default_hit") -> void:
+func play_v2_cue(cue_id: String, category: String = "default_hit", pitch: float = 1.0) -> void:
 	if audio_mgr == null:
 		return
 	var st: AudioStream = _streams.get(cue_id, null) as AudioStream
 	if st != null:
-		audio_mgr.play_cue(cue_id, st, category)
+		audio_mgr.play_cue(cue_id, st, category, pitch)
 
 func _on_orbit_loadout_changed(_slots: Array) -> void:
 	v2_loadout_changed.emit()
@@ -1218,11 +1219,28 @@ func deal_v2_damage(enemy: Node, base_dmg: float, element: String, opts: Diction
 	var is_crit := force_crit or (allow_crit and randf() < get_crit_chance())
 	var final_dmg := scaled_base * (get_crit_mult() if is_crit else 1.0)
 	var is_true := bool(opts.get("true_damage", false))
+	var is_dot := bool(opts.get("is_dot", false))
+	var hit_dir: Vector2 = opts.get("knockback_dir", Vector2.ZERO)
 
 	if enemy.has_method("take_damage_v2"):
-		enemy.take_damage_v2(final_dmg, is_crit, is_true, element)
+		enemy.take_damage_v2(final_dmg, is_crit, is_true, element, Color(0.0, 0.0, 0.0, 0.0), hit_dir, is_dot)
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(final_dmg)
+
+	if not is_dot and not bool(enemy.get("is_visual_culled")):
+		var tier := 0
+		if bool(enemy.get("is_boss")):
+			tier = 2
+		elif int(enemy.get("enemy_type")) == 1:
+			tier = 1
+		var pitch := 1.0
+		if tier == 1:
+			pitch = 0.88
+		elif tier == 2:
+			pitch = 0.76
+		if is_crit:
+			pitch *= 1.07
+		play_v2_cue("sfx_hit", "hit", pitch)
 
 	var kb := float(opts.get("knockback", 0.0))
 	if kb > 0.0 and not bool(enemy.get("is_dead")) and enemy.has_method("apply_knockback"):

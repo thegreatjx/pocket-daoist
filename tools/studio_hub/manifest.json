@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-25 13:24:50",
+    "generated_at": "2026-11-25 20:44:55",
     "active_media_count": 216,
     "used_media_count": 168,
     "orphan_media_count": 48,
@@ -45,6 +45,10 @@
       {
         "name": "GameFlow",
         "path": "res://scripts/autoload/game_flow.gd"
+      },
+      {
+        "name": "HitFeel",
+        "path": "res://scripts/autoload/hit_feel.gd"
       }
     ],
     "viewport": {
@@ -3167,7 +3171,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 3659,
+      "size_bytes": 3723,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -3329,7 +3333,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 538,
+      "size_bytes": 544,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5064,7 +5068,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 245,
+      "size_bytes": 252,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5093,7 +5097,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 272,
+      "size_bytes": 279,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5133,7 +5137,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 22147,
+      "size_bytes": 23048,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5783,7 +5787,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 6270,
+      "size_bytes": 6368,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -6133,7 +6137,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 629,
+      "size_bytes": 652,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -7869,6 +7873,10 @@
       {
         "name": "GameFlow",
         "path": "res://scripts/autoload/game_flow.gd"
+      },
+      {
+        "name": "HitFeel",
+        "path": "res://scripts/autoload/hit_feel.gd"
       }
     ],
     "scenes": [
@@ -7934,6 +7942,15 @@
         "sub_scenes": [],
         "scripts": [
           "res://scripts/ghost_trail.gd"
+        ]
+      },
+      {
+        "path": "scenes/hit_mark.tscn",
+        "name": "hit_mark",
+        "role": "entity",
+        "sub_scenes": [],
+        "scripts": [
+          "res://scripts/hit_mark.gd"
         ]
       },
       {
