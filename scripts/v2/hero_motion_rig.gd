@@ -283,7 +283,7 @@ func _draw() -> void:
 			draw_arc(Vector2(-6.0, 0.0), 5.0, 0.2, PI * 1.35, 10, Color(0.96, 0.80, 0.36, 0.85), 1.8)
 			draw_arc(Vector2(6.0, 1.0), 4.2, PI, TAU * 0.9, 10, Color(0.96, 0.80, 0.36, 0.85), 1.8)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		elif _mount_type == "fire_wheel":
+		elif _mount_type == "gourd" or _mount_type == "fire_wheel":
 			draw_set_transform(anchor_pos + Vector2(0.0, 2.0), _tilt * 0.8, Vector2(1.28, 0.40))
 			draw_circle(Vector2.ZERO, 24.0, Color(1.0, 0.42, 0.14, 0.24))
 			draw_arc(Vector2.ZERO, 21.0, 0.0, TAU, 24, Color(1.0, 0.56, 0.18, 0.92), 4.0)

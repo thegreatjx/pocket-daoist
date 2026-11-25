@@ -1,10 +1,10 @@
 {
   "summary": {
-    "generated_at": "2026-11-25 20:47:56",
+    "generated_at": "2026-11-25 21:17:54",
     "active_media_count": 224,
     "used_media_count": 175,
     "orphan_media_count": 49,
-    "legacy_count": 0,
+    "legacy_count": 1,
     "usage_rate_pct": 78.1,
     "error_count": 3,
     "gap_count": 5,
@@ -864,7 +864,7 @@
         "desc": "圆润可爱的观中小道士，稳坐青玉飞天宝葫御风巡空，催动离火与道法克敌。",
         "sprite": "res://assets/v2/heroes/hero_gourd_daoist.png",
         "motion_mode": "hover_ride",
-        "mount_type": "gourd",
+        "mount_type": "fire_wheel",
         "draw_height": 86.0,
         "start_weapon": "fire_lotus",
         "v2_start_weapon": "wpn_fire_gourd",
@@ -3177,6 +3177,24 @@
     ]
   },
   "assets": [
+    {
+      "path": "assets/_legacy_unused/hero_gourd_daoist_riding_old.png",
+      "res_path": "res://assets/_legacy_unused/hero_gourd_daoist_riding_old.png",
+      "name": "hero_gourd_daoist_riding_old.png",
+      "category": "legacy_unused",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 64830,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "hero"
+    },
     {
       "path": "assets/art/ending.png",
       "res_path": "res://assets/art/ending.png",
@@ -5671,9 +5689,9 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 64830,
-      "width": 256,
-      "height": 256,
+      "size_bytes": 275354,
+      "width": 512,
+      "height": 512,
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [

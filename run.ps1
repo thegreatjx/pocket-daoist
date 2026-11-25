@@ -9,6 +9,22 @@ param(
     [switch]$Fast     # 跳过缓存重建（缓存已存在时更快）
 )
 
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
+    if ($pwsh) {
+        $fwd = @()
+        foreach ($kv in $PSBoundParameters.GetEnumerator()) {
+            if ($kv.Value -is [switch]) {
+                if ($kv.Value.IsPresent) { $fwd += "-$($kv.Key)" }
+            } else {
+                $fwd += "-$($kv.Key)", $kv.Value
+            }
+        }
+        & $pwsh.Source -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @fwd
+        exit $LASTEXITCODE
+    }
+}
+
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 

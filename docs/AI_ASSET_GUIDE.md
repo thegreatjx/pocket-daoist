@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-25 20:47:56）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-25 21:17:54）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -93,4 +93,4 @@
 
 ### 音频与特效白名单
 - 已接入音频：`res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/music_battle.ogg`, `res://assets/audio/music_boss.ogg`, `res://assets/audio/music_swarm.ogg`, `res://assets/audio/music_title.ogg`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`, `res://assets/audio/thunder_arc_snap.wav`
-- 归档区 `assets/_legacy_unused/` 共有 0 个历史弃用文件，禁止新代码引用。
+- 归档区 `assets/_legacy_unused/` 共有 1 个历史弃用文件，禁止新代码引用。

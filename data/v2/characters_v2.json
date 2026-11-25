@@ -103,7 +103,7 @@
       "desc": "圆润可爱的观中小道士，稳坐青玉飞天宝葫御风巡空，催动离火与道法克敌。",
       "sprite": "res://assets/v2/heroes/hero_gourd_daoist.png",
       "motion_mode": "hover_ride",
-      "mount_type": "gourd",
+      "mount_type": "fire_wheel",
       "draw_height": 86.0,
       "start_weapon": "fire_lotus",
       "v2_start_weapon": "wpn_fire_gourd",
