@@ -19,7 +19,7 @@ func setup(dir: Vector2, col: Color, heavy: bool, kill: bool) -> void:
 	_color = col
 	_heavy = heavy
 	_kill = kill
-	_life = 0.15 if kill else (0.11 if heavy else 0.09)
+	_life = 0.13 if kill else (0.10 if heavy else 0.09)
 	rotation = dir.angle() + randf_range(-0.28, 0.28) if dir.length_squared() > 0.001 else randf() * TAU
 	queue_redraw()
 
@@ -39,7 +39,7 @@ func _draw() -> void:
 	var t := clampf(_age / _life, 0.0, 1.0)
 	var fade := pow(1.0 - t, 1.5)
 	var grow := 0.62 + 0.38 * (1.0 - pow(1.0 - t, 3.0))
-	var size_m := (1.9 if _kill else (1.35 if _heavy else 1.0)) * grow
+	var size_m := (1.6 if _kill else (1.2 if _heavy else 1.0)) * grow
 	var long := 27.0 * size_m
 	var short := 8.5 * size_m
 

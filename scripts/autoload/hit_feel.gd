@@ -3,18 +3,18 @@ extends Node
 const HIT_MARK_SCENE := "res://scenes/hit_mark.tscn"
 const MAX_HIT_MARKS := 40
 
-const STOP_BY_TIER := [0.0, 0.050, 0.060]
-const KILL_STOP_BY_TIER := [0.030, 0.100, 0.200]
-const CRIT_STOP_BONUS := 0.010
+const STOP_BY_TIER := [0.0, 0.045, 0.060]
+const KILL_STOP_BY_TIER := [0.020, 0.090, 0.180]
+const CRIT_STOP_BONUS := 0.008
 const STOP_MIN_INTERVAL_MS := 140.0
 const STOP_MAX_MS := 220.0
 const STOP_BUDGET_MAX_MS := 90.0
 const STOP_BUDGET_REFILL_MS_PER_SEC := 90.0
 const STOP_BUDGET_EXEMPT_MS := 80.0
 
-const SHAKE_BY_TIER := [0.0, 2.0, 3.0]
-const KILL_SHAKE_BY_TIER := [2.2, 4.0, 6.0]
-const CRIT_SHAKE_BONUS := 0.8
+const SHAKE_BY_TIER := [0.0, 2.5, 4.0]
+const KILL_SHAKE_BY_TIER := [0.8, 3.5, 6.0]
+const CRIT_SHAKE_BONUS := 0.6
 const SHAKE_MIN_INTERVAL_MS := 110.0
 
 var _stop_until_ms := 0.0
@@ -53,7 +53,8 @@ func on_hit(world_pos: Vector2, dir: Vector2, element: String, is_crit: bool, ti
 	var safe_tier := clampi(tier, 0, 2)
 	_try_stop(lethal, is_crit, safe_tier)
 	_try_shake(lethal, is_crit, safe_tier, dir)
-	_spawn_mark(world_pos, dir, element, is_crit, safe_tier, lethal, parent)
+	if lethal or is_crit or safe_tier > 0:
+		_spawn_mark(world_pos, dir, element, is_crit, safe_tier, lethal, parent)
 
 func _try_stop(lethal: bool, is_crit: bool, tier: int) -> void:
 	if DisplayServer.get_name() == "headless":
