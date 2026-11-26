@@ -1,15 +1,15 @@
 {
   "summary": {
-    "generated_at": "2026-11-25 21:24:02",
-    "active_media_count": 224,
+    "generated_at": "2026-11-26 09:57:41",
+    "active_media_count": 229,
     "used_media_count": 175,
-    "orphan_media_count": 49,
+    "orphan_media_count": 54,
     "legacy_count": 1,
-    "usage_rate_pct": 78.1,
+    "usage_rate_pct": 76.4,
     "error_count": 3,
     "gap_count": 5,
-    "warning_count": 5,
-    "ui_bypass_files": 7
+    "warning_count": 3,
+    "ui_bypass_files": 6
   },
   "project": {
     "name": "百宝小道修 · Pocket Daoist",
@@ -18,6 +18,10 @@
     "main_scene": "res://scenes/title.tscn",
     "icon": "res://icon.png",
     "autoloads": [
+      {
+        "name": "SingleInstance",
+        "path": "res://scripts/autoload/single_instance.gd"
+      },
       {
         "name": "CombatGrid",
         "path": "res://scripts/autoload/combat_grid.gd"
@@ -220,8 +224,8 @@
       "id": "ISS-010",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 49 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 49 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：trace(11), muzzle(10), smoke(5), star(4), window(4), spark(3)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 54 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 54 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：trace(11), muzzle(10), hero(6), smoke(5), star(4), window(4)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -231,33 +235,11 @@
       "id": "ISS-011",
       "severity": "warning",
       "code": "UI_THEME_BYPASS",
-      "title": "7 个 UI 脚本绕过 XianxiaUITheme 私写 38 处 StyleBoxFlat.new()",
-      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(17), ui.gd(9), v2_shop_ui.gd(5), chest_ui.gd(2), upgrade_ui.gd(2)。请在 UI 规范板核对。",
+      "title": "6 个 UI 脚本绕过 XianxiaUITheme 私写 34 处 StyleBoxFlat.new()",
+      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(14), ui.gd(9), v2_shop_ui.gd(5), chest_ui.gd(2), upgrade_ui.gd(2)。请在 UI 规范板核对。",
       "file": "scripts/ui/xianxia_ui_theme.gd",
       "entity_id": "ui_theme_bypass",
       "tab": "uikit",
-      "prompt_hint": null
-    },
-    {
-      "id": "ISS-012",
-      "severity": "warning",
-      "code": "DOC_CODE_DRIFT",
-      "title": "图鉴硬编码计数漂移：五行反应 (15) → 实际应为 五行反应 (7)",
-      "detail": "scripts/v2/v2_codex_panel.gd 的 TAB_NAMES 写死了数量文字，与 data/v2/*.json 实时条目数不一致。",
-      "file": "scripts/v2/v2_codex_panel.gd",
-      "entity_id": "codex_tab_drift",
-      "tab": "arch",
-      "prompt_hint": null
-    },
-    {
-      "id": "ISS-013",
-      "severity": "warning",
-      "code": "DOC_CODE_DRIFT",
-      "title": "图鉴硬编码计数漂移：法宝与超武 (7+3) → 实际应为 法宝与超武 (8+3)",
-      "detail": "scripts/v2/v2_codex_panel.gd 的 TAB_NAMES 写死了数量文字，与 data/v2/*.json 实时条目数不一致。",
-      "file": "scripts/v2/v2_codex_panel.gd",
-      "entity_id": "codex_tab_drift",
-      "tab": "arch",
       "prompt_hint": null
     }
   ],
@@ -375,7 +357,7 @@
         {
           "id": "ach_clear_stage1",
           "name": "青林问道",
-          "reward_desc": "解锁修士【圆圆】"
+          "reward_desc": "灵石 +90"
         }
       ]
     },
@@ -772,6 +754,18 @@
         "role": "御剑道君",
         "desc": "脚踏本命青霜飞剑御空游斗，玄袍金纹束冠掐剑诀，号令漫天飞剑与百宝神通。",
         "sprite": "res://assets/v2/heroes/hero_sword_qwen.png",
+        "foot_anchor": [
+          259,
+          483
+        ],
+        "showcase_top_y": 44,
+        "showcase_height": 346.0,
+        "avatar_region": [
+          166,
+          52,
+          184,
+          184
+        ],
         "motion_mode": "hover_ride",
         "mount_type": "sword",
         "draw_height": 88.0,
@@ -799,76 +793,25 @@
         "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
       },
       {
-        "id": "cloud_danxia",
-        "name": "青瑶",
-        "role": "踏云仙姑",
-        "desc": "足踏瑞霭祥云飘逸走位，伴生观音式甘露玉净瓶倾洒碧水灵波与水纹减速清场。",
-        "sprite": "res://assets/v2/heroes/hero_cloud_fairy.png",
-        "motion_mode": "hover_ride",
-        "mount_type": "cloud",
-        "draw_height": 86.0,
-        "start_weapon": "jade_aura",
-        "v2_start_weapon": "wpn_jade_vase",
-        "element_affinity": "water",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "default",
-          "desc": "初始可用"
-        },
-        "accent_color": "#5CE0F5",
-        "trait_mods": {
-          "mastery_pct": 0.18,
-          "area_pct": 0.12,
-          "max_hp": -10.0
-        },
-        "trait_summary": "+18% 元素精通 · +12% 范围 · -10 气血 · 水系亲和 +15%",
-        "max_health": 115.0,
-        "speed": 196.0,
-        "crit_chance": 0.12,
-        "magnet_radius": 180.0,
-        "active_name": "云露清波",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
-        "id": "wood_deer_spirit",
-        "name": "茸茸",
-        "role": "青木鹿灵",
-        "desc": "四肢灵动、蹦跳疾行的山海青鹿灵，鹿角萌发春芽，御使青藤灵鞭缠绕寄生、汲取生机。",
-        "sprite": "res://assets/v2/heroes/hero_deer_spirit.png",
-        "motion_mode": "brotato_bounce",
-        "mount_type": "none",
-        "draw_height": 76.0,
-        "start_weapon": "jade_aura",
-        "v2_start_weapon": "wpn_spirit_vine",
-        "element_affinity": "wood",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "default",
-          "desc": "初始可用"
-        },
-        "accent_color": "#4ADE80",
-        "trait_mods": {
-          "dot_damage_pct": 0.16,
-          "hp_regen": 0.8,
-          "lifesteal_pct": 0.02,
-          "damage_pct": -0.08
-        },
-        "trait_summary": "+16% 持续伤 · +0.8/s 回血 · +2% 吸血 · -8% 直伤 · 木系亲和 +15%",
-        "max_health": 115.0,
-        "speed": 192.0,
-        "crit_chance": 0.1,
-        "magnet_radius": 185.0,
-        "active_name": "万木逢春",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
         "id": "gourd_daoist",
         "name": "福宝",
-        "role": "乘葫小道士",
-        "desc": "圆润可爱的观中小道士，稳坐青玉飞天宝葫御风巡空，催动离火与道法克敌。",
+        "role": "火葫小道童",
+        "desc": "灵动俏皮的观中小道童，怀抱离火宝葫御风巡空，扇动三昧真火焚尽群妖。",
         "sprite": "res://assets/v2/heroes/hero_gourd_daoist.png",
-        "motion_mode": "hover_ride",
-        "mount_type": "fire_wheel",
+        "foot_anchor": [
+          519,
+          967
+        ],
+        "showcase_top_y": 68,
+        "showcase_height": 336.0,
+        "avatar_region": [
+          300,
+          108,
+          424,
+          424
+        ],
+        "motion_mode": "brotato_bounce",
+        "mount_type": "none",
         "draw_height": 86.0,
         "start_weapon": "fire_lotus",
         "v2_start_weapon": "wpn_fire_gourd",
@@ -878,7 +821,7 @@
           "type": "default",
           "desc": "初始可用"
         },
-        "accent_color": "#34D399",
+        "accent_color": "#F97316",
         "trait_mods": {
           "max_hp": 10.0,
           "armor": 2.0,
@@ -898,142 +841,23 @@
         "anim_run_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_run.json"
       },
       {
-        "id": "jinyiwei_gunner",
-        "name": "陆昭",
-        "role": "锦衣卫神机枪炮师",
-        "desc": "脚踏烈焰机械火轮疾驰，身着大明飞鱼服平端鎏金神机火铳轰碎群妖。",
-        "sprite": "res://assets/v2/heroes/hero_jinyiwei_v2.png",
-        "motion_mode": "hover_ride",
-        "mount_type": "fire_wheel",
-        "draw_height": 88.0,
-        "start_weapon": "shenji_musket",
-        "v2_start_weapon": "wpn_fire_gourd",
-        "element_affinity": "fire",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "best_kills",
-          "value": 150,
-          "desc": "单局诛魔达 150 解锁"
-        },
-        "accent_color": "#FF7A38",
-        "trait_mods": {
-          "damage_pct": 0.14,
-          "crit_mult_bonus": 0.2,
-          "max_hp": -15.0
-        },
-        "trait_summary": "+14% 全伤害 · +20% 暴伤 · -15 气血 · 火系亲和 +15%",
-        "max_health": 115.0,
-        "speed": 195.0,
-        "crit_chance": 0.15,
-        "magnet_radius": 180.0,
-        "active_name": "滑铲爆弹",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
-        "id": "gourd_spirit",
-        "name": "阿葫",
-        "role": "灵葫小仙",
-        "desc": "天生通灵的青玉宝葫精怪，圆滚身躯弹跳灵动，摇动万毒幡催发木瘴毒印噬尽群妖。",
-        "sprite": "res://assets/v2/heroes/hero_gourd_blob.png",
-        "motion_mode": "brotato_bounce",
-        "mount_type": "none",
-        "draw_height": 68.0,
-        "start_weapon": "fire_lotus",
-        "v2_start_weapon": "wpn_venom_banner",
-        "element_affinity": "wood",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "best_level",
-          "value": 12,
-          "desc": "单局境界达 Lv.12 解锁"
-        },
-        "accent_color": "#61EB9E",
-        "trait_mods": {
-          "dot_damage_pct": 0.18,
-          "hp_regen": 0.8,
-          "pickup_radius_pct": 0.15,
-          "crit_chance": -0.05
-        },
-        "trait_summary": "+18% 持续伤 · +0.8/s 回血 · +15% 拾取 · -5% 暴击 · 木系亲和 +15%",
-        "max_health": 120.0,
-        "speed": 188.0,
-        "crit_chance": 0.12,
-        "magnet_radius": 185.0,
-        "active_name": "飞葫撞岳",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
-        "id": "daoist_mochi",
-        "name": "圆圆",
-        "role": "太极小道童",
-        "desc": "圆润憨厚的道观小团子，怀抱玄玉太极珠稳如磐石，擅御金钟剑阵护体。",
-        "sprite": "res://assets/v2/heroes/hero_mochi_daoist.png",
-        "motion_mode": "brotato_bounce",
-        "mount_type": "none",
-        "draw_height": 68.0,
-        "start_weapon": "taiji_array",
-        "v2_start_weapon": "wpn_gold_bell",
-        "element_affinity": "metal",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "clear_stage",
-          "value": 1,
-          "desc": "通关秘境 1 解锁"
-        },
-        "accent_color": "#F0D15C",
-        "trait_mods": {
-          "armor": 4.0,
-          "max_hp": 20.0,
-          "area_pct": 0.14,
-          "move_speed_pct": -0.04
-        },
-        "trait_summary": "+4 护甲 · +20 气血 · +14% 范围 · -4% 移速 · 金系亲和 +15%",
-        "max_health": 135.0,
-        "speed": 182.0,
-        "crit_chance": 0.1,
-        "magnet_radius": 175.0,
-        "active_name": "太极挪移",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
-        "id": "fox_dango",
-        "name": "白团",
-        "role": "青丘幼狐",
-        "desc": "毛茸茸的青丘灵狐团子，身法轻捷如雪团跃动，御使天雷符与飞剑克敌。",
-        "sprite": "res://assets/v2/heroes/hero_fox_dango.png",
-        "motion_mode": "brotato_bounce",
-        "mount_type": "none",
-        "draw_height": 66.0,
-        "start_weapon": "flying_sword",
-        "v2_start_weapon": "wpn_thunder_talisman",
-        "element_affinity": "thunder",
-        "affinity_bonus_pct": 0.15,
-        "unlock_condition": {
-          "type": "total_runs",
-          "value": 3,
-          "desc": "累计修行 3 局解锁"
-        },
-        "accent_color": "#8CE6FF",
-        "trait_mods": {
-          "dodge_pct": 0.12,
-          "move_speed_pct": 0.08,
-          "crit_chance": 0.05,
-          "max_hp": -12.0
-        },
-        "trait_summary": "+12% 闪避 · +8% 移速 · +5% 暴击 · -12 气血 · 雷系亲和 +15%",
-        "max_health": 108.0,
-        "speed": 202.0,
-        "crit_chance": 0.16,
-        "magnet_radius": 190.0,
-        "active_name": "霜雪灵跃",
-        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
-      },
-      {
         "id": "thunder_daoist",
         "name": "张清霄",
-        "role": "天雷符师",
+        "role": "雷符天师",
         "desc": "黄袍紫绶束太极金冠的符箓宗师，左手展天雷秘卷、右手掐剑诀步罡踏斗，引九霄神雷破邪除妖。",
         "sprite": "res://assets/v2/heroes/hero_thunder_daoist.png",
+        "foot_anchor": [
+          482,
+          967
+        ],
+        "showcase_top_y": 68,
+        "showcase_height": 346.0,
+        "avatar_region": [
+          332,
+          92,
+          400,
+          400
+        ],
         "motion_mode": "brotato_bounce",
         "mount_type": "none",
         "draw_height": 88.0,
@@ -1061,6 +885,51 @@
         "crit_chance": 0.14,
         "magnet_radius": 185.0,
         "active_name": "步罡雷遁",
+        "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
+      },
+      {
+        "id": "cloud_danxia",
+        "name": "青瑶",
+        "role": "踏云仙姑",
+        "desc": "足踏瑞霭祥云飘逸游斗，怀抱甘露玉净瓶轻洒碧波，水纹涟漪由小渐阔，满阶化作双潮金碧甘露阵。",
+        "sprite": "res://assets/v2/heroes/hero_cloud_danxia.png",
+        "foot_anchor": [
+          248,
+          476
+        ],
+        "showcase_top_y": 23,
+        "showcase_height": 346.0,
+        "avatar_region": [
+          170,
+          36,
+          200,
+          200
+        ],
+        "motion_mode": "hover_ride",
+        "mount_type": "none",
+        "draw_height": 88.0,
+        "anim_idle_atlas": "res://assets/v2/hero/anim/hero_cloud_danxia_idle-atlas-00.png",
+        "anim_idle_meta": "res://assets/v2/hero/anim/hero_cloud_danxia_idle.json",
+        "start_weapon": "jade_aura",
+        "v2_start_weapon": "wpn_jade_vase",
+        "element_affinity": "water",
+        "affinity_bonus_pct": 0.15,
+        "unlock_condition": {
+          "type": "default",
+          "desc": "初始可用"
+        },
+        "accent_color": "#5CE0F5",
+        "trait_mods": {
+          "mastery_pct": 0.18,
+          "area_pct": 0.12,
+          "max_hp": -10.0
+        },
+        "trait_summary": "+18% 元素精通 · +12% 范围 · -10 气血 · 水系亲和 +15%",
+        "max_health": 115.0,
+        "speed": 195.0,
+        "crit_chance": 0.12,
+        "magnet_radius": 182.0,
+        "active_name": "云露清波",
         "active_desc": "向移动方向高速瞬步穿怪脱身（纯位移无敌，无伤害与技能特效）。"
       }
     ],
@@ -1735,7 +1604,7 @@
         "icon": "res://assets/v2/weapons/wpn_jade_vase.png",
         "attack_pattern": "water_dew_splash",
         "base_cost": 19,
-        "sfx_cue": "sfx_ice_chime",
+        "sfx_cue": "sfx_water_ripple",
         "tiers": [
           {
             "tier": 1,
@@ -2931,10 +2800,10 @@
         "desc": "累计完成3局修行",
         "metric": "total_runs",
         "target": 3,
-        "reward_type": "unlock_character",
-        "reward_id": "fox_dango",
-        "reward_value": 1,
-        "reward_desc": "解锁修士【白团】"
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 60,
+        "reward_desc": "灵石 +60"
       },
       {
         "id": "ach_ten_runs",
@@ -2953,10 +2822,10 @@
         "desc": "单局诛魔达150",
         "metric": "run_kills",
         "target": 150,
-        "reward_type": "unlock_character",
-        "reward_id": "jinyiwei_gunner",
-        "reward_value": 1,
-        "reward_desc": "解锁修士【陆昭】"
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 60,
+        "reward_desc": "灵石 +60"
       },
       {
         "id": "ach_kills_500",
@@ -3008,10 +2877,10 @@
         "desc": "单局境界达到Lv.12",
         "metric": "run_level",
         "target": 12,
-        "reward_type": "unlock_character",
-        "reward_id": "gourd_spirit",
-        "reward_value": 1,
-        "reward_desc": "解锁修士【阿葫】"
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 70,
+        "reward_desc": "灵石 +70"
       },
       {
         "id": "ach_level_20",
@@ -3063,10 +2932,10 @@
         "desc": "通关秘境1",
         "metric": "cleared_stage_1",
         "target": 1,
-        "reward_type": "unlock_character",
-        "reward_id": "daoist_mochi",
-        "reward_value": 1,
-        "reward_desc": "解锁修士【圆圆】"
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 90,
+        "reward_desc": "灵石 +90"
       },
       {
         "id": "ach_clear_stage2",
@@ -3135,15 +3004,15 @@
         "reward_desc": "灵石 +150"
       },
       {
-        "id": "ach_first_fusion",
-        "name": "法宝合体",
-        "desc": "任意局合成1件合体超武",
-        "metric": "run_fusions",
-        "target": 1,
-        "reward_type": "unlock_arcana",
-        "reward_id": "arcana_primordial_bond",
-        "reward_value": 1,
-        "reward_desc": "解锁天道道韵【太初本命】"
+        "id": "ach_first_reaction_10",
+        "name": "五行相生",
+        "desc": "单局触发10次五行元素反应",
+        "metric": "run_reactions",
+        "target": 10,
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 80,
+        "reward_desc": "灵石 +80"
       },
       {
         "id": "ach_jars_15",
@@ -3151,10 +3020,10 @@
         "desc": "累计击碎15个青瓷罐",
         "metric": "total_jars_broken",
         "target": 15,
-        "reward_type": "unlock_arcana",
-        "reward_id": "arcana_void_magnet",
-        "reward_value": 1,
-        "reward_desc": "解锁天道道韵【归墟引灵】"
+        "reward_type": "spirit_stones",
+        "reward_id": "",
+        "reward_value": 120,
+        "reward_desc": "灵石 +120"
       },
       {
         "id": "ach_curse_clear_20",
@@ -3438,6 +3307,27 @@
       ],
       "status": "used",
       "cluster": "enemy"
+    },
+    {
+      "path": "assets/audio/fire_gourd_burn.wav",
+      "res_path": "res://assets/audio/fire_gourd_burn.wav",
+      "name": "fire_gourd_burn.wav",
+      "category": "audio_sfx",
+      "ext": ".wav",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 97064,
+      "width": null,
+      "height": null,
+      "duration_sec": 1.1,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/sfx.gd",
+        "scripts/v2/v2_combat_controller.gd"
+      ],
+      "status": "used",
+      "cluster": "fire"
     },
     {
       "path": "assets/audio/gem_pickup.wav",
@@ -3724,6 +3614,99 @@
       ],
       "status": "used",
       "cluster": "thunder"
+    },
+    {
+      "path": "assets/audio/water_ripple_splash.wav",
+      "res_path": "res://assets/audio/water_ripple_splash.wav",
+      "name": "water_ripple_splash.wav",
+      "category": "audio_sfx",
+      "ext": ".wav",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 113822,
+      "width": null,
+      "height": null,
+      "duration_sec": 1.29,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/sfx.gd",
+        "scripts/v2/v2_combat_controller.gd"
+      ],
+      "status": "used",
+      "cluster": "water"
+    },
+    {
+      "path": "assets/fonts/LXGWWenKaiLite-Medium.ttf",
+      "res_path": "res://assets/fonts/LXGWWenKaiLite-Medium.ttf",
+      "name": "LXGWWenKaiLite-Medium.ttf",
+      "category": "fonts_other",
+      "ext": ".ttf",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 13801408,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "doc_meta",
+      "cluster": "LXGWWenKaiLite-Medium"
+    },
+    {
+      "path": "assets/fonts/OFL_LXGWWenKai.txt",
+      "res_path": "res://assets/fonts/OFL_LXGWWenKai.txt",
+      "name": "OFL_LXGWWenKai.txt",
+      "category": "fonts_other",
+      "ext": ".txt",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 5176,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "doc_meta",
+      "cluster": "OFL"
+    },
+    {
+      "path": "assets/fonts/OFL_ZCOOLXiaoWei.txt",
+      "res_path": "res://assets/fonts/OFL_ZCOOLXiaoWei.txt",
+      "name": "OFL_ZCOOLXiaoWei.txt",
+      "category": "fonts_other",
+      "ext": ".txt",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 4400,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "doc_meta",
+      "cluster": "OFL"
+    },
+    {
+      "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf",
+      "res_path": "res://assets/fonts/ZCOOLXiaoWei-Regular.ttf",
+      "name": "ZCOOLXiaoWei-Regular.ttf",
+      "category": "fonts_other",
+      "ext": ".ttf",
+      "is_media": false,
+      "is_image": false,
+      "is_audio": false,
+      "size_bytes": 6313808,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "doc_meta",
+      "cluster": "ZCOOLXiaoWei-Regular"
     },
     {
       "path": "assets/icons/icon_jiutian_thunder.png",
@@ -4950,6 +4933,29 @@
       "cluster": "fx"
     },
     {
+      "path": "assets/sprites/fx_water_ripple_strip.png",
+      "res_path": "res://assets/sprites/fx_water_ripple_strip.png",
+      "name": "fx_water_ripple_strip.png",
+      "category": "vfx_particles",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 125321,
+      "width": 3072,
+      "height": 128,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 24,
+        "rows": 1
+      },
+      "used_by": [
+        "scripts/v2/v2_attack_fx.gd"
+      ],
+      "status": "used",
+      "cluster": "fx"
+    },
+    {
       "path": "assets/sprites/pickup_magnet.png",
       "res_path": "res://assets/sprites/pickup_magnet.png",
       "name": "pickup_magnet.png",
@@ -5168,7 +5174,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 245,
+      "size_bytes": 363,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5197,7 +5203,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 272,
+      "size_bytes": 221,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5217,13 +5223,15 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 6722466,
-      "width": 1728,
-      "height": 2688,
+      "size_bytes": 3271977,
+      "width": 1344,
+      "height": 1608,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
       "cluster": "hero"
     },
     {
@@ -5235,13 +5243,15 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 23799,
+      "size_bytes": 20650,
       "width": null,
       "height": null,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "doc_meta",
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
       "cluster": "hero"
     },
     {
@@ -5253,9 +5263,9 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 8485451,
+      "size_bytes": 3328091,
       "width": 1584,
-      "height": 3072,
+      "height": 1512,
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
@@ -5273,7 +5283,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 23713,
+      "size_bytes": 14936,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5293,9 +5303,9 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 6328445,
-      "width": 1616,
-      "height": 2304,
+      "size_bytes": 2609943,
+      "width": 1680,
+      "height": 1320,
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
@@ -5313,7 +5323,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 20572,
+      "size_bytes": 18541,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5393,7 +5403,7 @@
       "is_media": false,
       "is_image": false,
       "is_audio": false,
-      "size_bytes": 18802,
+      "size_bytes": 18082,
       "width": null,
       "height": null,
       "duration_sec": null,
@@ -5605,6 +5615,26 @@
       "cluster": "hero"
     },
     {
+      "path": "assets/v2/heroes/hero_cloud_danxia.png",
+      "res_path": "res://assets/v2/heroes/hero_cloud_danxia.png",
+      "name": "hero_cloud_danxia.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 253547,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/characters_v2.json"
+      ],
+      "status": "used",
+      "cluster": "hero"
+    },
+    {
       "path": "assets/v2/heroes/hero_cloud_fairy.png",
       "res_path": "res://assets/v2/heroes/hero_cloud_fairy.png",
       "name": "hero_cloud_fairy.png",
@@ -5618,10 +5648,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5638,10 +5666,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5658,10 +5684,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5678,10 +5702,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5693,9 +5715,9 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 275354,
-      "width": 512,
-      "height": 512,
+      "size_bytes": 818248,
+      "width": 1024,
+      "height": 1024,
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
@@ -5718,10 +5740,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5738,10 +5758,8 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/characters_v2.json"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -5774,9 +5792,9 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 269638,
-      "width": 512,
-      "height": 512,
+      "size_bytes": 899789,
+      "width": 1024,
+      "height": 1024,
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
@@ -5932,6 +5950,26 @@
       ],
       "status": "used",
       "cluster": "tile"
+    },
+    {
+      "path": "assets/v2/ui/lotus_pedestal.png",
+      "res_path": "res://assets/v2/ui/lotus_pedestal.png",
+      "name": "lotus_pedestal.png",
+      "category": "fonts_other",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 333450,
+      "width": 512,
+      "height": 377,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/title.gd"
+      ],
+      "status": "used",
+      "cluster": "lotus"
     },
     {
       "path": "assets/v2/weapons/wpn_fire_gourd.png",
@@ -8089,15 +8127,15 @@
   "ui_compliance": [
     {
       "file": "scripts/ui/xianxia_ui_theme.gd",
-      "stylebox_new": 6,
+      "stylebox_new": 14,
       "theme_calls": 1,
       "status": "theme_source"
     },
     {
       "file": "scripts/v2/v2_detail_drawer.gd",
-      "stylebox_new": 17,
-      "theme_calls": 0,
-      "status": "full_bypass"
+      "stylebox_new": 14,
+      "theme_calls": 2,
+      "status": "partial_bypass"
     },
     {
       "file": "scripts/ui.gd",
@@ -8126,13 +8164,7 @@
     {
       "file": "scripts/v2/v2_codex_panel.gd",
       "stylebox_new": 2,
-      "theme_calls": 4,
-      "status": "partial_bypass"
-    },
-    {
-      "file": "scripts/title.gd",
-      "stylebox_new": 1,
-      "theme_calls": 38,
+      "theme_calls": 6,
       "status": "partial_bypass"
     },
     {
@@ -8156,18 +8188,28 @@
     {
       "file": "scripts/settings_panel.gd",
       "stylebox_new": 0,
-      "theme_calls": 5,
+      "theme_calls": 7,
+      "status": "compliant"
+    },
+    {
+      "file": "scripts/title.gd",
+      "stylebox_new": 0,
+      "theme_calls": 91,
       "status": "compliant"
     },
     {
       "file": "scripts/v2/v2_debug_sandbox.gd",
       "stylebox_new": 0,
-      "theme_calls": 27,
+      "theme_calls": 26,
       "status": "compliant"
     }
   ],
   "architecture": {
     "autoloads": [
+      {
+        "name": "SingleInstance",
+        "path": "res://scripts/autoload/single_instance.gd"
+      },
       {
         "name": "CombatGrid",
         "path": "res://scripts/autoload/combat_grid.gd"
@@ -8469,6 +8511,7 @@
       "shaders/bagua_domain_wave.gdshader",
       "shaders/boss_shockwave_ring.gdshader",
       "shaders/burn_dissolve.gdshader",
+      "shaders/circle_avatar.gdshader",
       "shaders/electric_arc.gdshader",
       "shaders/fire_flame_2d.gdshader",
       "shaders/flame_tongue.gdshader",
@@ -8520,7 +8563,7 @@
         {
           "id": "characters_v2",
           "label": "characters_v2.json",
-          "count": 9,
+          "count": 4,
           "group": "meta",
           "x": 340,
           "y": 250

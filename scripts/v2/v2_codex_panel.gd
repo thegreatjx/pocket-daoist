@@ -3,7 +3,7 @@ extends Control
 
 signal closed
 
-const TAB_NAMES := ["五行反应 (15)", "法宝与超武 (7+3)", "境界与秘宝 (6+16)"]
+const TAB_NAMES := ["五行反应 (7)", "法宝图鉴 (8)", "境界与秘宝 (4+16)"]
 
 var active_tab: int = 0
 var codex_data: Dictionary = {}
@@ -52,16 +52,16 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.offset_left = -490.0
-	panel.offset_right = 490.0
-	panel.offset_top = -280.0
-	panel.offset_bottom = 280.0
-	panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 18))
+	panel.offset_left = -500.0
+	panel.offset_right = 500.0
+	panel.offset_top = -290.0
+	panel.offset_bottom = 290.0
+	panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 26))
 	XianxiaUITheme.attach_ornaments(panel, XianxiaUITheme.COL_GOLD, 14.0, 6.0)
 	add_child(panel)
 
 	var root_vb := VBoxContainer.new()
-	root_vb.add_theme_constant_override("separation", 10)
+	root_vb.add_theme_constant_override("separation", 12)
 	panel.add_child(root_vb)
 
 	var header := HBoxContainer.new()
@@ -109,12 +109,10 @@ func _build_ui() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	XianxiaUITheme.style_scroll_container(scroll)
 	root_vb.add_child(scroll)
 
-	_content_vb = VBoxContainer.new()
-	_content_vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_content_vb.add_theme_constant_override("separation", 10)
-	scroll.add_child(_content_vb)
+	_content_vb = XianxiaUITheme.make_scroll_body(scroll, 12, 10, 4)
 
 func _make_btn(text: String, bg: Color, border: Color) -> Button:
 	var b := Button.new()
@@ -142,12 +140,13 @@ func _refresh_view() -> void:
 	var sm: Dictionary = codex_data.get("summary", {})
 	var elems: Array = sm.get("owned_elements", [])
 	var elem_txt := "暂无元素" if elems.is_empty() else "、".join(elems)
-	_summary_lbl.text = "境界 Lv.%d  |  法宝槽 %d/6  |  已持元素：%s  |  可触发五行反应：%d/%d" % [
+	_summary_lbl.text = "境界 Lv.%d  |  法宝槽 %d/%d  |  已持元素：%s  |  可触发五行反应：%d/%d" % [
 		int(sm.get("player_level", 1)),
 		int(sm.get("unlocked_slots", 1)),
+		int(sm.get("max_slots", 4)),
 		elem_txt,
 		int(sm.get("active_reaction_count", 0)),
-		int(sm.get("total_reactions", 10)),
+		int(sm.get("total_reactions", 7)),
 	]
 
 	for i in range(_tab_btns.size()):
@@ -177,7 +176,7 @@ func _make_card_panel(bg: Color, border: Color, bw: int = 1) -> PanelContainer:
 	st.border_color = border
 	st.set_border_width_all(bw)
 	st.set_corner_radius_all(8)
-	st.set_content_margin_all(10)
+	st.set_content_margin_all(12)
 	p.add_theme_stylebox_override("panel", st)
 	return p
 
@@ -190,8 +189,8 @@ func _render_reactions_tab(sm: Dictionary) -> void:
 
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 8)
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
 	_content_vb.add_child(grid)
 
 	for rx in codex_data.get("reactions", []):
@@ -221,37 +220,20 @@ func _render_reactions_tab(sm: Dictionary) -> void:
 		vb.add_child(desc)
 
 func _render_weapons_tab() -> void:
-	var h1 := Label.new()
-	h1.text = "仙阶合体超武配方（需两件材料均达 Lv.5 自动合体并腾出 1 槽）"
-	h1.add_theme_font_size_override("font_size", 15)
-	h1.add_theme_color_override("font_color", Color(0.68, 0.24, 0.10))
-	_content_vb.add_child(h1)
-
-	for f in codex_data.get("fusions", []):
-		var owned := bool(f.get("owned", false))
-		var card := _make_card_panel(Color(1.0, 0.95, 0.84) if owned else Color(0.95, 0.93, 0.87), Color(0.88, 0.42, 0.16) if owned else Color(0.66, 0.72, 0.68), 2 if owned else 1)
-		_content_vb.add_child(card)
-		var lbl := Label.new()
-		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		var state := "★ 已合体降临" if owned else "%s (Lv.%d/5) + %s (Lv.%d/5)" % [String(f.get("ing_a_name", "")), int(f.get("ing_a_lv", 0)), String(f.get("ing_b_name", "")), int(f.get("ing_b_lv", 0))]
-		lbl.text = "【%s】 · %s\n%s" % [String(f.get("name", "")), state, String(f.get("desc", ""))]
-		lbl.add_theme_font_size_override("font_size", 14)
-		lbl.add_theme_color_override("font_color", Color(0.72, 0.22, 0.10) if owned else Color(0.16, 0.26, 0.23))
-		card.add_child(lbl)
-
+	var weapons_list: Array = codex_data.get("weapons", [])
 	var h2 := Label.new()
-	h2.text = "六大基础法宝 Lv.1 → Lv.5 成长路线"
+	h2.text = "%d 大基础法宝 Lv.1 → Lv.%d 成长路线" % [weapons_list.size(), OrbitWeaponRig.MAX_WEAPON_TIER]
 	h2.add_theme_font_size_override("font_size", 15)
 	h2.add_theme_color_override("font_color", Color(0.10, 0.36, 0.30))
 	_content_vb.add_child(h2)
 
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 8)
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
 	_content_vb.add_child(grid)
 
-	for w in codex_data.get("weapons", []):
+	for w in weapons_list:
 		var cur_lv := int(w.get("cur_lv", 0))
 		var card := _make_card_panel(Color(0.90, 0.96, 0.92) if cur_lv > 0 else Color(0.95, 0.93, 0.88), Color(0.18, 0.58, 0.46) if cur_lv > 0 else Color(0.68, 0.72, 0.68), 2 if cur_lv > 0 else 1)
 		grid.add_child(card)
@@ -260,7 +242,7 @@ func _render_weapons_tab() -> void:
 		card.add_child(vb)
 
 		var title := Label.new()
-		var lv_str := "当前 Lv.%d/5" % cur_lv if cur_lv > 0 else "未携带"
+		var lv_str := "当前 Lv.%d/%d" % [cur_lv, OrbitWeaponRig.MAX_WEAPON_TIER] if cur_lv > 0 else "未携带"
 		title.text = "【%s】%s · %s" % [String(w.get("element_cn", "")), String(w.get("name", "")), lv_str]
 		title.add_theme_font_size_override("font_size", 15)
 		title.add_theme_color_override("font_color", Color(0.08, 0.36, 0.26) if cur_lv > 0 else Color(0.22, 0.30, 0.28))
@@ -277,7 +259,8 @@ func _render_weapons_tab() -> void:
 
 func _render_realms_items_tab() -> void:
 	var h1 := Label.new()
-	h1.text = "大境界法宝槽解锁进度（击杀第 2 只大精英亦可提前解封全部 6 槽）"
+	var max_slots := int(codex_data.get("summary", {}).get("max_slots", 4))
+	h1.text = "大境界法宝槽解锁进度（击杀第 2 只大精英亦可提前解封全部 %d 槽）" % max_slots
 	h1.add_theme_font_size_override("font_size", 15)
 	h1.add_theme_color_override("font_color", Color(0.10, 0.36, 0.30))
 	_content_vb.add_child(h1)
@@ -304,8 +287,8 @@ func _render_realms_items_tab() -> void:
 
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 8)
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
 	_content_vb.add_child(grid)
 
 	for it in codex_data.get("items", []):
@@ -387,26 +370,6 @@ static func build_codex_data(loader: V2DataLoader, v2: V2CombatController = null
 		})
 
 	var fusions: Array[Dictionary] = []
-	for recipe in loader.fusion_recipes:
-		var fid := String(recipe.get("id", ""))
-		var ing: Array = recipe.get("ingredients", [])
-		var ia := String(ing[0]) if ing.size() >= 1 else ""
-		var ib := String(ing[1]) if ing.size() >= 2 else ""
-		var na := String(loader.weapons_by_id.get(ia, {}).get("name", ia))
-		var nb := String(loader.weapons_by_id.get(ib, {}).get("name", ib))
-		fusions.append({
-			"id": fid,
-			"name": String(recipe.get("name", fid)),
-			"desc": String(recipe.get("desc", "")),
-			"icon": String(recipe.get("icon", "")),
-			"ingredients": ing,
-			"ing_a_name": na,
-			"ing_b_name": nb,
-			"ing_a_lv": v2.orbit_rig.get_weapon_tier(ia) if (v2 != null and v2.orbit_rig != null) else 0,
-			"ing_b_lv": v2.orbit_rig.get_weapon_tier(ib) if (v2 != null and v2.orbit_rig != null) else 0,
-			"required_tier": int(recipe.get("required_tier", OrbitWeaponRig.MAX_WEAPON_TIER)),
-			"owned": v2.orbit_rig.has_fusion(fid) if (v2 != null and v2.orbit_rig != null) else false,
-		})
 
 	var realms: Array[Dictionary] = []
 	var r_table := v2.get_realm_table() if v2 != null else loader.realm_slot_unlocks
@@ -453,6 +416,7 @@ static func build_codex_data(loader: V2DataLoader, v2: V2CombatController = null
 		"summary": {
 			"player_level": player_lv,
 			"unlocked_slots": unlocked_slots,
+			"max_slots": v2.get_max_weapon_slots() if v2 != null else loader.max_weapon_slots,
 			"owned_elements": owned_elem_names,
 			"active_reaction_count": rx_active.size(),
 			"total_reactions": reactions.size(),

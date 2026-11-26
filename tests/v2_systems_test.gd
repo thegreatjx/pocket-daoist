@@ -161,18 +161,11 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 	for _lv in range(OrbitWeaponRig.MAX_WEAPON_TIER):
 		rig2.add_weapon("wpn_fire_gourd", 1)
 	check(
-		"orbit_dual_lv8_fused_to_mythic",
-		rig2.slots.size() == 1 and String(rig2.slots[0]["id"]) == "fusion_flame_sword_array" and bool(rig2.slots[0]["is_fusion"]) and int(rig2.slots[0]["tier"]) == OrbitWeaponRig.FUSION_TIER,
+		"orbit_fusion_disabled_keeps_separate_slots",
+		rig2.slots.size() == 2 and not rig2.has_fusion("fusion_flame_sword_array") and not bool(rig2.slots[0]["is_fusion"]) and not bool(rig2.slots[1]["is_fusion"]),
 		str(rig2.slots)
 	)
-	check("orbit_has_fusion_helper", rig2.has_fusion("fusion_flame_sword_array"), "has_fusion false")
-	var fused_sp: Sprite2D = rig2.slots[0]["sprite"] as Sprite2D
-	var leftover_max_fx := fused_sp.get_node_or_null("MaxTierParticles")
-	check(
-		"orbit_fusion_visual_children",
-		fused_sp.get_node_or_null("FusionAura") != null and fused_sp.get_node_or_null("FusionSecondary") != null and (leftover_max_fx == null or leftover_max_fx.is_queued_for_deletion()),
-		"fusion visual node mismatch"
-	)
+	check("orbit_has_fusion_disabled", not rig2.has_fusion("fusion_flame_sword_array"), "has_fusion should be false")
 
 	var dummy_enemy := Node2D.new()
 	add_child(dummy_enemy)
@@ -218,8 +211,8 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 		rig_full_max.add_weapon(wid, 1)
 	check("orbit_full_max_setup", rig_full_max.slots.size() == 4 and rig_full_max.get_weapon_tier("wpn_jade_sword") == OrbitWeaponRig.MAX_WEAPON_TIER, str(rig_full_max.slots))
 	check(
-		"orbit_full_accepts_lv8_companion_fusion",
-		rig_full_max.add_weapon("wpn_fire_gourd", OrbitWeaponRig.MAX_WEAPON_TIER) and rig_full_max.has_fusion("fusion_flame_sword_array"),
+		"orbit_full_rejects_companion_when_fusion_disabled",
+		not rig_full_max.add_weapon("wpn_fire_gourd", OrbitWeaponRig.MAX_WEAPON_TIER) and not rig_full_max.has_fusion("fusion_flame_sword_array"),
 		str(rig_full_max.slots)
 	)
 
@@ -451,7 +444,7 @@ func _test_arena_pillars_and_spawning(loader: V2DataLoader) -> void:
 				break
 	check("arena_pillars_circle_colliders", all_circles, "obstacles must use CircleShape2D on layer 5")
 	check("arena_2_spirit_arrays", bg.call("get_landmarks_by_role", "spirit_array").size() == 2, "spirit arrays != 2")
-	check("arena_2_demon_steles", bg.call("get_landmarks_by_role", "demon_stele").size() == 2, "demon steles != 2")
+	check("arena_1_demon_stele_well_clear", bg.call("get_landmarks_by_role", "demon_stele").size() == 1 and bg.call("get_landmarks_by_role", "well").size() == 1, "demon stele / well landmark mismatch")
 
 	var steering := EnemySteeringDirector.new()
 	steering.configure(loader.wave_config.get("global_limits", {}))
@@ -675,9 +668,9 @@ func _test_t2b_pools_luck_and_shop(_loader: V2DataLoader) -> void:
 	var w_same_elem := cc.get_weapon_offer_weight("wpn_gold_bell")
 	var w_new_elem := cc.get_weapon_offer_weight("wpn_ice_mirror")
 	check(
-		"t2b_companion_weight_boost",
-		w_companion >= w_same_elem * 2.0,
-		"companion=%.2f same_elem=%.2f" % [w_companion, w_same_elem]
+		"t2b_companion_weight_no_fusion_boost",
+		is_equal_approx(w_companion, w_new_elem),
+		"companion=%.2f new_elem=%.2f" % [w_companion, w_new_elem]
 	)
 	check(
 		"t2b_missing_elem_weight_boost",
@@ -771,8 +764,8 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 	)
 	var fusions: Array = sword_det.get("fusions", [])
 	check(
-		"t2c_weapon_detail_fusion_recipe",
-		fusions.size() >= 1 and String(fusions[0].get("fusion_id", "")) == "fusion_flame_sword_array",
+		"t2c_weapon_detail_fusion_disabled",
+		fusions.is_empty(),
 		str(fusions)
 	)
 
@@ -860,7 +853,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	var sm0: Dictionary = d0.get("summary", {})
 	check(
 		"t2d_codex_counts",
-		(d0.get("reactions", []) as Array).size() == 7 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).size() == 3 and (d0.get("realms", []) as Array).size() == 4 and (d0.get("items", []) as Array).size() == 16,
+		(d0.get("reactions", []) as Array).size() == 7 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).is_empty() and (d0.get("realms", []) as Array).size() == 4 and (d0.get("items", []) as Array).size() == 16,
 		str(sm0)
 	)
 	check("t2d_codex_initial_0_reactions", int(sm0.get("active_reaction_count", -1)) == 0, str(sm0))
@@ -915,8 +908,8 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 		cc2.upgrade_weapon("wpn_jade_sword", 1)
 		cc2.upgrade_weapon("wpn_fire_gourd", 1)
 	check(
-		"t2d_e2e_dual_lv8_fuses_and_frees_slot",
-		cc2.orbit_rig.has_fusion("fusion_flame_sword_array") and cc2.orbit_rig.slots.size() == 1 and cc2.get_unlocked_slots() == 2 and cc2.orbit_rig.has_free_slot(),
+		"t2d_e2e_dual_lv8_stays_separate",
+		not cc2.orbit_rig.has_fusion("fusion_flame_sword_array") and cc2.orbit_rig.slots.size() == 2 and cc2.get_unlocked_slots() == 2 and not cc2.orbit_rig.has_free_slot(),
 		str(cc2.orbit_rig.slots)
 	)
 
@@ -926,11 +919,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	codex.switch_tab(0)
 	codex.switch_tab(1)
 	codex.switch_tab(2)
-	var found_owned_fusion := false
-	for f in codex.codex_data.get("fusions", []):
-		if String(f.get("id", "")) == "fusion_flame_sword_array" and bool(f.get("owned", false)):
-			found_owned_fusion = true
-	check("t2d_e2e_codex_marks_owned_fusion", found_owned_fusion, str(codex.codex_data.get("fusions", [])))
+	check("t2d_e2e_codex_hides_fusions", (codex.codex_data.get("fusions", []) as Array).is_empty(), str(codex.codex_data.get("fusions", [])))
 
 	codex.queue_free()
 	um.queue_free()
@@ -1473,14 +1462,7 @@ func _test_t5_batch3a_arcana_limit_break() -> void:
 	rig.add_weapon("wpn_jade_sword", OrbitWeaponRig.MAX_WEAPON_TIER)
 	v2.orbit_rig = rig
 	v2.unlocked_weapon_slots = 4
-	_check("t5_3a_wl_match", v2.is_arcana_applicable_to_weapon("arcana_mirror_blade", "wpn_jade_sword") and not v2.is_arcana_applicable_to_weapon("arcana_mirror_blade", "wpn_venom_banner"), "")
-	var base_dmg := v2.get_damage_mult()
-	_check("t5_3a_add_solitary", v2.add_arcana("arcana_solitary_dao"), "")
-	_check("t5_3a_empty_slot_bonus", v2.get_empty_slot_count() == 3 and v2.get_damage_mult() > base_dmg + 0.4, "")
-	_check("t5_3a_add_samsara", v2.add_arcana("arcana_samsara"), "")
-	var before_rev := v2.get_damage_mult()
-	v2.on_player_revived()
-	_check("t5_3a_revival_stack", v2.revival_stacks == 1 and v2.get_damage_mult() > before_rev, "")
+	_check("t5_3a_arcana_disabled", not v2.add_arcana("arcana_solitary_dao") and not v2.has_arcana("arcana_solitary_dao") and v2.get_arcana_choices().is_empty(), "")
 	var ok_lb := true
 	for _i in range(5):
 		ok_lb = ok_lb and v2.apply_weapon_limit_break("wpn_jade_sword", "damage_pct", 0.08, 5)
@@ -1548,7 +1530,7 @@ func _test_t5_batch3c_achievements() -> void:
 		"run_jars_broken": 16,
 	}, false)
 	_check("t5_3c_unlocked_multi", unlocked.size() >= 6, "got=%d" % unlocked.size())
-	_check("t5_3c_curse_seal_bonus", Stats.bonus_seal_slots >= 2 and Stats.is_arcana_unlocked("arcana_primordial_bond") and Stats.is_arcana_unlocked("arcana_void_magnet"), "")
+	_check("t5_3c_curse_seal_bonus", Stats.bonus_seal_slots >= 2, "")
 	var unlocked_again := Stats.evaluate_run_achievements({
 		"run_time": 200.0,
 		"run_level": 14,
@@ -2311,7 +2293,7 @@ func _test_flying_sword_dummy_and_debug_isolation() -> void:
 		dummy_ok = mid_ok and reset_ok and is_equal_approx(d0.total_damage, 0.0) and d0.hit_count == 0
 	var loader_chk := V2DataLoader.new()
 	loader_chk.load_all("res://data/v2")
-	var data_driven_ok := dbg_sandbox != null and dbg_sandbox._weapon_rows.size() == loader_chk.weapons_by_id.size() and dbg_sandbox._item_rows.size() == loader_chk.items_by_id.size() and dbg_sandbox._arcana_rows.size() == loader_chk.arcanas.size() and dbg_sandbox._char_btns.size() == CharacterData.all().size() and dbg_sandbox._stage_btns.size() == loader_chk.stages.size()
+	var data_driven_ok := dbg_sandbox != null and dbg_sandbox._weapon_rows.size() == loader_chk.weapons_by_id.size() and dbg_sandbox._item_rows.size() == loader_chk.items_by_id.size() and dbg_sandbox._arcana_rows.is_empty() and dbg_sandbox._char_btns.size() == CharacterData.all().size() and dbg_sandbox._stage_btns.size() == loader_chk.stages.size()
 	loader_chk.free()
 	_check(
 		"debug_sandbox_isolated_with_wooden_dummies",

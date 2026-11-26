@@ -69,20 +69,20 @@ func _build_ui() -> void:
 
 	_panel = Panel.new()
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_panel.offset_left = -490.0
-	_panel.offset_right = 490.0
-	_panel.offset_top = -305.0
-	_panel.offset_bottom = 305.0
+	_panel.offset_left = -500.0
+	_panel.offset_right = 500.0
+	_panel.offset_top = -315.0
+	_panel.offset_bottom = 315.0
 	_panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 0))
 	XianxiaUITheme.attach_ornaments(_panel, XianxiaUITheme.COL_GOLD, 16.0, 7.0)
 	_root_dim.add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_bottom", 16)
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_bottom", 24)
 	_panel.add_child(margin)
 
 	var main_vb := VBoxContainer.new()
@@ -117,7 +117,7 @@ func _build_ui() -> void:
 	main_vb.add_child(_cards_row)
 
 	var sep_lbl := Label.new()
-	sep_lbl.text = "当前携带法宝（单件购买即淬炼升阶 · 双 Lv.5 合体超武 · 点击可 55% 折价出售）"
+	sep_lbl.text = "当前携带法宝（单件购买即淬炼升阶 · 点击可 55%% 折价出售）"
 	sep_lbl.add_theme_font_size_override("font_size", 14)
 	sep_lbl.add_theme_color_override("font_color", Color(0.28, 0.38, 0.34))
 	main_vb.add_child(sep_lbl)
@@ -333,11 +333,7 @@ func _build_new_weapon_candidates(luck: float, used_keys: Dictionary) -> Array[D
 			continue
 		var tier := 2 if (has_slot and randf() < p2) else 1
 		if not has_slot:
-			var finfo := _v2.find_companion_fusion_info(wid)
-			if bool(finfo.get("ready_now", false)) and _v2.can_add_weapon(wid, OrbitWeaponRig.MAX_WEAPON_TIER):
-				tier = OrbitWeaponRig.MAX_WEAPON_TIER
-			else:
-				continue
+			continue
 		elif not _v2.can_add_weapon(wid, tier):
 			continue
 		out.append({
@@ -439,7 +435,7 @@ func _refresh_view() -> void:
 	var realm_by_slot := {}
 	for entry in _v2.get_realm_table():
 		realm_by_slot[int(entry.get("slots", 0))] = entry
-	for i in range(6):
+	for i in range(_v2.get_max_weapon_slots()):
 		if i < slots.size():
 			_loadout_row.add_child(_build_owned_slot(i, slots[i], slots.size() > 1))
 		elif i < unlocked:
@@ -469,7 +465,7 @@ func _build_offer_card(idx: int, offer: Dictionary) -> Control:
 	st.set_border_width_all(2)
 	st.border_color = Color(0.86, 0.62, 0.16) if locked else Color(0.22, 0.58, 0.50)
 	st.set_corner_radius_all(10)
-	st.set_content_margin_all(12)
+	st.set_content_margin_all(14)
 	card.add_theme_stylebox_override("panel", st)
 
 	var vb := VBoxContainer.new()
@@ -510,18 +506,11 @@ func _build_offer_card(idx: int, offer: Dictionary) -> Control:
 			can_buy = false
 			syn_text = "已满级或未持有该法宝"
 		else:
-			var finfo := _v2.find_companion_fusion_info(item_id)
-			if bool(finfo.get("ready_now", false)):
-				if next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER:
-					syn_text = "✦ 淬炼满级即合体【%s】！" % String(finfo.get("fusion_name", ""))
-				else:
-					syn_text = "✦ 伴生【%s】已满级，冲 Lv.5 合体【%s】！" % [String(finfo.get("partner_name", "")), String(finfo.get("fusion_name", ""))]
-			else:
-				syn_text = "✦ 原地淬炼升阶，不占法宝槽"
+			syn_text = "✦ 原地淬炼升阶，不占法宝槽"
 	elif kind == "weapon" and _v2.loader.weapons_by_id.has(item_id):
 		var w: Dictionary = _v2.loader.weapons_by_id[item_id]
 		var elem := String(w.get("element", "metal"))
-		tag = "【%s · %s】" % [String(ELEM_NAMES.get(elem, "法")), TIER_ROMAN[clampi(tier, 1, 5)]]
+		tag = "【%s · %s】" % [String(ELEM_NAMES.get(elem, "法")), TIER_ROMAN[clampi(tier, 1, OrbitWeaponRig.MAX_WEAPON_TIER)]]
 		title = String(w.get("name", item_id))
 		icon_path = String(w.get("icon", ""))
 		var tiers: Array = w.get("tiers", [])
@@ -536,20 +525,15 @@ func _build_offer_card(idx: int, offer: Dictionary) -> Control:
 		elif t_stat.has("pierce"):
 			desc += "\n穿透 %d 敌" % int(t_stat["pierce"])
 		var cur_tier := _v2.orbit_rig.get_weapon_tier(item_id) if _v2.orbit_rig != null else 0
-		var finfo := _v2.find_companion_fusion_info(item_id)
 		if cur_tier >= OrbitWeaponRig.MAX_WEAPON_TIER:
 			can_buy = false
-			syn_text = "已淬炼至 Lv.5 满级"
+			syn_text = "已淬炼至 Lv.%d 满级" % OrbitWeaponRig.MAX_WEAPON_TIER
 		elif cur_tier > 0:
 			var target_lv := mini(OrbitWeaponRig.MAX_WEAPON_TIER, maxi(cur_tier + 1, tier))
 			syn_text = "✦ 购买即淬炼升至 %s!" % TIER_ROMAN[target_lv]
 		elif not _v2.can_add_weapon(item_id, tier):
 			can_buy = false
 			syn_text = "槽位未解锁/已满"
-		elif bool(finfo.get("ready_now", false)):
-			syn_text = "✦ 可与【%s】合体为【%s】！" % [String(finfo.get("partner_name", "")), String(finfo.get("fusion_name", ""))]
-		elif not finfo.is_empty():
-			syn_text = "✦ 可与已有【%s】凑双满级合体【%s】" % [String(finfo.get("partner_name", "")), String(finfo.get("fusion_name", ""))]
 	elif kind == "item" and _v2.loader.items_by_id.has(item_id):
 		var it: Dictionary = _v2.loader.items_by_id[item_id]
 		var rarity := int(it.get("rarity", 1))
@@ -686,7 +670,7 @@ func _build_owned_slot(slot_idx: int, slot: Dictionary, can_sell: bool) -> Contr
 	st.border_color = Color(0.98, 0.78, 0.26) if is_f else Color(0.30, 0.76, 0.66)
 	st.set_border_width_all(2 if is_f else 1)
 	st.set_corner_radius_all(8)
-	st.set_content_margin_all(6)
+	st.set_content_margin_all(8)
 	p.add_theme_stylebox_override("panel", st)
 
 	var hb := HBoxContainer.new()
@@ -723,7 +707,7 @@ func _build_owned_slot(slot_idx: int, slot: Dictionary, can_sell: bool) -> Contr
 	lbl_btn.custom_minimum_size = Vector2(10, 0)
 	lbl_btn.clip_text = true
 	lbl_btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	lbl_btn.text = "%s (%s)" % [w_name, TIER_ROMAN[clampi(tier, 1, 6)]]
+	lbl_btn.text = "%s (%s)" % [w_name, TIER_ROMAN[9] if is_f else TIER_ROMAN[clampi(tier, 1, OrbitWeaponRig.MAX_WEAPON_TIER)]]
 	lbl_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	lbl_btn.focus_mode = Control.FOCUS_NONE
 	lbl_btn.add_theme_font_size_override("font_size", 13)
@@ -761,6 +745,7 @@ func _build_empty_owned_slot(label_text: String = "", locked: bool = false) -> C
 		st.border_color = Color(0.36, 0.58, 0.52, 0.45)
 	st.set_border_width_all(1)
 	st.set_corner_radius_all(8)
+	st.set_content_margin_all(8)
 	p.add_theme_stylebox_override("panel", st)
 	var lbl := Label.new()
 	lbl.text = label_text if label_text != "" else "空法宝槽"

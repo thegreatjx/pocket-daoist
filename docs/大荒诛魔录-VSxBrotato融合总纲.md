@@ -1,7 +1,7 @@
 # 《百宝小道修》(Pocket Daoist)VS × Brotato 双核融合总控方案
 
-> 参考逆向基准：`vs_analysis/report/`（《吸血鬼幸存者》设计/行为解剖与 `stages_waves.csv`）、`brotato_analysis/report/`（《土豆兄弟》结构/行为/手感解剖与 `combat_summary.txt`）
-> 协作模式：总指挥定架构与工单契约 → OpenCode（`magpie/auto/deepseek-v4.1-flash`）实施并自跑无头测试与 `git diff` 自查 → 总指挥做架构/数值/闭环宏观验收与复测放行
+> 参考逆向基准：`vs_analysis/report/`、`brotato_analysis/report/`
+> 注：本文档为 V2 早期融合设计总纲。当前实际落地的线上规则已收口为：**4 槽位法宝、8 件法宝 Lv.1→Lv.8 原地淬炼、7 组五行反应（ICD 2.4s/1.6s）、4 位可用角色、5 关 10 波推图；双法宝合体（超武融合）与天道道韵当前已停用**，实时数值与配置以 `data/v2/*.json` 和 `docs/游戏设计规划.md` 为准。
 
 ---
 

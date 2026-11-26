@@ -11,7 +11,7 @@ const V2_ELEM_NAMES := {
 	"water": "水系法宝",
 }
 
-const V2_TIER_NAMES := ["", "Lv.1", "Lv.2", "Lv.3", "Lv.4", "Lv.5", "Lv.6", "Lv.7", "Lv.8", "超武"]
+const V2_TIER_NAMES := ["", "Lv.1", "Lv.2", "Lv.3", "Lv.4", "Lv.5", "Lv.6", "Lv.7", "Lv.8"]
 
 const V2_REALM_BREAKTHROUGHS := [
 	{"id": "v2_stat:dmg", "tag": "【灵力淬炼】", "title": "道心凝锋", "desc": "所有法宝与元素反应伤害 +7%（限叠 4 次）。", "icon": "res://assets/icons/icon_qingzhu_sword.png", "hint": "✦ 稳健全局增幅", "stackable": true, "max_stacks": 4},
@@ -328,24 +328,8 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 		var desc := "%s\n伤害 %d · 冷却 %.2fs" % [summary, int(ts.get("damage", 15)), float(ts.get("cooldown", 1.0))]
 		var w_weight := maxi(1, roundi(v2.get_weapon_offer_weight(sid) * 10.0))
 
-		var finfo := v2.find_companion_fusion_info(sid)
-		var fusion_hint := ""
-		var ready_now := bool(finfo.get("ready_now", false))
-		if not finfo.is_empty():
-			var p_name := String(finfo.get("partner_name", ""))
-			var f_name := String(finfo.get("fusion_name", ""))
-			if ready_now:
-				if cur_lv > 0 and next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER:
-					fusion_hint = "✦ 升满即与【%s】合体为【%s】！" % [p_name, f_name]
-				else:
-					fusion_hint = "✦ 可与【%s】合体为【%s】！" % [p_name, f_name]
-			else:
-				fusion_hint = "✦ 与已有【%s】双满级可合体【%s】" % [p_name, f_name]
-
 		var syn_hint := "✦ 可触发不同五行元素反应"
-		if fusion_hint != "":
-			syn_hint = fusion_hint
-		elif cur_lv > 0:
+		if cur_lv > 0:
 			syn_hint = "✦ 法宝原地淬炼，不占新槽位"
 		elif not owned_elems.has(elem):
 			syn_hint = "✦ 新属性【%s】可与现有法宝触发五行反应！" % String(V2_ELEM_NAMES.get(elem, elem))
@@ -361,11 +345,11 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 			"max_level": OrbitWeaponRig.MAX_WEAPON_TIER,
 			"icon": String(w.get("icon", "")),
 			"synergy_hint": syn_hint,
-			"fusion_hint": fusion_hint,
+			"fusion_hint": "",
 			"offer_kind": "new_weapon" if cur_lv == 0 else "upgrade_weapon",
 			"is_new": cur_lv == 0,
 			"is_relic": false,
-			"is_evo": (cur_lv > 0 and next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER) or ready_now,
+			"is_evo": (cur_lv > 0 and next_lv >= OrbitWeaponRig.MAX_WEAPON_TIER),
 			"weight": w_weight,
 			"elem": elem,
 		}
@@ -409,22 +393,24 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 			var item_id := String(iid)
 			if banished_ids.has("v2_item:" + item_id):
 				continue
-			if v2.has_item(item_id):
+			if not v2.can_add_item(item_id):
 				continue
 			var it: Dictionary = v2.loader.items_by_id[iid]
+			var cur_cnt := v2.get_item_count(item_id)
+			var cap := maxi(1, int(it.get("max_stacks", 1)))
 			item_candidates.append({
 				"id": "v2_item:" + item_id,
 				"tag": "【秘宝】",
 				"title": String(it.get("name", item_id)),
 				"desc": String(it.get("desc", "")),
-				"level": 0,
-				"next_level": 1,
-				"max_level": 1,
+				"level": cur_cnt,
+				"next_level": cur_cnt + 1,
+				"max_level": cap,
 				"icon": String(V2ShopUI.ITEM_ICONS.get(item_id, "res://assets/icons/relic_insight.png")),
 				"synergy_hint": "",
 				"fusion_hint": "",
 				"offer_kind": "item",
-				"is_new": true,
+				"is_new": cur_cnt == 0,
 				"is_relic": true,
 				"is_evo": false,
 				"weight": 100,
@@ -551,7 +537,6 @@ func apply_v2_upgrade(choice_id: String, player: Node) -> void:
 		v2.add_item(choice_id.substr(8))
 		return
 	if choice_id.begins_with("v2_arcana:"):
-		v2.add_arcana(choice_id.substr(10))
 		return
 	if choice_id.begins_with("v2_stat:"):
 		v2.record_stat_pick(choice_id)
@@ -597,34 +582,6 @@ func roll_v2_chest_rewards(player: Node) -> Array[Dictionary]:
 		return legacy_rewards
 	var v2: V2CombatController = player.v2_combat
 	var rewards: Array[Dictionary] = []
-
-	if v2.orbit_rig != null and v2.loader != null:
-		for recipe in v2.loader.fusion_recipes:
-			var ing: Array = recipe["ingredients"]
-			var a := String(ing[0])
-			var b := String(ing[1])
-			var has_a_max := v2.orbit_rig._find_slot(a, OrbitWeaponRig.MAX_WEAPON_TIER) != -1
-			var has_b_max := v2.orbit_rig._find_slot(b, OrbitWeaponRig.MAX_WEAPON_TIER) != -1
-			if has_a_max and not has_b_max and v2.can_add_weapon(b, OrbitWeaponRig.MAX_WEAPON_TIER):
-				v2.add_weapon(b, OrbitWeaponRig.MAX_WEAPON_TIER)
-				rewards.append({
-					"is_evo": true,
-					"title": "【合体超武】%s" % String(recipe["name"]),
-					"subtitle": "天机宝箱赐予满级伴生法宝，当场合体！",
-					"desc": "双 Lv.8 满级神兵融为一体，腾出 1 个法宝槽并激活双元素自反应！",
-					"icon": String(recipe["icon"]),
-				})
-				return rewards
-			if has_b_max and not has_a_max and v2.can_add_weapon(a, OrbitWeaponRig.MAX_WEAPON_TIER):
-				v2.add_weapon(a, OrbitWeaponRig.MAX_WEAPON_TIER)
-				rewards.append({
-					"is_evo": true,
-					"title": "【合体超武】%s" % String(recipe["name"]),
-					"subtitle": "天机宝箱赐予满级伴生法宝，当场合体！",
-					"desc": "双 Lv.8 满级神兵融为一体，腾出 1 个法宝槽并激活双元素自反应！",
-					"icon": String(recipe["icon"]),
-				})
-				return rewards
 
 	var roll := randf()
 	var cnt := 3 if roll > 0.65 else 2

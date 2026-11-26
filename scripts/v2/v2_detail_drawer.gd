@@ -68,6 +68,7 @@ const MOD_SPECS := {
 	"lifesteal_pct": ["攻击吸血", "pct", false],
 	"gold_gain_pct": ["灵石掉落", "pct", false],
 	"enemy_spawn_pct": ["刷怪密度", "pct", true],
+	"curse_pct": ["劫难", "pct", true],
 	"luck": ["机缘", "pct", false],
 }
 
@@ -271,29 +272,10 @@ func _make_scroll_column(parent_row: HBoxContainer, ratio: float, is_sidebar: bo
 	if not is_sidebar:
 		sc.size_flags_stretch_ratio = ratio
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var vbar := sc.get_v_scroll_bar()
-	if vbar != null:
-		var track_st := StyleBoxFlat.new()
-		track_st.bg_color = Color(0.78, 0.80, 0.75, 0.28)
-		track_st.set_corner_radius_all(3)
-		track_st.content_margin_left = 3
-		track_st.content_margin_right = 3
-		vbar.add_theme_stylebox_override("scroll", track_st)
-		var grab_st := StyleBoxFlat.new()
-		grab_st.bg_color = Color(0.24, 0.46, 0.40, 0.48)
-		grab_st.set_corner_radius_all(3)
-		vbar.add_theme_stylebox_override("grabber", grab_st)
-		var grab_hv := grab_st.duplicate() as StyleBoxFlat
-		grab_hv.bg_color = Color(0.16, 0.44, 0.36, 0.72)
-		vbar.add_theme_stylebox_override("grabber_highlight", grab_hv)
-		vbar.add_theme_stylebox_override("grabber_pressed", grab_hv)
+	XianxiaUITheme.style_scroll_container(sc)
 	host.add_child(sc)
 
-	var vb := VBoxContainer.new()
-	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vb.add_theme_constant_override("separation", 12)
-	sc.add_child(vb)
-	return vb
+	return XianxiaUITheme.make_scroll_body(sc, 12, 6 if is_sidebar else 10, 2)
 
 func _make_btn(text: String, bg: Color, border: Color, font_col: Color) -> Button:
 	var b := Button.new()
@@ -548,7 +530,7 @@ func _render_weapon_left(detail: Dictionary) -> void:
 			var dcol := COL_JADE if is_pos else COL_CINNABAR
 			hb.add_child(_make_pill(delta_t, Color(dcol.r, dcol.g, dcol.b, 0.14), Color(dcol.r, dcol.g, dcol.b, 0.45), dcol, 11))
 
-	var road_box := _add_section(_left_vb, "淬炼阶梯", "Lv.1 → Lv.5", COL_GOLD)
+	var road_box := _add_section(_left_vb, "淬炼阶梯", "Lv.1 → Lv.%d" % OrbitWeaponRig.MAX_WEAPON_TIER, COL_GOLD)
 	var roadmap: Array = detail.get("tier_roadmap", [])
 	var pip_bar := HBoxContainer.new()
 	pip_bar.add_theme_constant_override("separation", 6)
@@ -598,57 +580,6 @@ func _render_weapon_left(detail: Dictionary) -> void:
 		row_hb.add_child(lbl)
 
 func _render_weapon_right(detail: Dictionary) -> void:
-	var fuse_box := _add_section(_right_vb, "仙阶合体配方", "双 Lv.5 触发", COL_CINNABAR)
-	var fusions: Array = detail.get("fusions", [])
-	if fusions.is_empty():
-		var none_lbl := Label.new()
-		none_lbl.text = "当前暂无对应仙阶合体配方"
-		none_lbl.add_theme_font_size_override("font_size", 13)
-		none_lbl.add_theme_color_override("font_color", COL_INK_SUB)
-		fuse_box.add_child(none_lbl)
-	else:
-		for f in fusions:
-			var ready := bool(f.get("ready_now", false))
-			var owned_f := bool(f.get("owned_fusion", false))
-			var fp := PanelContainer.new()
-			var fst := StyleBoxFlat.new()
-			fst.bg_color = Color(0.99, 0.94, 0.86, 1.0) if (ready or owned_f) else Color(0.97, 0.96, 0.92, 0.92)
-			fst.border_color = Color(0.86, 0.44, 0.16, 0.85) if (ready or owned_f) else Color(0.76, 0.78, 0.73, 0.80)
-			fst.set_border_width_all(1)
-			fst.set_corner_radius_all(8)
-			fst.content_margin_left = 10
-			fst.content_margin_right = 10
-			fst.content_margin_top = 8
-			fst.content_margin_bottom = 8
-			fp.add_theme_stylebox_override("panel", fst)
-			fuse_box.add_child(fp)
-
-			var fvb := VBoxContainer.new()
-			fvb.add_theme_constant_override("separation", 4)
-			fp.add_child(fvb)
-
-			var fhead := HBoxContainer.new()
-			fhead.add_theme_constant_override("separation", 6)
-			fvb.add_child(fhead)
-
-			var fname := Label.new()
-			fname.text = String(f.get("fusion_name", ""))
-			fname.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			fname.add_theme_font_size_override("font_size", 14)
-			fname.add_theme_color_override("font_color", COL_CINNABAR if (ready or owned_f) else COL_INK)
-			fhead.add_child(fname)
-
-			var status_txt := "已合体" if owned_f else ("伴生已满级 · 冲 Lv.5" if ready else "本件 %d/5 · %s %d/5" % [int(f.get("self_lv", 0)), String(f.get("partner_name", "")), int(f.get("partner_lv", 0))])
-			var st_col := COL_CINNABAR if (ready or owned_f) else COL_JADE
-			fhead.add_child(_make_pill(status_txt, Color(st_col.r, st_col.g, st_col.b, 0.14), Color(st_col.r, st_col.g, st_col.b, 0.48), st_col, 11))
-
-			var fdesc := Label.new()
-			fdesc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			fdesc.text = String(f.get("desc", ""))
-			fdesc.add_theme_font_size_override("font_size", 12)
-			fdesc.add_theme_color_override("font_color", COL_INK_SUB)
-			fvb.add_child(fdesc)
-
 	var syn: Dictionary = detail.get("synergy_summary", {})
 	var syn_badge := "已持 %d → 选用后 %d 组" % [int(syn.get("active_reaction_count", 0)), int(syn.get("projected_reaction_count", 0))]
 	var rx_box := _add_section(_right_vb, "五行反应联动", syn_badge, COL_JADE)
@@ -793,10 +724,16 @@ func _render_item_left(detail: Dictionary) -> void:
 		m_lbl.add_theme_color_override("font_color", COL_INK)
 		mech_box.add_child(m_lbl)
 	elif not rows.is_empty():
-		var note_box := _add_section(_left_vb, "佩戴说明", "可重复叠加", COL_GOLD)
+		var max_st := maxi(1, int(detail.get("max_stacks", 1)))
+		var owned_st := int(detail.get("owned_count", 0))
+		var cap_badge := "限持 1 件" if max_st == 1 else "限叠 %d 件 (%d/%d)" % [max_st, owned_st, max_st]
+		var note_box := _add_section(_left_vb, "佩戴说明", cap_badge, COL_GOLD)
 		var n_lbl := Label.new()
 		n_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		n_lbl.text = "同款秘宝词条可累加生效；若含代偿词条，请结合当前气血与容错权衡。" if bool(detail.get("has_tradeoff", false)) else "同款秘宝词条可累加生效，购入后立即作用于本局属性。"
+		if max_st == 1:
+			n_lbl.text = "同款秘宝限持 1 件，购入后立即作用于本局属性。"
+		else:
+			n_lbl.text = "同款秘宝最多叠加 %d 件；若含代偿词条，请结合当前气血与容错权衡。" % max_st if bool(detail.get("has_tradeoff", false)) else "同款秘宝最多叠加 %d 件，购入后立即作用于本局属性。" % max_st
 		n_lbl.add_theme_font_size_override("font_size", 13)
 		n_lbl.add_theme_color_override("font_color", COL_INK_SUB)
 		note_box.add_child(n_lbl)
@@ -949,7 +886,7 @@ func _render_synergy_right(detail: Dictionary) -> void:
 
 	var bond_items: Array = detail.get("owned_bond_items", [])
 	var bonds: Array = detail.get("owned_bonds", [])
-	var bond_box := _add_section(_right_vb, "当前法宝与合体进度", "%d 槽" % maxi(bond_items.size(), bonds.size()), COL_GOLD)
+	var bond_box := _add_section(_right_vb, "当前携带法宝", "%d 槽" % maxi(bond_items.size(), bonds.size()), COL_GOLD)
 	if not bond_items.is_empty():
 		for bi in bond_items:
 			bond_box.add_child(_build_bond_row(bi))
@@ -1004,33 +941,25 @@ func _build_bond_row(bi: Dictionary) -> PanelContainer:
 	top.add_child(name_lbl)
 
 	if is_f:
-		top.add_child(_make_pill("仙阶超武", Color(0.86, 0.36, 0.16, 0.18), Color(0.86, 0.36, 0.16, 0.65), COL_CINNABAR, 11))
+		top.add_child(_make_pill("满阶", Color(0.86, 0.36, 0.16, 0.18), Color(0.86, 0.36, 0.16, 0.65), COL_CINNABAR, 11))
 	else:
 		var lv := int(bi.get("level", 1))
+		var max_t := OrbitWeaponRig.MAX_WEAPON_TIER
 		var pips := HBoxContainer.new()
-		pips.add_theme_constant_override("separation", 3)
-		for k in range(5):
+		pips.add_theme_constant_override("separation", 2)
+		for k in range(max_t):
 			var dot := ColorRect.new()
-			dot.custom_minimum_size = Vector2(9, 9)
+			dot.custom_minimum_size = Vector2(7, 9)
 			dot.color = COL_JADE if k < lv else Color(0.78, 0.80, 0.75, 0.85)
 			pips.add_child(dot)
 		top.add_child(pips)
 
 		var lv_lbl := Label.new()
-		lv_lbl.text = "Lv.%d/5" % lv
+		lv_lbl.text = "Lv.%d/%d" % [lv, max_t]
 		lv_lbl.add_theme_font_size_override("font_size", 12)
-		lv_lbl.add_theme_color_override("font_color", COL_JADE if lv >= 5 else COL_INK_SUB)
+		lv_lbl.add_theme_color_override("font_color", COL_JADE if lv >= max_t else COL_INK_SUB)
 		top.add_child(lv_lbl)
 
-	var partner := String(bi.get("partner_name", ""))
-	var fusion_name := String(bi.get("fusion_name", ""))
-	if not is_f and fusion_name != "":
-		var sub := Label.new()
-		sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		sub.text = "配【%s】双满级 → 合体【%s】" % [partner, fusion_name]
-		sub.add_theme_font_size_override("font_size", 11)
-		sub.add_theme_color_override("font_color", COL_INK_SUB)
-		vb.add_child(sub)
 	return p
 
 static func format_reaction_effect(rx: Dictionary) -> String:
@@ -1146,35 +1075,6 @@ static func build_weapon_detail(v2: V2CombatController, weapon_id: String, previ
 		})
 
 	var fusions: Array[Dictionary] = []
-	for recipe in v2.loader.fusion_recipes:
-		var ing: Array = recipe.get("ingredients", [])
-		if ing.size() < 2:
-			continue
-		var partner_id := ""
-		if String(ing[0]) == weapon_id:
-			partner_id = String(ing[1])
-		elif String(ing[1]) == weapon_id:
-			partner_id = String(ing[0])
-		if partner_id.is_empty():
-			continue
-		var partner_name := partner_id
-		if v2.loader.weapons_by_id.has(partner_id):
-			partner_name = String(v2.loader.weapons_by_id[partner_id].get("name", partner_id))
-		var partner_lv := v2.orbit_rig.get_weapon_tier(partner_id) if v2.orbit_rig != null else 0
-		var fid := String(recipe.get("id", ""))
-		var owned_f := v2.orbit_rig.has_fusion(fid) if v2.orbit_rig != null else false
-		fusions.append({
-			"fusion_id": fid,
-			"fusion_name": String(recipe.get("name", fid)),
-			"desc": String(recipe.get("desc", "")),
-			"partner_id": partner_id,
-			"partner_name": partner_name,
-			"self_lv": cur_lv,
-			"partner_lv": partner_lv,
-			"required_tier": int(recipe.get("required_tier", OrbitWeaponRig.MAX_WEAPON_TIER)),
-			"ready_now": (not owned_f) and partner_lv >= OrbitWeaponRig.MAX_WEAPON_TIER,
-			"owned_fusion": owned_f,
-		})
 
 	var owned_elems := v2.get_owned_elements()
 	var active_rx_list: Array[Dictionary] = []
@@ -1304,21 +1204,15 @@ static func _collect_owned_synergy_context(v2: V2CombatController) -> Dictionary
 				var wdata: Dictionary = v2.loader.weapons_by_id[wid]
 				var wname := String(wdata.get("name", wid))
 				var welem := String(wdata.get("element", "metal"))
-				var finfo := v2.find_companion_fusion_info(wid)
-				var partner_name := String(finfo.get("partner_name", "")) if not finfo.is_empty() else ""
-				var fusion_name := String(finfo.get("fusion_name", "")) if not finfo.is_empty() else ""
-				if not finfo.is_empty():
-					owned_bonds.append("• %s Lv.%d/5 ↔ %s（可合体【%s】）" % [wname, lv, partner_name, fusion_name])
-				else:
-					owned_bonds.append("• %s Lv.%d/5" % [wname, lv])
+				owned_bonds.append("• %s Lv.%d/%d" % [wname, lv, OrbitWeaponRig.MAX_WEAPON_TIER])
 				owned_bond_items.append({
 					"is_fusion": false,
 					"id": wid,
 					"name": wname,
 					"level": lv,
 					"element": welem,
-					"partner_name": partner_name,
-					"fusion_name": fusion_name,
+					"partner_name": "",
+					"fusion_name": "",
 				})
 	return {
 		"active_reactions": active_reactions,
@@ -1384,6 +1278,7 @@ static func build_item_detail(v2: V2CombatController, item_id: String) -> Dictio
 		"rarity": rarity,
 		"has_tradeoff": has_tradeoff,
 		"owned_count": owned_cnt,
+		"max_stacks": maxi(1, int(it.get("max_stacks", 1))),
 		"mod_rows": mod_rows,
 		"trigger_desc": String(TRIGGER_LABELS.get(trig_key, "")),
 		"desc": String(it.get("desc", "")),

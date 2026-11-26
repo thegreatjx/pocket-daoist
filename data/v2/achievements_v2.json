@@ -18,10 +18,10 @@
       "desc": "累计完成3局修行",
       "metric": "total_runs",
       "target": 3,
-      "reward_type": "unlock_character",
-      "reward_id": "fox_dango",
-      "reward_value": 1,
-      "reward_desc": "解锁修士【白团】"
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 60,
+      "reward_desc": "灵石 +60"
     },
     {
       "id": "ach_ten_runs",
@@ -40,10 +40,10 @@
       "desc": "单局诛魔达150",
       "metric": "run_kills",
       "target": 150,
-      "reward_type": "unlock_character",
-      "reward_id": "jinyiwei_gunner",
-      "reward_value": 1,
-      "reward_desc": "解锁修士【陆昭】"
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 60,
+      "reward_desc": "灵石 +60"
     },
     {
       "id": "ach_kills_500",
@@ -95,10 +95,10 @@
       "desc": "单局境界达到Lv.12",
       "metric": "run_level",
       "target": 12,
-      "reward_type": "unlock_character",
-      "reward_id": "gourd_spirit",
-      "reward_value": 1,
-      "reward_desc": "解锁修士【阿葫】"
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 70,
+      "reward_desc": "灵石 +70"
     },
     {
       "id": "ach_level_20",
@@ -150,10 +150,10 @@
       "desc": "通关秘境1",
       "metric": "cleared_stage_1",
       "target": 1,
-      "reward_type": "unlock_character",
-      "reward_id": "daoist_mochi",
-      "reward_value": 1,
-      "reward_desc": "解锁修士【圆圆】"
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 90,
+      "reward_desc": "灵石 +90"
     },
     {
       "id": "ach_clear_stage2",
@@ -222,15 +222,15 @@
       "reward_desc": "灵石 +150"
     },
     {
-      "id": "ach_first_fusion",
-      "name": "法宝合体",
-      "desc": "任意局合成1件合体超武",
-      "metric": "run_fusions",
-      "target": 1,
-      "reward_type": "unlock_arcana",
-      "reward_id": "arcana_primordial_bond",
-      "reward_value": 1,
-      "reward_desc": "解锁天道道韵【太初本命】"
+      "id": "ach_first_reaction_10",
+      "name": "五行相生",
+      "desc": "单局触发10次五行元素反应",
+      "metric": "run_reactions",
+      "target": 10,
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 80,
+      "reward_desc": "灵石 +80"
     },
     {
       "id": "ach_jars_15",
@@ -238,10 +238,10 @@
       "desc": "累计击碎15个青瓷罐",
       "metric": "total_jars_broken",
       "target": 15,
-      "reward_type": "unlock_arcana",
-      "reward_id": "arcana_void_magnet",
-      "reward_value": 1,
-      "reward_desc": "解锁天道道韵【归墟引灵】"
+      "reward_type": "spirit_stones",
+      "reward_id": "",
+      "reward_value": 120,
+      "reward_desc": "灵石 +120"
     },
     {
       "id": "ach_curse_clear_20",

@@ -56,25 +56,20 @@ func get_weapon_tier(weapon_id: String) -> int:
 	var idx := find_weapon_slot(weapon_id)
 	return int(slots[idx]["tier"]) if idx != -1 else 0
 
-func has_fusion(fusion_id: String) -> bool:
-	for i in range(slots.size()):
-		if bool(slots[i]["is_fusion"]) and String(slots[i]["id"]) == fusion_id:
-			return true
+func has_fusion(_fusion_id: String) -> bool:
 	return false
 
 func can_upgrade_weapon(weapon_id: String) -> bool:
 	var idx := find_weapon_slot(weapon_id)
 	return idx != -1 and int(slots[idx]["tier"]) < MAX_WEAPON_TIER
 
-func can_add_weapon(weapon_id: String, tier: int = 1) -> bool:
+func can_add_weapon(weapon_id: String, _tier: int = 1) -> bool:
 	if loader == null or not loader.weapons_by_id.has(weapon_id):
 		return false
 	var existing_idx := find_weapon_slot(weapon_id)
 	if existing_idx != -1:
 		return int(slots[existing_idx]["tier"]) < MAX_WEAPON_TIER
 	if slots.size() < get_unlocked_slots():
-		return true
-	if tier >= MAX_WEAPON_TIER and not _find_fusion_match(weapon_id, tier).is_empty():
 		return true
 	return false
 
@@ -88,10 +83,7 @@ func add_weapon(weapon_id: String, tier: int = 1) -> bool:
 		slots[existing_idx]["tier"] = clampi(maxi(cur_tier + 1, tier), 1, MAX_WEAPON_TIER)
 		_sync_max_tier_visual(slots[existing_idx])
 	elif slots.size() >= get_unlocked_slots():
-		var match_info: Dictionary = _find_fusion_match(weapon_id, tier)
-		if match_info.is_empty():
-			return false
-		_convert_slot_to_fusion(int(match_info["partner_idx"]), match_info["recipe"] as Dictionary)
+		return false
 	else:
 		var w_def: Dictionary = loader.weapons_by_id[weapon_id]
 		var sp := Sprite2D.new()
@@ -146,8 +138,7 @@ func sell_weapon(slot_index: int) -> Dictionary:
 	return removed
 
 func _settle_fusions() -> void:
-	while _try_fuse_once():
-		pass
+	return
 
 func _try_fuse_once() -> bool:
 	for recipe in loader.fusion_recipes:

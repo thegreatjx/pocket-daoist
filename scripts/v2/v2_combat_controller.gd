@@ -340,42 +340,8 @@ func get_owned_elements() -> Dictionary:
 				out[el] = true
 	return out
 
-func find_companion_fusion_info(weapon_id: String) -> Dictionary:
-	if orbit_rig == null or loader == null:
-		return {}
-	var fallback := {}
-	for recipe in loader.fusion_recipes:
-		var fid := String(recipe.get("id", ""))
-		if orbit_rig.has_fusion(fid):
-			continue
-		var ing: Array = recipe.get("ingredients", [])
-		if ing.size() < 2:
-			continue
-		var partner_id := ""
-		if String(ing[0]) == weapon_id:
-			partner_id = String(ing[1])
-		elif String(ing[1]) == weapon_id:
-			partner_id = String(ing[0])
-		if partner_id.is_empty():
-			continue
-		var partner_lv := orbit_rig.get_weapon_tier(partner_id)
-		if partner_lv <= 0:
-			continue
-		var partner_name := partner_id
-		if loader.weapons_by_id.has(partner_id):
-			partner_name = String(loader.weapons_by_id[partner_id].get("name", partner_id))
-		var info := {
-			"recipe": recipe,
-			"partner_id": partner_id,
-			"partner_name": partner_name,
-			"fusion_name": String(recipe.get("name", fid)),
-			"ready_now": partner_lv >= OrbitWeaponRig.MAX_WEAPON_TIER,
-		}
-		if bool(info["ready_now"]):
-			return info
-		if fallback.is_empty():
-			fallback = info
-	return fallback
+func find_companion_fusion_info(_weapon_id: String) -> Dictionary:
+	return {}
 
 func get_weapon_offer_weight(weapon_id: String) -> float:
 	var w := 10.0
@@ -1636,20 +1602,11 @@ func get_hud_items() -> Array[Dictionary]:
 		})
 	return out
 
-func has_arcana(arcana_id: String) -> bool:
-	return active_arcanas.has(arcana_id)
+func has_arcana(_arcana_id: String) -> bool:
+	return false
 
-func add_arcana(arcana_id: String) -> bool:
-	if arcana_id.is_empty() or active_arcanas.has(arcana_id):
-		return false
-	if loader != null and not loader.arcanas_by_id.is_empty() and not loader.arcanas_by_id.has(arcana_id):
-		return false
-	active_arcanas.append(arcana_id)
-	if arcana_id == "arcana_samsara" and player != null and is_instance_valid(player):
-		player.revivals_left += 1
-	recompute_player_stats()
-	v2_loadout_changed.emit()
-	return true
+func add_arcana(_arcana_id: String) -> bool:
+	return false
 
 func remove_arcana(arcana_id: String) -> bool:
 	if not active_arcanas.has(arcana_id):
@@ -1659,21 +1616,8 @@ func remove_arcana(arcana_id: String) -> bool:
 	v2_loadout_changed.emit()
 	return true
 
-func get_arcana_choices(count: int = 3) -> Array[Dictionary]:
-	var pool: Array[Dictionary] = []
-	if loader == null:
-		return pool
-	for arc in loader.arcanas:
-		var aid := String(arc.get("id", ""))
-		if aid.is_empty() or active_arcanas.has(aid):
-			continue
-		var unlocked := bool(arc.get("default_unlocked", true))
-		if not unlocked and Stats != null and Stats.has_method("is_arcana_unlocked"):
-			unlocked = Stats.is_arcana_unlocked(aid)
-		if unlocked:
-			pool.append((arc as Dictionary).duplicate(true))
-	pool.shuffle()
-	return pool.slice(0, mini(count, pool.size()))
+func get_arcana_choices(_count: int = 3) -> Array[Dictionary]:
+	return []
 
 func get_starter_weapon_id() -> String:
 	if player != null and is_instance_valid(player):
@@ -1702,15 +1646,8 @@ func get_empty_slot_count() -> int:
 	var used := orbit_rig.slots.size() if orbit_rig != null else 0
 	return maxi(0, get_unlocked_slots() - used)
 
-func get_arcana_weapon_damage_mult(weapon_id: String) -> float:
-	var mult := 1.0
-	if has_arcana("arcana_calamity_ember") and is_arcana_applicable_to_weapon("arcana_calamity_ember", weapon_id):
-		mult += 0.15 + get_curse_pct()
-	if has_arcana("arcana_glacial_shatter") and is_arcana_applicable_to_weapon("arcana_glacial_shatter", weapon_id):
-		mult += 0.35
-	if has_arcana("arcana_thunder_venom") and is_arcana_applicable_to_weapon("arcana_thunder_venom", weapon_id):
-		mult += 0.35
-	return mult
+func get_arcana_weapon_damage_mult(_weapon_id: String) -> float:
+	return 1.0
 
 func on_player_revived() -> void:
 	if has_arcana("arcana_samsara"):
@@ -1752,13 +1689,7 @@ func apply_weapon_limit_break(weapon_id: String, stat_key: String, delta_val: fl
 	return true
 
 func count_fusions_owned() -> int:
-	if orbit_rig == null:
-		return 0
-	var c := 0
-	for s in orbit_rig.slots:
-		if bool(s.get("is_fusion", false)):
-			c += 1
-	return c
+	return 0
 
 func get_stats_summary() -> Dictionary:
 	return {

@@ -59,8 +59,8 @@ func show_rewards(rewards: Array) -> void:
 
 	var is_evo := bool(shown[0].get("is_evo", false))
 	if is_evo:
-		title_label.text = "天机宝箱 · 超武质变！"
-		subtitle_label.text = "神通与法宝灵韵共鸣，化生绝世仙法！"
+		title_label.text = "天机宝箱 · 法宝蜕变！"
+		subtitle_label.text = "天机灵韵加持，法宝威能大盛！"
 	elif shown.size() >= 5:
 		title_label.text = "天机宝箱 · 五福临门！"
 		subtitle_label.text = "鸿运冲天，一举斩获 5 重造化！"

@@ -211,7 +211,7 @@ func _build_landmarks() -> void:
 		},
 		{
 			"id": "peach_brook",
-			"role": "demon_stele",
+			"role": "well",
 			"name": "西南古井",
 			"pos": SPAWN_CENTER + Vector2(-760.0, 480.0),
 			"radius": 145.0,

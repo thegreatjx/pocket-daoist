@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "max_weapon_slots": 4,
   "max_weapon_level": 8,
-  "tier_scaling_note": "单局最多装备 4 件法宝；每件法宝从 Lv.1 原地淬炼至 Lv.8 触发形态与配色质变；互为配方的两件满级法宝可合体为仙阶超武。",
+  "tier_scaling_note": "单局最多装备 4 件法宝；每件法宝从 Lv.1 原地淬炼至 Lv.8 触发形态与配色质变。",
   "realm_slot_unlocks": [
     {"slots": 1, "level": 1, "realm": "练气"},
     {"slots": 2, "level": 5, "realm": "筑基"},
