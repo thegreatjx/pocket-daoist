@@ -465,6 +465,10 @@ func _boss_species(chapter: Dictionary) -> int:
 	match str(chapter.get("boss_type", "wolf")):
 		"ghost": return 1
 		"skeleton": return 2
+		"cauldron": return 3
+		"corpse": return 4
+		"fox": return 5
+		"swordmaster": return 6
 		_: return 0
 
 func _pick_minion_species() -> int:
@@ -475,7 +479,11 @@ func _pick_minion_species() -> int:
 	var jinchan_w := float(enemy_weights.get("jinchan", 0.12))
 	var shenjing_w := float(enemy_weights.get("shenjing", 0.14))
 	var huodou_w := float(enemy_weights.get("huodou", 0.12))
-	var total := wolf_w + ghost_w + skel_w + jiangshi_w + jinchan_w + shenjing_w + huodou_w
+	var zhiren_w := float(enemy_weights.get("zhiren", 0.08))
+	var danling_w := float(enemy_weights.get("danling", 0.08))
+	var zhangchan_w := float(enemy_weights.get("zhangchan", 0.08))
+	var jiankui_w := float(enemy_weights.get("jiankui", 0.08))
+	var total := wolf_w + ghost_w + skel_w + jiangshi_w + jinchan_w + shenjing_w + huodou_w + zhiren_w + danling_w + zhangchan_w + jiankui_w
 	if total <= 0.0:
 		return 0
 	var roll := randf() * total
@@ -491,7 +499,15 @@ func _pick_minion_species() -> int:
 	if roll < acc: return 4
 	acc += shenjing_w
 	if roll < acc: return 5
-	return 6
+	acc += huodou_w
+	if roll < acc: return 6
+	acc += zhiren_w
+	if roll < acc: return 7
+	acc += danling_w
+	if roll < acc: return 8
+	acc += zhangchan_w
+	if roll < acc: return 9
+	return 10
 
 func _spawn_squad_batch(reqs: Array[Dictionary], cap: int) -> void:
 	var arena := _get_arena_rect()
@@ -579,13 +595,23 @@ func _spawn_flank_lanes(count: int, msg: String) -> void:
 			var sp_id := int(arch.get("species", _pick_minion_species())) if not arch.is_empty() else _pick_minion_species()
 			_instantiate_enemy_at(pos, Enemy.Type.MINION, sp_id, arch)
 
+func _pick_elite_species() -> int:
+	if randf() < 0.35:
+		return 11 if randf() < 0.5 else 12
+	return _pick_minion_species()
+
 func _spawn_mini_boss(base_hp: float, msg: String, species_override: int = -1) -> void:
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.85)
 	if msg != "":
 		get_tree().call_group("ui", "show_banner", msg)
 	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), true, 380.0)
-	var sp_id := species_override if species_override >= 0 else _pick_minion_species()
-	spawn_telegraphed_enemy(pick["pos"] as Vector2, Enemy.Type.ELITE, 1.25, sp_id, {"override_hp": base_hp, "is_mini_boss": true})
+	var sp_id := species_override if species_override >= 0 else _pick_elite_species()
+	var hp := base_hp
+	if sp_id == 11:
+		hp *= 1.2
+	elif sp_id == 12:
+		hp *= 1.4
+	spawn_telegraphed_enemy(pick["pos"] as Vector2, Enemy.Type.ELITE, 1.25, sp_id, {"override_hp": hp, "is_mini_boss": true})
 
 func _trigger_swarm(count: int, elites: int, msg: String) -> void:
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.92)
@@ -727,7 +753,7 @@ func debug_spawn_pack(kind: String, count: int = 12) -> void:
 		var dist := randf_range(210.0, 310.0)
 		var pos := _clamp_to_arena(player.global_position + Vector2(cos(ang), sin(ang)) * dist)
 		if kind == "elite":
-			_instantiate_enemy_at(pos, Enemy.Type.ELITE, i % 7)
+			_instantiate_enemy_at(pos, Enemy.Type.ELITE, i % 9)
 		elif kind == "dummy":
 			_instantiate_enemy_at(pos, Enemy.Type.MINION, 2, {"override_hp": 5000.0, "move_speed": 22.0})
 		else:
@@ -752,6 +778,12 @@ func _scale_to_chapter(enemy: Node) -> void:
 		4: base_hp = 58.0
 		5: base_hp = 22.0
 		6: base_hp = 46.0
+		7: base_hp = 26.0
+		8: base_hp = 34.0
+		9: base_hp = 60.0
+		10: base_hp = 48.0
+		11: base_hp = 150.0
+		12: base_hp = 220.0
 	var time_ramp := 1.0 + _stage_hp_ramp_per_min * (_chapter_elapsed / 60.0)
 	var hp := base_hp * _stage_hp_mult * _wave_hp_scale * time_ramp
 	if enemy.enemy_type == Enemy.Type.ELITE:

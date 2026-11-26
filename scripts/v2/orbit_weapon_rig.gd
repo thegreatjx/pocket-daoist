@@ -20,6 +20,7 @@ const WINDUP_PULL_DISTANCE := 9.0
 var loader: V2DataLoader
 var slots: Array[Dictionary] = []
 var unlocked_slots: int = 4
+var starter_weapon_id: String = ""
 var _hover_time: float = 0.0
 var _facing: float = 1.0
 var _hurt_scatter: float = 0.0
@@ -42,6 +43,17 @@ func set_unlocked_slots(count: int) -> void:
 
 func get_unlocked_slots() -> int:
 	return clampi(unlocked_slots, 1, max_slots)
+
+func set_starter_weapon(weapon_id: String) -> void:
+	starter_weapon_id = weapon_id
+	for slot in slots:
+		if bool(slot.get("is_fusion", false)):
+			continue
+		if String(slot.get("id", "")) != starter_weapon_id:
+			continue
+		var sp := slot.get("sprite") as Sprite2D
+		if sp != null and is_instance_valid(sp):
+			sp.visible = false
 
 func has_free_slot() -> bool:
 	return slots.size() < get_unlocked_slots()
@@ -91,6 +103,8 @@ func add_weapon(weapon_id: String, tier: int = 1) -> bool:
 		if ResourceLoader.exists(icon_path):
 			sp.texture = load(icon_path)
 		sp.scale = Vector2(weapon_sprite_scale, weapon_sprite_scale)
+		if weapon_id == starter_weapon_id:
+			sp.visible = false
 		add_child(sp)
 		var seal := V2VfxFactory.make_sprite(V2VfxFactory.TEX_MAGIC_04, 240.0, Color(0.96, 0.86, 0.46, 0.78), true)
 		seal.name = "SummonSeal"

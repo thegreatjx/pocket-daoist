@@ -23,6 +23,18 @@ const TEX_ELITE_JIANGSHI_SHEET: Texture2D = preload("res://assets/sprites/anim_e
 const TEX_ELITE_JINCHAN_SHEET: Texture2D = preload("res://assets/sprites/anim_elite_jinchan_run.png")
 const TEX_ELITE_SHENJING_SHEET: Texture2D = preload("res://assets/sprites/anim_elite_shenjing_run.png")
 const TEX_ELITE_HUODOU_SHEET: Texture2D = preload("res://assets/sprites/anim_elite_huodou_run.png")
+const TEX_ZHUSHA_ZIREN_SHEET: Texture2D = preload("res://assets/sprites/anim_zhusha_zhiren_run.png")
+const TEX_CHIHUO_DANLING_SHEET: Texture2D = preload("res://assets/sprites/anim_chihuo_danling_run.png")
+const TEX_WUDU_ZHANGCHAN_SHEET: Texture2D = preload("res://assets/sprites/anim_wudu_zhangchan_run.png")
+const TEX_CANJIAN_JIANKUI_SHEET: Texture2D = preload("res://assets/sprites/anim_canjian_jiankui_run.png")
+const TEX_ELITE_YINSHA: Texture2D = preload("res://assets/sprites/enemy_yinsha_daotong.png")
+const TEX_ELITE_SHIDUN: Texture2D = preload("res://assets/sprites/enemy_zhenhun_shidun.png")
+const TEX_ELITE_YINSHA_SHEET: Texture2D = preload("res://assets/sprites/anim_yinsha_daotong_run.png")
+const TEX_ELITE_SHIDUN_SHEET: Texture2D = preload("res://assets/sprites/anim_zhenhun_shidun_run.png")
+const TEX_BAGUA_DANLU_SHEET: Texture2D = preload("res://assets/sprites/anim_bagua_danlu_run.png")
+const TEX_TONGJIA_SHIWANG_SHEET: Texture2D = preload("res://assets/sprites/anim_tongjia_shiwang_run.png")
+const TEX_HUAPI_HUANDAO_SHEET: Texture2D = preload("res://assets/sprites/anim_huapi_huandao_run.png")
+const TEX_WANJIAN_MOZUN_SHEET: Texture2D = preload("res://assets/sprites/anim_wanjian_mozun_run.png")
 
 const RUN_FRAMES := 8
 const SHANXIAO_FRAMES := 5
@@ -170,6 +182,70 @@ func _rebuild_rig() -> void:
 					"dust_radius": 4.6,
 					"dust_color": Color(0.96, 0.52, 0.28, 0.50),
 				})
+			7:
+				rig = CharacterRig.new({
+					"gait_mode": "float",
+					"run_frames": RUN_FRAMES,
+					"idle_frames": RUN_FRAMES,
+					"run_fps": 9.0,
+					"bob_amp": 0.0,
+					"idle_breath_amp": 0.0,
+					"waddle_rad": 0.0,
+					"tilt_max_rad": 0.0,
+					"up_down_tilt_rad": 0.0,
+					"squash_amp": 0.0,
+					"hit_pop_scale": 0.25,
+					"dust_enabled": false,
+				})
+			8:
+				rig = CharacterRig.new({
+					"gait_mode": "float",
+					"run_frames": RUN_FRAMES,
+					"idle_frames": RUN_FRAMES,
+					"run_fps": 12.0,
+					"bob_amp": 0.0,
+					"idle_breath_amp": 0.0,
+					"waddle_rad": 0.0,
+					"tilt_max_rad": 0.0,
+					"up_down_tilt_rad": 0.0,
+					"squash_amp": 0.08,
+					"lunge_dist": 10.0,
+					"hit_pop_scale": 0.24,
+					"dust_enabled": false,
+				})
+			9:
+				rig = CharacterRig.new({
+					"gait_mode": "quadruped",
+					"run_frames": RUN_FRAMES,
+					"idle_frames": RUN_FRAMES,
+					"run_fps": 8.0,
+					"bob_amp": 0.0,
+					"idle_breath_amp": 0.0,
+					"waddle_rad": 0.0,
+					"tilt_max_rad": 0.0,
+					"up_down_tilt_rad": 0.0,
+					"squash_amp": 0.0,
+					"hit_pop_scale": 0.18,
+					"dust_enabled": true,
+					"dust_radius": 5.0,
+					"dust_color": Color(0.62, 0.84, 0.40, 0.42),
+				})
+			10:
+				rig = CharacterRig.new({
+					"gait_mode": "float",
+					"run_frames": RUN_FRAMES,
+					"idle_frames": RUN_FRAMES,
+					"run_fps": 10.0,
+					"bob_amp": 0.0,
+					"idle_breath_amp": 0.0,
+					"waddle_rad": 0.0,
+					"tilt_max_rad": 0.0,
+					"up_down_tilt_rad": 0.0,
+					"squash_amp": 0.0,
+					"lunge_dist": 16.0,
+					"hit_pop_scale": 0.22,
+					"dust_enabled": false,
+				})
 			_:
 				rig = CharacterRig.new({
 					"gait_mode": "quadruped",
@@ -259,6 +335,23 @@ func _rebuild_rig() -> void:
 				e_fps = 12.0
 				e_squash = 0.03
 				e_dcol = Color(0.98, 0.50, 0.24, 0.52)
+			11:
+				e_gait = "float"
+				e_bob = 0.0
+				e_waddle = 0.0
+				e_fps = 9.0
+				e_squash = 0.0
+				e_tilt = 0.0
+				e_breath = 0.0
+				e_dust = false
+				e_dcol = Color(0.40, 0.92, 0.82, 0.46)
+			12:
+				e_gait = "quadruped"
+				e_bob = 0.8
+				e_waddle = 0.02
+				e_fps = 8.0
+				e_squash = 0.02
+				e_dcol = Color(0.86, 0.74, 0.38, 0.46)
 			_:
 				e_gait = "quadruped"
 				e_bob = 1.0
@@ -486,6 +579,35 @@ func _draw() -> void:
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
 					draw_texture_rect_region(TEX_HUODOU_SHEET, Rect2(-36.0, -54.0, 72.0, 72.0), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			7:
+				if TEX_ZHUSHA_ZIREN_SHEET != null:
+					var zz_idx := idx % RUN_FRAMES
+					var src := Rect2(float(zz_idx) * 128.0, 0.0, 128.0, 128.0)
+					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
+					draw_texture_rect_region(TEX_ZHUSHA_ZIREN_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			8:
+				_draw_kenney_aura(Vector2(0.0, 18.0), 24.0, Color(1.0, 0.56, 0.22, 0.30 + 0.10 * sin(t * 6.0)), false)
+				if TEX_CHIHUO_DANLING_SHEET != null:
+					var cd_idx := idx % RUN_FRAMES
+					var src := Rect2(float(cd_idx) * 128.0, 0.0, 128.0, 128.0)
+					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
+					draw_texture_rect_region(TEX_CHIHUO_DANLING_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			9:
+				if TEX_WUDU_ZHANGCHAN_SHEET != null:
+					var wz_idx := idx % RUN_FRAMES
+					var src := Rect2(float(wz_idx) * 128.0, 0.0, 128.0, 128.0)
+					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
+					draw_texture_rect_region(TEX_WUDU_ZHANGCHAN_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			10:
+				if TEX_CANJIAN_JIANKUI_SHEET != null:
+					var cj_idx := idx % RUN_FRAMES
+					var src := Rect2(float(cj_idx) * 128.0, 0.0, 128.0, 128.0)
+					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
+					draw_texture_rect_region(TEX_CANJIAN_JIANKUI_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			_:
 				if TEX_FOX_SHEET != null:
 					var r_idx := idx % FOX_FRAMES
@@ -507,6 +629,7 @@ func _draw() -> void:
 		var elite_frames := FOX_FRAMES
 		var draw_rect := Rect2(-46.0, -81.0, 92.0, 92.0)
 		var extra_y := 0.0
+		var elite_frame_px := 128.0
 		match species:
 			0:
 				elite_col = Color(0.96, 0.44, 0.24, aura_a)
@@ -550,6 +673,20 @@ func _draw() -> void:
 				elite_sheet = TEX_ELITE_HUODOU_SHEET
 				elite_frames = RUN_FRAMES
 				draw_rect = Rect2(-50.0, -84.0, 100.0, 100.0)
+			11:
+				elite_col = Color(0.31, 0.90, 0.76, aura_a)
+				elite_tex = TEX_ELITE_YINSHA
+				elite_sheet = TEX_ELITE_YINSHA_SHEET
+				elite_frames = RUN_FRAMES
+				elite_frame_px = 160.0
+				draw_rect = Rect2(-60.0, -80.0, 120.0, 120.0)
+			12:
+				elite_col = Color(0.88, 0.74, 0.34, aura_a)
+				elite_tex = TEX_ELITE_SHIDUN
+				elite_sheet = TEX_ELITE_SHIDUN_SHEET
+				elite_frames = RUN_FRAMES
+				elite_frame_px = 160.0
+				draw_rect = Rect2(-60.0, -80.0, 120.0, 120.0)
 			_:
 				elite_col = Color(0.96, 0.44, 0.24, aura_a)
 				elite_tex = TEX_ELITE_FOX
@@ -562,7 +699,7 @@ func _draw() -> void:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		if elite_sheet != null:
 			var e_idx := idx % elite_frames
-			var e_src := Rect2(float(e_idx) * 128.0, 0.0, 128.0, 128.0)
+			var e_src := Rect2(float(e_idx) * elite_frame_px, 0.0, elite_frame_px, elite_frame_px)
 			draw_set_transform(Vector2(roundf(off.x), roundf(22.0 + off.y + extra_y)), rot, sc)
 			draw_texture_rect_region(elite_sheet, draw_rect, e_src, tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -613,6 +750,21 @@ func _draw() -> void:
 			draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, use_sc)
 			draw_texture_rect_region(TEX_ELITE_SHEET, Rect2(-80.0, -142.0, 160.0, 160.0), src, boss_tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		elif species >= 3 and species <= 6:
+			var boss_sheet: Texture2D = TEX_BAGUA_DANLU_SHEET
+			match species:
+				4:
+					boss_sheet = TEX_TONGJIA_SHIWANG_SHEET
+				5:
+					boss_sheet = TEX_HUAPI_HUANDAO_SHEET
+				6:
+					boss_sheet = TEX_WANJIAN_MOZUN_SHEET
+			if boss_sheet != null:
+				var col := idx % RUN_FRAMES
+				draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, sc)
+				var src := Rect2(float(col) * 224.0, 0.0, 224.0, 224.0)
+				draw_texture_rect_region(boss_sheet, Rect2(-100.0, -168.0, 200.0, 200.0), src, boss_tint)
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif TEX_WOLF_SHEET != null:
 			var col := idx % RUN_FRAMES
 			var use_sc := sc

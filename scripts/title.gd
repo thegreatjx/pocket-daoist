@@ -972,7 +972,11 @@ func _refresh_character_ui(animate_switch: bool = false) -> void:
 	if _char_skill_lbl != null:
 		_char_skill_lbl.text = "身法 · %s" % str(c.get("active_name", "御剑瞬步"))
 
-	_stat_hp_lbl.text = str(int(c.get("max_health", 120.0)))
+	var base_hp := float(c.get("max_health", 120.0))
+	var hp_mods: Dictionary = c.get("trait_mods", {})
+	var final_hp := base_hp + float(hp_mods.get("max_hp", 0.0))
+	_stat_hp_lbl.text = str(roundi(final_hp))
+	_stat_hp_lbl.tooltip_text = "气血 %d" % roundi(final_hp) if is_equal_approx(base_hp, final_hp) else "基础 %d，命格 %+d" % [roundi(base_hp), roundi(final_hp - base_hp)]
 	_stat_spd_lbl.text = str(int(c.get("speed", 190.0)))
 	_stat_crit_lbl.text = "%d%%" % roundi(float(c.get("crit_chance", 0.12)) * 100.0)
 	if _char_trait_lbl != null:

@@ -322,11 +322,11 @@ func _setup_top_right_hud() -> void:
 	tr_plate.anchors_preset = Control.PRESET_TOP_RIGHT
 	tr_plate.anchor_left = 1.0
 	tr_plate.anchor_right = 1.0
-	tr_plate.offset_left = -206.0
+	tr_plate.offset_left = -146.0
 	tr_plate.offset_right = -14.0
 	tr_plate.offset_top = 12.0
-	tr_plate.offset_bottom = 90.0
-	tr_plate.custom_minimum_size = Vector2(192, 78)
+	tr_plate.offset_bottom = 68.0
+	tr_plate.custom_minimum_size = Vector2(132, 56)
 	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 12)
 	tr_st.content_margin_left = 20
 	tr_st.content_margin_right = 20
@@ -346,7 +346,7 @@ func _setup_top_right_hud() -> void:
 		_reparent_control(kill_label, vb)
 		kill_label.modulate = Color.WHITE
 		kill_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		kill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		kill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		kill_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		kill_label.add_theme_font_size_override("font_size", 18)
 		kill_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.62))
@@ -497,7 +497,7 @@ func update_exp(curr: float, max_e: float, level: int) -> void:
 	_sync_avatar(cid)
 	var cname := str(CharacterData.get_character(cid).get("name", "沈砚"))
 	if realm_label != null:
-		realm_label.text = "【%s · %s】Lv.%d" % [cname, realm, level]
+		realm_label.text = "【%s · %s】" % [cname, realm]
 
 func _setup_banner() -> void:
 	var hud = get_node_or_null("HUD")

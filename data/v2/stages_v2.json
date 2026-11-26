@@ -89,6 +89,10 @@
             {
               "id": "enemy_kiter_fox",
               "weight": 0.2
+            },
+            {
+              "id": "enemy_zhusha_zhiren",
+              "weight": 0.1
             }
           ],
           "events": [],
@@ -120,6 +124,14 @@
             {
               "id": "enemy_hopper_jiangshi",
               "weight": 0.2
+            },
+            {
+              "id": "enemy_zhusha_zhiren",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_canjian_jiankui",
+              "weight": 0.08
             }
           ],
           "events": [
@@ -193,6 +205,10 @@
             {
               "id": "enemy_hopper_jiangshi",
               "weight": 0.2
+            },
+            {
+              "id": "enemy_canjian_jiankui",
+              "weight": 0.12
             }
           ],
           "events": [],
@@ -228,6 +244,14 @@
             {
               "id": "enemy_skitter_shenjing",
               "weight": 0.18
+            },
+            {
+              "id": "enemy_chihuo_danling",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_wudu_zhangchan",
+              "weight": 0.06
             }
           ],
           "events": [
@@ -271,6 +295,14 @@
             {
               "id": "enemy_kiter_fox",
               "weight": 0.2
+            },
+            {
+              "id": "enemy_wudu_zhangchan",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_canjian_jiankui",
+              "weight": 0.08
             }
           ],
           "events": [
@@ -333,6 +365,22 @@
             {
               "id": "enemy_bulwark_jinchan",
               "weight": 0.1
+            },
+            {
+              "id": "enemy_zhusha_zhiren",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_chihuo_danling",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_wudu_zhangchan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_canjian_jiankui",
+              "weight": 0.06
             }
           ],
           "events": [],
@@ -388,6 +436,22 @@
             {
               "id": "enemy_bulwark_jinchan",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_zhusha_zhiren",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_chihuo_danling",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_wudu_zhangchan",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_canjian_jiankui",
+              "weight": 0.04
             }
           ],
           "events": [

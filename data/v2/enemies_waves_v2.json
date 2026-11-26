@@ -255,6 +255,169 @@
       "element_multipliers": {},
       "notes": "山海经三足金蟾，慢速高血高伤，高灵石掉落靶子。",
       "elite_chance": 0.14
+    },
+    {
+      "id": "enemy_zhusha_zhiren",
+      "name": "朱砂纸人",
+      "species": 7,
+      "ai_behavior": "swarm_chaser",
+      "chase_mode": "direct",
+      "hp_units": 0.9,
+      "speed_pct": 116,
+      "base_dmg": 6,
+      "radius": 15,
+      "xp_value": 2,
+      "gold_value": 1,
+      "spawn_cost": 1.2,
+      "knockback_resist": 0.0,
+      "element_multipliers": {
+        "fire": 1.15,
+        "thunder": 1.25
+      },
+      "notes": "朱砂符纸扎成的小人，边跑边挥臂，成群结队扑向生人。",
+      "elite_chance": 0.1
+    },
+    {
+      "id": "enemy_chihuo_danling",
+      "name": "炽火丹灵",
+      "species": 8,
+      "ai_behavior": "splitter_bomber",
+      "chase_mode": "direct",
+      "hp_units": 1.15,
+      "speed_pct": 124,
+      "base_dmg": 13,
+      "radius": 16,
+      "xp_value": 3,
+      "gold_value": 2,
+      "spawn_cost": 2.1,
+      "knockback_resist": 0.0,
+      "death_burst": {
+        "radius": 76,
+        "delay_sec": 0.4,
+        "dmg_mult": 1.0,
+        "color": "#FF7A2A"
+      },
+      "element_multipliers": {
+        "fire": 0.7,
+        "ice": 1.3
+      },
+      "notes": "丹炉逸出的火灵，贴身即炸，留下一圈灼烧余烬。",
+      "elite_chance": 0.1
+    },
+    {
+      "id": "enemy_wudu_zhangchan",
+      "name": "五毒蟾蜍",
+      "species": 9,
+      "ai_behavior": "kiter_shooter",
+      "chase_mode": "strafe_kiter",
+      "hp_units": 2.4,
+      "speed_pct": 82,
+      "base_dmg": 11,
+      "radius": 23,
+      "xp_value": 4,
+      "gold_value": 3,
+      "spawn_cost": 3.0,
+      "knockback_resist": 0.0,
+      "ranged_attack": {
+        "preferred_dist_min": 190,
+        "preferred_dist_max": 270,
+        "fire_cooldown": 2.7,
+        "bullet_speed": 185,
+        "bullet_radius": 10,
+        "color": "#86D34A"
+      },
+      "resistances": {
+        "slow_resist": 0.2
+      },
+      "element_multipliers": {
+        "wood": 0.7,
+        "ice": 1.2
+      },
+      "notes": "吞食五毒长大的紫蟾，保持距离喷吐毒涎，皮糙肉厚。",
+      "elite_chance": 0.12
+    },
+    {
+      "id": "enemy_canjian_jiankui",
+      "name": "残剑剑傀",
+      "species": 10,
+      "ai_behavior": "charger_telegraph",
+      "chase_mode": "direct",
+      "hp_units": 2.6,
+      "speed_pct": 92,
+      "base_dmg": 15,
+      "radius": 20,
+      "xp_value": 4,
+      "gold_value": 3,
+      "spawn_cost": 3.0,
+      "knockback_resist": 0.0,
+      "dash_telegraph": {
+        "charge_speed_pct": 280,
+        "telegraph_sec": 0.55,
+        "charge_dur_sec": 0.5,
+        "cooldown_sec": 2.6,
+        "dash_length": 250,
+        "dash_width": 40,
+        "windup_kb_resist": 0.9,
+        "stun_on_pillar": 1.2,
+        "color": "#7FD8F2"
+      },
+      "resistances": {
+        "knockback_resist": 0.15
+      },
+      "element_multipliers": {
+        "thunder": 0.8,
+        "fire": 1.2
+      },
+      "notes": "断剑通灵化傀，蓄势后化作一道青芒直刺而来。",
+      "elite_chance": 0.12
+    },
+    {
+      "id": "enemy_yinsha_daotong",
+      "name": "阴煞道童",
+      "species": 11,
+      "ai_behavior": "swarm_chaser",
+      "chase_mode": "direct",
+      "hp_units": 5.2,
+      "speed_pct": 118,
+      "base_dmg": 20,
+      "radius": 20,
+      "xp_value": 8,
+      "gold_value": 6,
+      "spawn_cost": 6.0,
+      "knockback_resist": 0.0,
+      "element_multipliers": {
+        "thunder": 0.8,
+        "wood": 1.15
+      },
+      "notes": "阴煞附体的道童，符纸环身，唯在精英波现身。",
+      "elite_chance": 0.0,
+      "elite_only": true
+    },
+    {
+      "id": "enemy_zhenhun_shidun",
+      "name": "镇魂石墩",
+      "species": 12,
+      "ai_behavior": "shield_bulwark",
+      "chase_mode": "direct",
+      "hp_units": 7.5,
+      "speed_pct": 62,
+      "base_dmg": 24,
+      "radius": 30,
+      "xp_value": 9,
+      "gold_value": 8,
+      "spawn_cost": 7.0,
+      "knockback_resist": 0.8,
+      "resistances": {
+        "knockback_resist": 0.8,
+        "phys_reduction": 0.3
+      },
+      "element_multipliers": {
+        "thunder": 1.25,
+        "ice": 1.15
+      },
+      "notes": "镇墓石狮成精，符纸镇额，移速极慢但硬如铁壁。",
+      "elite_chance": 0.0,
+      "elite_only": true
     }
   ],
   "elite_variants": {
@@ -364,6 +527,73 @@
       "exp_gem_count": 5,
       "aura_color": "#FF6B26",
       "skill_mode": "fire_dash"
+    },
+    "11": {
+      "id": "elite_yinsha_daotong",
+      "name": "阴煞道童",
+      "species": 11,
+      "sprite": "res://assets/sprites/enemy_yinsha_daotong.png",
+      "sheet": "res://assets/sprites/anim_yinsha_daotong_run.png",
+      "hp_mult": 3.0,
+      "speed_mult": 1.1,
+      "dmg_mult": 1.4,
+      "kb_resist": 0.75,
+      "xp_mult": 3.0,
+      "gold_mult": 3,
+      "exp_gem_count": 5,
+      "aura_color": "#4FE0C0",
+      "skill_mode": "wisp_pulse"
+    },
+    "12": {
+      "id": "elite_zhenhun_shidun",
+      "name": "镇魂石墩",
+      "species": 12,
+      "sprite": "res://assets/sprites/enemy_zhenhun_shidun.png",
+      "sheet": "res://assets/sprites/anim_zhenhun_shidun_run.png",
+      "hp_mult": 4.2,
+      "speed_mult": 0.95,
+      "dmg_mult": 1.5,
+      "kb_resist": 0.92,
+      "phys_reduction": 0.25,
+      "xp_mult": 3.2,
+      "gold_mult": 4,
+      "exp_gem_count": 6,
+      "aura_color": "#D8B45A",
+      "skill_mode": "heavy_dash"
     }
-  }
+  },
+  "boss_variants": [
+    {
+      "id": "boss_bagua_danlu",
+      "name": "成精八卦丹炉",
+      "species": 3,
+      "sprite": "res://assets/sprites/enemy_bagua_danlu.png",
+      "sheet": "res://assets/sprites/anim_bagua_danlu_run.png",
+      "hp": 20000.0
+    },
+    {
+      "id": "boss_tongjia_shiwang",
+      "name": "铜甲尸王",
+      "species": 4,
+      "sprite": "res://assets/sprites/enemy_tongjia_shiwang.png",
+      "sheet": "res://assets/sprites/anim_tongjia_shiwang_run.png",
+      "hp": 22000.0
+    },
+    {
+      "id": "boss_huapi_huandao",
+      "name": "画皮狐妖",
+      "species": 5,
+      "sprite": "res://assets/sprites/enemy_huapi_huandao.png",
+      "sheet": "res://assets/sprites/anim_huapi_huandao_run.png",
+      "hp": 19000.0
+    },
+    {
+      "id": "boss_wanjian_mozun",
+      "name": "万剑魔尊",
+      "species": 6,
+      "sprite": "res://assets/sprites/enemy_wanjian_mozun.png",
+      "sheet": "res://assets/sprites/anim_wanjian_mozun_run.png",
+      "hp": 24000.0
+    }
+  ]
 }

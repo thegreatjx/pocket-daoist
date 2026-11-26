@@ -966,8 +966,8 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 			seen_ids[String((p_entry as Dictionary).get("id", ""))] = true
 	var w1_pool: Array = (st1_waves[0] as Dictionary).get("pool", [])
 	var w8_pool: Array = (st1_waves[7] as Dictionary).get("pool", [])
-	check("t3_all_9_archetypes_appear", loader.enemy_archetypes.size() == 9 and seen_ids.size() == 9, "archetypes=%d seen=%s" % [loader.enemy_archetypes.size(), str(seen_ids.keys())])
-	check("t3_w1_warmup_only_and_w8_all_9", w1_pool.size() == 3 and w8_pool.size() == 9, "w1=%d w8=%d" % [w1_pool.size(), w8_pool.size()])
+	check("t3_archetypes_appear_in_pools", loader.enemy_archetypes.size() >= 9 and seen_ids.size() >= 9, "archetypes=%d seen=%s" % [loader.enemy_archetypes.size(), str(seen_ids.keys())])
+	check("t3_w1_warmup_and_w8_wide_pool", w1_pool.size() == 3 and w8_pool.size() >= 9, "w1=%d w8=%d" % [w1_pool.size(), w8_pool.size()])
 
 	check(
 		"t3_base_constants",
@@ -1546,7 +1546,7 @@ func _test_batch5_seven_elite_variants() -> void:
 	var parsed: Variant = JSON.parse_string(raw)
 	_check("b5_ew_json_valid", parsed is Dictionary, "")
 	var ev_map: Dictionary = (parsed as Dictionary).get("elite_variants", {})
-	_check("b5_seven_elite_variants", ev_map.size() == 7, "got=%d" % ev_map.size())
+	_check("b5_elite_variants_cover_species", ev_map.size() >= 7, "got=%d" % ev_map.size())
 	var all_tex_ok := true
 	var hp_set := {}
 	var enemy_scene := load("res://scenes/enemy.tscn") as PackedScene
@@ -1561,36 +1561,39 @@ func _test_batch5_seven_elite_variants() -> void:
 		e.setup_type(Enemy.Type.ELITE, 0.0, sp)
 		hp_set[int(round(e.max_health))] = true
 		e.queue_free()
-	_check("b5_all_7_elite_sprites_load", all_tex_ok, "")
+	_check("b5_all_elite_sprites_load", all_tex_ok, "")
 	_check("b5_elite_stats_differentiated", hp_set.size() >= 6, "unique_hp=%d" % hp_set.size())
 	var elite_sheets := [
-		["res://assets/sprites/anim_elite_fox_run.png", 6],
-		["res://assets/sprites/anim_elite_doll_float.png", 6],
-		["res://assets/sprites/anim_elite_shanxiao_run.png", 8],
-		["res://assets/sprites/anim_elite_jiangshi_run.png", 8],
-		["res://assets/sprites/anim_elite_jinchan_run.png", 8],
-		["res://assets/sprites/anim_elite_shenjing_run.png", 8],
-		["res://assets/sprites/anim_elite_huodou_run.png", 8],
+		["res://assets/sprites/anim_elite_fox_run.png", 6, 128],
+		["res://assets/sprites/anim_elite_doll_float.png", 6, 128],
+		["res://assets/sprites/anim_elite_shanxiao_run.png", 8, 128],
+		["res://assets/sprites/anim_elite_jiangshi_run.png", 8, 128],
+		["res://assets/sprites/anim_elite_jinchan_run.png", 8, 128],
+		["res://assets/sprites/anim_elite_shenjing_run.png", 8, 128],
+		["res://assets/sprites/anim_elite_huodou_run.png", 8, 128],
+		["res://assets/sprites/anim_yinsha_daotong_run.png", 8, 160],
+		["res://assets/sprites/anim_zhenhun_shidun_run.png", 8, 160],
 	]
 	var sheets_ok := true
 	var sheets_info := ""
 	for pair in elite_sheets:
 		var tex := load(String(pair[0])) as Texture2D
-		var want_w: int = int(pair[1]) * 128
+		var cell: int = int(pair[2])
+		var want_w: int = int(pair[1]) * cell
 		if tex == null:
 			sheets_ok = false
 			sheets_info += "%s:missing " % pair[0]
 			continue
-		if tex.get_width() != want_w or tex.get_height() != 128:
+		if tex.get_width() != want_w or tex.get_height() != cell:
 			sheets_ok = false
 			sheets_info += "%s:%dx%d " % [pair[0], tex.get_width(), tex.get_height()]
-	_check("b5_all_7_elite_anim_sheets_sized", sheets_ok, sheets_info)
+	_check("b5_all_elite_anim_sheets_sized", sheets_ok, sheets_info)
 	var ev_src := FileAccess.get_file_as_string("res://scripts/enemy_visual.gd")
 	var ev_anim_ok := true
-	for path in ["anim_elite_fox_run.png", "anim_elite_doll_float.png", "anim_elite_shanxiao_run.png", "anim_elite_jiangshi_run.png", "anim_elite_jinchan_run.png", "anim_elite_shenjing_run.png", "anim_elite_huodou_run.png"]:
+	for path in ["anim_elite_fox_run.png", "anim_elite_doll_float.png", "anim_elite_shanxiao_run.png", "anim_elite_jiangshi_run.png", "anim_elite_jinchan_run.png", "anim_elite_shenjing_run.png", "anim_elite_huodou_run.png", "anim_yinsha_daotong_run.png", "anim_zhenhun_shidun_run.png"]:
 		if not ev_src.contains(path):
 			ev_anim_ok = false
-	_check("b5_enemy_visual_preloads_7_elite_sheets", ev_anim_ok, "")
+	_check("b5_enemy_visual_preloads_all_elite_sheets", ev_anim_ok, "")
 	var spawner_src := FileAccess.get_file_as_string("res://scripts/spawner.gd")
 	_check("b5_spawner_all_species_elite", spawner_src.contains("_get_elite_variant") and spawner_src.contains("elite_chance"), "")
 

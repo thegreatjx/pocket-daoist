@@ -203,8 +203,17 @@ func _draw() -> void:
 	if font != null:
 		var main_txt := "聚灵充能中 %.1fs" % maxf(0.0, ARRAY_CHARGE_SEC - charge_progress) if charge_progress > 0.0 else "聚灵阵（站入 2.5 秒触发）"
 		var sub_txt := "回血15% · 伤害+25% · 攻速+30%"
-		var main_pos := pos + Vector2(-130.0, -ARRAY_TRIGGER_RADIUS - 26.0)
-		var sub_pos := pos + Vector2(-130.0, -ARRAY_TRIGGER_RADIUS - 8.0)
+		var vp := get_viewport()
+		var view_tl := Vector2.ZERO
+		var view_br := Vector2(1280.0, 720.0)
+		if vp != null:
+			var inv := vp.get_canvas_transform().affine_inverse()
+			view_tl = inv * Vector2.ZERO
+			view_br = inv * vp.get_visible_rect().size
+		var text_x := clampf(pos.x - 130.0, view_tl.x + 8.0, maxf(view_tl.x + 8.0, view_br.x - 268.0))
+		var text_top := clampf(pos.y - ARRAY_TRIGGER_RADIUS - 44.0, view_tl.y + 8.0, maxf(view_tl.y + 8.0, view_br.y - 52.0))
+		var main_pos := Vector2(text_x, text_top + 18.0)
+		var sub_pos := Vector2(text_x, text_top + 36.0)
 		draw_string(font, main_pos + Vector2(1.0, 1.0), main_txt, HORIZONTAL_ALIGNMENT_CENTER, 260.0, 16, Color(0.04, 0.10, 0.09, 0.92))
 		draw_string(font, main_pos, main_txt, HORIZONTAL_ALIGNMENT_CENTER, 260.0, 16, Color(0.98, 0.92, 0.45, 0.98))
 		draw_string(font, sub_pos + Vector2(1.0, 1.0), sub_txt, HORIZONTAL_ALIGNMENT_CENTER, 260.0, 13, Color(0.04, 0.10, 0.09, 0.92))

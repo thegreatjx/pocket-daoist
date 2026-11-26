@@ -86,6 +86,4 @@ func _process(delta: float) -> void:
 		ObjectPools.release(self)
 
 func _format(value: float) -> String:
-	if value < 10.0:
-		return "%.1f" % value
 	return str(roundi(value))

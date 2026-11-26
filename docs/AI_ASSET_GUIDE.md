@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 12:21:59）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 12:51:56）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -42,7 +42,7 @@
 | `GAP` (MISSING_ART_SLOT) | 合体超武复用基础法宝图标 (3/3) | `data/v2/weapons_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
 | `WARNING` (STORY_STAGE_MISMATCH) | 剧情章节数 (6) 与 V2 关卡数 (1) 不一致 | `scripts/story.gd` |
-| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 6 个未引用媒体文件（含多版本残留） | `assets/` |
+| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 10 个未引用媒体文件（含多版本残留） | `assets/` |
 | `WARNING` (UI_THEME_BYPASS) | 6 个 UI 脚本绕过 XianxiaUITheme 私写 34 处 StyleBoxFlat.new() | `scripts/ui/xianxia_ui_theme.gd` |
 
 ## 4. 已有核心资产速查表（直接复用，勿重复生成）
@@ -78,6 +78,12 @@
 - `enemy_charger_huodou` (炎煞祸斗, species=6) -> `res://assets/sprites/anim_huodou_run.png`
 - `enemy_bulwark_golem` (青石镇傀, species=2) -> `res://assets/sprites/anim_shanxiao_run.png`
 - `enemy_bulwark_jinchan` (三足金蟾, species=4) -> `res://assets/sprites/anim_jinchan_run.png`
+- `enemy_zhusha_zhiren` (朱砂纸人, species=7) -> ``
+- `enemy_chihuo_danling` (炽火丹灵, species=8) -> ``
+- `enemy_wudu_zhangchan` (五毒蟾蜍, species=9) -> ``
+- `enemy_canjian_jiankui` (残剑剑傀, species=10) -> ``
+- `enemy_yinsha_daotong` (阴煞道童, species=11) -> ``
+- `enemy_zhenhun_shidun` (镇魂石墩, species=12) -> ``
 
 ### 音频与特效白名单
 - 已接入音频：`res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/fire_gourd_burn.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/music_battle.ogg`, `res://assets/audio/music_boss.ogg`, `res://assets/audio/music_swarm.ogg`, `res://assets/audio/music_title.ogg`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`, `res://assets/audio/thunder_arc_snap.wav`, `res://assets/audio/water_ripple_splash.wav`

@@ -110,6 +110,7 @@ func setup_for_player(p: Player) -> void:
 	unlocked_weapon_slots = calc_unlocked_slots(int(player.level), 0)
 	orbit_rig.set_unlocked_slots(unlocked_weapon_slots)
 	orbit_rig.add_weapon(start_wpn, 1)
+	orbit_rig.set_starter_weapon(start_wpn)
 	if not player.leveled_up.is_connected(_on_player_leveled_up):
 		player.leveled_up.connect(_on_player_leveled_up)
 	recompute_player_stats()
