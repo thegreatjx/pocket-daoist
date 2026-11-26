@@ -41,6 +41,54 @@ func clear_realm() -> void:
 	_ambient_layer = null
 	cover_pillars_data.clear()
 
+func build_tutorial_props(center: Vector2, pillars: Array, landmarks: Array, pine_tex: Texture2D, lm_textures: Dictionary) -> void:
+	clear_realm()
+	for p in pillars:
+		if not bool(p.get("is_core_pillar", false)):
+			continue
+		if pine_tex != null:
+			var obs := MapPropObstacle.new()
+			obs.position = p["pos"] as Vector2
+			add_child(obs)
+			obs.setup_from_spec(pine_tex, {
+				"foot_y_norm": 0.92,
+				"shape": "circle",
+				"coll_rx": 0.14,
+				"shadow_rx": 0.24,
+				"shadow_ry": 0.10,
+				"occlude": true,
+			}, 250.0, false, 0.0)
+			_realm_nodes.append(obs)
+	for lm in landmarks:
+		var lm_id := String(lm.get("id", ""))
+		var tex: Texture2D = lm_textures.get(lm_id, null) as Texture2D
+		if tex == null:
+			continue
+		var obs := MapPropObstacle.new()
+		obs.position = lm["pos"] as Vector2
+		add_child(obs)
+		var is_solid := (lm_id == "sword_mound" or lm_id == "peach_brook")
+		var spec := {
+			"foot_y_norm": 0.90 if lm_id == "sword_mound" else 0.86,
+			"shape": "capsule",
+			"coll_rx": 0.30,
+			"coll_ry": 0.15,
+			"shadow_rx": 0.36,
+			"shadow_ry": 0.16,
+			"occlude": lm_id != "spirit_spring",
+		}
+		var h_px := 180.0 if lm_id == "sword_mound" else (140.0 if lm_id == "peach_brook" else 165.0)
+		obs.setup_from_spec(tex, spec, h_px, false, -1.0 if is_solid else 0.0)
+		_realm_nodes.append(obs)
+		if is_solid:
+			cover_pillars_data.append({
+				"id": cover_pillars_data.size(),
+				"tag": lm_id,
+				"pos": obs.position,
+				"radius": obs.collider_radius,
+				"is_core_pillar": false,
+			})
+
 func build_realm(
 	realm_cfg: Dictionary,
 	arena_rect: Rect2,
@@ -57,6 +105,7 @@ func build_realm(
 	var min_spacing := float(realm_cfg.get("obstacle_min_spacing", 280.0))
 	var target_count := clampi(int(realm_cfg.get("obstacle_count", 20)), 18, 26)
 	var prop_pool: Array = realm_cfg.get("prop_pool", [])
+	var landmark_spec: Dictionary = realm_cfg.get("landmark_prop_spec", {})
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(realm_cfg.get("seed", 20261126))
@@ -74,7 +123,7 @@ func build_realm(
 				var obs := MapPropObstacle.new()
 				obs.position = hpos
 				add_child(obs)
-				obs.setup_sized(tex, float(h.get("height", 180.0)), 0.25, true, false, 34.0 if htype == "sword_stele" else -1.0)
+				obs.setup_from_spec(tex, landmark_spec, float(h.get("height", 180.0)), false, -1.0)
 				_realm_nodes.append(obs)
 				var tag := "sword_stele" if htype == "sword_stele" else "landmark_anchor_%d" % anchor_idx
 				anchor_idx += 1
@@ -90,6 +139,34 @@ func build_realm(
 			forbidden.append({"pos": hpos, "r": float(h.get("radius", 155.0)) + 140.0})
 
 	var placed_positions: Array[Vector2] = []
+	var layout_props: Array = realm_cfg.get("layout_props", [])
+	for lp in layout_props:
+		if placed_positions.size() >= target_count or prop_pool.is_empty():
+			break
+		if not (lp is Dictionary):
+			continue
+		var rel: Vector2 = (lp as Dictionary).get("pos", Vector2.ZERO)
+		var pos := center + rel
+		var p_idx := clampi(int((lp as Dictionary).get("pool_idx", 0)), 0, prop_pool.size() - 1)
+		var spec: Dictionary = prop_pool[p_idx] as Dictionary
+		var tex := MapRealmCatalog.load_tex_safe(String(spec.get("tex", "")))
+		if tex != null:
+			var h_px := float((lp as Dictionary).get("height", spec.get("height", 190.0)))
+			var flip_h := bool((lp as Dictionary).get("flip_h", false))
+			var obs := MapPropObstacle.new()
+			obs.position = pos
+			add_child(obs)
+			obs.setup_from_spec(tex, spec, h_px, flip_h)
+			_realm_nodes.append(obs)
+			placed_positions.append(pos)
+			cover_pillars_data.append({
+				"id": cover_pillars_data.size(),
+				"tag": "realm_prop_%d" % placed_positions.size(),
+				"pos": pos,
+				"radius": obs.collider_radius,
+				"is_core_pillar": false,
+			})
+
 	var inner_rect := arena_rect.grow(-300.0)
 	var attempts := 0
 	while placed_positions.size() < target_count and attempts < target_count * 40:
@@ -125,7 +202,7 @@ func build_realm(
 				var obs := MapPropObstacle.new()
 				obs.position = pos
 				add_child(obs)
-				obs.setup_sized(tex, h_px, float(spec.get("coll_ratio", 0.25)), bool(spec.get("occlude", true)), rng.randf() < 0.5)
+				obs.setup_from_spec(tex, spec, h_px, rng.randf() < 0.5)
 				_realm_nodes.append(obs)
 				cover_pillars_data.append({
 					"id": cover_pillars_data.size(),
@@ -157,13 +234,41 @@ func _spawn_border_cliffs(realm_cfg: Dictionary, arena_rect: Rect2, rng: RandomN
 	var step := float(realm_cfg.get("border_step", 225.0))
 	var bw := float(border_tex.get_width())
 	var bh := float(border_tex.get_height())
-	var base_sc := (512.0 * float(realm_cfg.get("border_scale", 0.62))) / maxf(1.0, bw)
+	var base_sc := (512.0 * float(realm_cfg.get("border_scale", 0.72))) / maxf(1.0, bw)
+	var foot_y_norm := clampf(float(realm_cfg.get("border_foot_y", 0.85)), 0.5, 0.99)
+	var foot_off_y := (0.5 - foot_y_norm) * bh
+	var inset := float(realm_cfg.get("border_wall_inset", 50.0))
+
+	# Solid physical colliders aligned 1:1 with the visible mountain foothills
+	var cliff_body := StaticBody2D.new()
+	cliff_body.name = "BorderCliffColliders"
+	cliff_body.collision_layer = 1
+	cliff_body.collision_mask = 0
+	var c := arena_rect.get_center()
+	var w := arena_rect.size.x
+	var h := arena_rect.size.y
+	var wall_thickness := 140.0
+	var wall_specs := [
+		{"pos": Vector2(c.x, arena_rect.position.y - wall_thickness * 0.5 + inset), "size": Vector2(w + 300.0, wall_thickness)},
+		{"pos": Vector2(c.x, arena_rect.end.y + wall_thickness * 0.5 - inset * 0.5), "size": Vector2(w + 300.0, wall_thickness)},
+		{"pos": Vector2(arena_rect.position.x - wall_thickness * 0.5 + inset, c.y), "size": Vector2(wall_thickness, h + 300.0)},
+		{"pos": Vector2(arena_rect.end.x + wall_thickness * 0.5 - inset, c.y), "size": Vector2(wall_thickness, h + 300.0)},
+	]
+	for ws in wall_specs:
+		var col := CollisionShape2D.new()
+		var rect_shape := RectangleShape2D.new()
+		rect_shape.size = ws["size"]
+		col.shape = rect_shape
+		col.position = ws["pos"]
+		cliff_body.add_child(col)
+	add_child(cliff_body)
+	_realm_nodes.append(cliff_body)
 
 	var edges := [
-		{"a": arena_rect.position, "b": Vector2(arena_rect.end.x, arena_rect.position.y), "out": Vector2(0.0, -34.0)},
-		{"a": Vector2(arena_rect.position.x, arena_rect.end.y), "b": arena_rect.end, "out": Vector2(0.0, 56.0)},
-		{"a": arena_rect.position, "b": Vector2(arena_rect.position.x, arena_rect.end.y), "out": Vector2(-42.0, 0.0)},
-		{"a": Vector2(arena_rect.end.x, arena_rect.position.y), "b": arena_rect.end, "out": Vector2(42.0, 0.0)},
+		{"a": arena_rect.position, "b": Vector2(arena_rect.end.x, arena_rect.position.y), "out": Vector2(0.0, inset * 0.85)},
+		{"a": Vector2(arena_rect.position.x, arena_rect.end.y), "b": arena_rect.end, "out": Vector2(0.0, 26.0)},
+		{"a": arena_rect.position, "b": Vector2(arena_rect.position.x, arena_rect.end.y), "out": Vector2(-18.0, 0.0)},
+		{"a": arena_rect.end.x * Vector2.RIGHT + arena_rect.position.y * Vector2.DOWN, "b": arena_rect.end, "out": Vector2(18.0, 0.0)},
 	]
 	for edge_idx in range(edges.size()):
 		var a: Vector2 = edges[edge_idx]["a"]
@@ -173,13 +278,13 @@ func _spawn_border_cliffs(realm_cfg: Dictionary, arena_rect: Rect2, rng: RandomN
 		var count := maxi(2, int(round(dist / step)))
 		for i in range(count + 1):
 			var t := float(i) / float(count)
-			var pos := a.lerp(b, t) + out_off + Vector2(rng.randf_range(-16.0, 16.0), rng.randf_range(-12.0, 12.0))
+			var pos := a.lerp(b, t) + out_off + Vector2(rng.randf_range(-10.0, 10.0), rng.randf_range(-6.0, 6.0))
 			var sp := Sprite2D.new()
 			sp.texture = border_tex
 			sp.flip_h = ((i + edge_idx) % 2) == 1
-			var sc := base_sc * rng.randf_range(0.92, 1.12)
+			var sc := base_sc * rng.randf_range(0.95, 1.08)
 			sp.scale = Vector2(sc, sc)
-			sp.offset = Vector2(0.0, -bh * 0.25)
+			sp.offset = Vector2(0.0, foot_off_y)
 			sp.position = pos
 			add_child(sp)
 			_realm_nodes.append(sp)

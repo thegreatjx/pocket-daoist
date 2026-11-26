@@ -580,14 +580,14 @@ func apply_v2_upgrade(choice_id: String, player: Node) -> void:
 			apply_upgrade(choice_id, player)
 
 func roll_v2_chest_rewards(player: Node) -> Array[Dictionary]:
-	var bundle := roll_v2_chest_bundle(player)
+	var bundle := roll_v2_chest_bundle(player, false)
 	var out: Array[Dictionary] = []
 	for r in bundle.get("rewards", []):
 		if r is Dictionary:
 			out.append(r)
 	return out
 
-func roll_v2_chest_bundle(player: Node) -> Dictionary:
+func roll_v2_chest_bundle(player: Node, defer_new_weapon: bool = false) -> Dictionary:
 	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
 		var legacy_rewards: Array[Dictionary] = roll_chest_rewards(player)
 		if legacy_rewards.is_empty():
@@ -609,15 +609,18 @@ func roll_v2_chest_bundle(player: Node) -> Dictionary:
 	var stones_gained := v2.add_run_gold(base_stones)
 
 	var rewards: Array[Dictionary] = []
+	var reserved_new_wids: Array[String] = []
 	var guaranteed := false
 	for i in range(tier):
-		var reward := _roll_single_v2_chest_reward(v2, i == 0)
+		var reward := _roll_single_v2_chest_reward(v2, i == 0, defer_new_weapon, reserved_new_wids)
 		if reward.is_empty():
 			if not guaranteed:
 				guaranteed = true
 				stones_gained += v2.add_run_gold(15)
 				rewards.append(_chest_guarantee_reward(player))
 			break
+		if String(reward.get("reward_kind", "")) == "pending_new_weapon":
+			reserved_new_wids.append(String(reward.get("weapon_id", "")))
 		rewards.append(reward)
 
 	if rewards.is_empty():
@@ -629,7 +632,42 @@ func roll_v2_chest_bundle(player: Node) -> Dictionary:
 		"rewards": rewards,
 	}
 
-func _roll_single_v2_chest_reward(v2: V2CombatController, prefer_upgrade: bool) -> Dictionary:
+func resolve_chest_pending_rewards(rewards: Array, player: Node) -> int:
+	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
+		return 0
+	var v2: V2CombatController = player.v2_combat
+	var salvage_stones_total := 0
+	for item in rewards:
+		if not (item is Dictionary):
+			continue
+		var r: Dictionary = item
+		if String(r.get("reward_kind", "")) != "pending_new_weapon":
+			continue
+		var wid := String(r.get("weapon_id", ""))
+		var accepted := bool(r.get("accepted", true))
+		if accepted and wid != "" and v2.can_add_weapon(wid, 1) and v2.add_weapon(wid, 1):
+			continue
+		var salvage := maxi(15, int(r.get("salvage_stones", 30)))
+		salvage_stones_total += v2.add_run_gold(salvage)
+		if player.has_method("heal"):
+			player.heal(15.0)
+	return salvage_stones_total
+
+func _build_synergy_hint_for_weapon(v2: V2CombatController, wid: String, elem: String) -> String:
+	if elem == "none":
+		return "✦ 器道百搭 · 不占反应，高伤卷经验"
+	var syns: Array[Dictionary] = v2.get_weapon_reaction_synergies(wid)
+	if not syns.is_empty():
+		var s0: Dictionary = syns[0]
+		return "✦ 可与【%s】触发：%s（%s）" % [s0["partner_name"], s0["rx_name"], s0["role_tag"]]
+	return "✦ 可触发五行反应"
+
+func _roll_single_v2_chest_reward(
+	v2: V2CombatController,
+	prefer_upgrade: bool,
+	defer_new_weapon: bool = false,
+	reserved_new_wids: Array[String] = []
+) -> Dictionary:
 	if v2 == null or v2.loader == null:
 		return {}
 
@@ -639,13 +677,17 @@ func _roll_single_v2_chest_reward(v2: V2CombatController, prefer_upgrade: bool) 
 		for s in v2.orbit_rig.slots:
 			if not bool(s.get("is_fusion", false)) and int(s.get("tier", 1)) < OrbitWeaponRig.MAX_WEAPON_TIER:
 				upgradable_weapons.append(s)
-		if v2.orbit_rig.has_free_slot():
+		var free_slots := maxi(0, v2.orbit_rig.get_unlocked_slots() - v2.orbit_rig.slots.size() - reserved_new_wids.size())
+		if free_slots > 0:
 			for wid_raw in v2.loader.weapons_by_id.keys():
 				var wid := String(wid_raw)
-				if banished_ids.has("v2_wpn:" + wid):
+				if banished_ids.has("v2_wpn:" + wid) or reserved_new_wids.has(wid):
 					continue
 				if v2.orbit_rig.get_weapon_tier(wid) == 0 and v2.can_add_weapon(wid, 1):
-					new_weapons.append(wid)
+					var w_def: Dictionary = v2.loader.weapons_by_id[wid_raw]
+					var elem := String(w_def.get("element", "none"))
+					if elem == "none" or not v2.get_weapon_reaction_synergies(wid).is_empty():
+						new_weapons.append(wid)
 
 	if prefer_upgrade and not upgradable_weapons.is_empty():
 		var pick_u: Dictionary = upgradable_weapons[randi() % upgradable_weapons.size()]
@@ -658,16 +700,20 @@ func _roll_single_v2_chest_reward(v2: V2CombatController, prefer_upgrade: bool) 
 		var iid := String(iid_raw)
 		if banished_ids.has("v2_item:" + iid):
 			continue
+		var it_def: Dictionary = v2.loader.items_by_id[iid_raw]
+		var mods: Variant = it_def.get("mods", {})
+		if mods is Dictionary and float((mods as Dictionary).get("curse_pct", 0.0)) > 0.0:
+			continue
 		if v2.can_add_item(iid):
 			available_items.append(iid)
 
 	var pool: Array[Dictionary] = []
 	if not upgradable_weapons.is_empty():
-		pool.append({"kind": "upgrade_weapon", "weight": 45})
+		pool.append({"kind": "upgrade_weapon", "weight": 58})
 	if not new_weapons.is_empty():
-		pool.append({"kind": "new_weapon", "weight": 30})
+		pool.append({"kind": "new_weapon", "weight": 18})
 	if not available_items.is_empty():
-		pool.append({"kind": "item", "weight": 35})
+		pool.append({"kind": "item", "weight": 32})
 
 	if pool.is_empty():
 		return {}
@@ -690,14 +736,33 @@ func _roll_single_v2_chest_reward(v2: V2CombatController, prefer_upgrade: bool) 
 			return _apply_chest_weapon_upgrade(v2, String(pick_u["id"]), int(pick_u["tier"]))
 		"new_weapon":
 			var wid: String = new_weapons[randi() % new_weapons.size()]
+			var w: Dictionary = v2.loader.weapons_by_id[wid]
+			var elem := String(w.get("element", "none"))
+			var syn_hint := _build_synergy_hint_for_weapon(v2, wid, elem)
+			if defer_new_weapon:
+				var alts: Array[String] = []
+				for alt_id in new_weapons:
+					if alt_id != wid:
+						alts.append(alt_id)
+				return {
+					"is_evo": false,
+					"reward_kind": "pending_new_weapon",
+					"weapon_id": wid,
+					"alt_weapon_ids": alts,
+					"salvage_stones": 30,
+					"accepted": true,
+					"rerolled": false,
+					"title": String(w.get("name", wid)),
+					"subtitle": "天机赐宝 · 协同新法宝",
+					"desc": "%s · Lv.1\n%s" % [String(V2_ELEM_NAMES.get(elem, "器道奇宝")), syn_hint],
+					"icon": String(w.get("icon", "")),
+				}
 			if v2.add_weapon(wid, 1):
-				var w: Dictionary = v2.loader.weapons_by_id[wid]
-				var elem := String(w.get("element", "none"))
 				return {
 					"is_evo": false,
 					"title": String(w.get("name", wid)),
 					"subtitle": "天机赐宝 · 新获法宝",
-					"desc": "%s · Lv.1 入手，立即参战！" % String(V2_ELEM_NAMES.get(elem, "器道奇宝")),
+					"desc": "%s · Lv.1 入手，立即参战！\n%s" % [String(V2_ELEM_NAMES.get(elem, "器道奇宝")), syn_hint],
 					"icon": String(w.get("icon", "")),
 				}
 		"item":

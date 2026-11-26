@@ -21,6 +21,7 @@
       ],
       "motion_mode": "hover_ride",
       "mount_type": "sword",
+      "floating_sword": true,
       "draw_height": 88.0,
       "anim_idle_atlas": "res://assets/v2/hero/anim/hero_sword_qwen_idle-atlas-00.png",
       "anim_idle_meta": "res://assets/v2/hero/anim/hero_sword_qwen_idle.json",

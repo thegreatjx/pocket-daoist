@@ -21,7 +21,7 @@ const MATERIALIZE_SEC := 0.10
 const CAST_RECOIL_SEC := 0.12
 const DISSIPATE_SEC := 0.22
 
-@export var max_slots: int = 4
+@export var max_slots: int = 6
 @export var orbit_radius_x: float = 54.0
 @export var orbit_radius_y: float = 36.0
 @export var weapon_sprite_scale: float = 0.20
@@ -29,7 +29,7 @@ const DISSIPATE_SEC := 0.22
 
 var loader: V2DataLoader
 var slots: Array[Dictionary] = []
-var unlocked_slots: int = 4
+var unlocked_slots: int = 6
 var starter_weapon_id: String = ""
 var _hover_time: float = 0.0
 var _facing: float = 1.0

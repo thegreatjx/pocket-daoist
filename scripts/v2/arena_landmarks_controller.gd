@@ -244,7 +244,9 @@ func _step_realm_process(delta: float) -> void:
 		var dy := absf(p_pos.y - _realm_center.y)
 		var on_v_road := dx <= road_hw and dy <= half_span
 		var on_h_road := dy <= road_hw and dx <= half_span
-		if on_v_road or on_h_road:
+		var ring_d := float(_realm_cfg.get("courtyard_ring_dist", 0.0))
+		var on_branch := ring_d > 0.0 and absf(dy - ring_d) <= road_hw and dx <= ring_d
+		if on_v_road or on_h_road or on_branch:
 			bonuses["move_speed_pct"] = 0.05
 
 	var in_spring := false

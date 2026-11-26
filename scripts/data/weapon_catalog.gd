@@ -1,6 +1,6 @@
 class_name WeaponCatalog
 
-const MAX_WEAPON_SLOTS := 4
+const MAX_WEAPON_SLOTS := 6
 const MAX_PASSIVE_SLOTS := 6
 const MAX_WEAPON_LEVEL := 8
 const MAX_PASSIVE_LEVEL := 5

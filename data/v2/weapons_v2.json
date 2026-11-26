@@ -1,13 +1,40 @@
 {
   "schema_version": "2.0",
-  "max_weapon_slots": 4,
+  "max_weapon_slots": 6,
   "max_weapon_level": 8,
-  "tier_scaling_note": "单局最多装备 4 件法宝；每件法宝从 Lv.1 原地淬炼至 Lv.8 触发形态与配色质变。",
+  "tier_scaling_note": "单局最多装备 6 件法宝；每件法宝从 Lv.1 原地淬炼至 Lv.8 触发形态与配色质变。",
   "realm_slot_unlocks": [
-    {"slots": 1, "level": 1, "realm": "练气"},
-    {"slots": 2, "level": 5, "realm": "筑基"},
-    {"slots": 3, "level": 11, "realm": "金丹"},
-    {"slots": 4, "level": 18, "realm": "元婴", "alt_elite_kills": 2}
+    {
+      "slots": 1,
+      "level": 1,
+      "realm": "练气"
+    },
+    {
+      "slots": 2,
+      "level": 3,
+      "realm": "筑基"
+    },
+    {
+      "slots": 3,
+      "level": 6,
+      "realm": "金丹"
+    },
+    {
+      "slots": 4,
+      "level": 10,
+      "realm": "元婴"
+    },
+    {
+      "slots": 5,
+      "level": 14,
+      "realm": "化神"
+    },
+    {
+      "slots": 6,
+      "level": 18,
+      "realm": "渡劫",
+      "alt_elite_kills": 3
+    }
   ],
   "weapons": [
     {
@@ -21,7 +48,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 14,
+          "damage": 16,
           "cooldown": 1.05,
           "range": 345,
           "projectile_count": 1,
@@ -33,8 +60,8 @@
         },
         {
           "tier": 2,
-          "damage": 18,
-          "cooldown": 1.00,
+          "damage": 19,
+          "cooldown": 1.0,
           "range": 355,
           "projectile_count": 1,
           "pierce": 2,
@@ -58,7 +85,7 @@
         {
           "tier": 4,
           "damage": 26,
-          "cooldown": 0.90,
+          "cooldown": 0.9,
           "range": 382,
           "projectile_count": 2,
           "pierce": 3,
@@ -75,14 +102,14 @@
           "projectile_count": 3,
           "pierce": 3,
           "proj_speed": 755,
-          "crit_chance": 0.20,
+          "crit_chance": 0.2,
           "crit_mult": 2.02,
           "level_summary": "飞剑增至 3 柄，冷却缩短"
         },
         {
           "tier": 6,
           "damage": 36,
-          "cooldown": 0.80,
+          "cooldown": 0.8,
           "range": 420,
           "projectile_count": 4,
           "pierce": 4,
@@ -105,8 +132,8 @@
         },
         {
           "tier": 8,
-          "damage": 50,
-          "cooldown": 0.70,
+          "damage": 52,
+          "cooldown": 0.7,
           "range": 465,
           "projectile_count": 5,
           "pierce": 5,
@@ -135,12 +162,12 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 7,
+          "damage": 10,
           "cooldown": 1.65,
           "range": 320,
           "aoe_radius": 70,
           "zone_duration": 2.8,
-          "tick_dps": 9,
+          "tick_dps": 11,
           "burn_dur": 1.5,
           "level_summary": "抛射离火球，命中与火海均附带 1.5s 灼烧"
         },
@@ -158,7 +185,7 @@
         {
           "tier": 3,
           "damage": 12,
-          "cooldown": 1.50,
+          "cooldown": 1.5,
           "range": 345,
           "aoe_radius": 82,
           "zone_duration": 3.3,
@@ -241,7 +268,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 11,
+          "damage": 14,
           "cooldown": 1.38,
           "range": 360,
           "chain_count": 2,
@@ -250,7 +277,7 @@
         },
         {
           "tier": 2,
-          "damage": 14,
+          "damage": 17,
           "cooldown": 1.32,
           "range": 370,
           "chain_count": 2,
@@ -296,7 +323,7 @@
         {
           "tier": 7,
           "damage": 34,
-          "cooldown": 1.00,
+          "cooldown": 1.0,
           "range": 444,
           "chain_count": 7,
           "chain_range": 196,
@@ -331,13 +358,13 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 6,
+          "damage": 9,
           "cooldown": 1.24,
           "range": 380,
           "proj_speed": 235,
           "pierce": 3,
           "projectile_count": 3,
-          "slow_pct": 0.30,
+          "slow_pct": 0.3,
           "slow_dur": 2.4,
           "level_summary": "低伤控场：3 枚玄冰雪花慢速旋转穿透，遇潮湿妖物立刻玄霜冰封"
         },
@@ -373,7 +400,7 @@
           "proj_speed": 235,
           "pierce": 3,
           "projectile_count": 4,
-          "slow_pct": 0.40,
+          "slow_pct": 0.4,
           "slow_dur": 3.0,
           "level_summary": "玄冰雪花飘飞射程扩大，强效迟滞冲锋怪"
         },
@@ -446,12 +473,12 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 7,
+          "damage": 10,
           "cooldown": 1.55,
           "range": 350,
           "projectile_count": 1,
           "spirit_speed": 330,
-          "dot_dps": 11,
+          "dot_dps": 13,
           "dot_dur": 4.2,
           "spread_radius": 110,
           "spread_targets": 3,
@@ -460,7 +487,7 @@
         {
           "tier": 2,
           "damage": 8,
-          "cooldown": 1.50,
+          "cooldown": 1.5,
           "range": 362,
           "projectile_count": 1,
           "spirit_speed": 350,
@@ -525,7 +552,7 @@
         {
           "tier": 7,
           "damage": 19,
-          "cooldown": 1.20,
+          "cooldown": 1.2,
           "range": 420,
           "projectile_count": 3,
           "spirit_speed": 450,
@@ -571,7 +598,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 10,
+          "damage": 13,
           "cooldown": 2.05,
           "aoe_radius": 175,
           "knockback": 230,
@@ -605,7 +632,7 @@
         {
           "tier": 4,
           "damage": 20,
-          "cooldown": 1.80,
+          "cooldown": 1.8,
           "aoe_radius": 222,
           "knockback": 295,
           "slow_pct": 0.25,
@@ -678,7 +705,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 7,
+          "damage": 11,
           "cooldown": 1.26,
           "range": 335,
           "aoe_radius": 78,
@@ -688,8 +715,8 @@
         },
         {
           "tier": 2,
-          "damage": 9,
-          "cooldown": 1.20,
+          "damage": 13,
+          "cooldown": 1.2,
           "range": 345,
           "aoe_radius": 84,
           "slow_pct": 0.31,
@@ -709,7 +736,7 @@
         {
           "tier": 4,
           "damage": 15,
-          "cooldown": 1.10,
+          "cooldown": 1.1,
           "range": 370,
           "aoe_radius": 100,
           "slow_pct": 0.37,
@@ -722,14 +749,14 @@
           "cooldown": 1.05,
           "range": 384,
           "aoe_radius": 108,
-          "slow_pct": 0.40,
+          "slow_pct": 0.4,
           "slow_dur": 3.2,
           "level_summary": "碧水灵潮范围扩张，配合火雷木打反应"
         },
         {
           "tier": 6,
           "damage": 21,
-          "cooldown": 1.00,
+          "cooldown": 1.0,
           "range": 396,
           "aoe_radius": 115,
           "slow_pct": 0.43,
@@ -749,7 +776,7 @@
         {
           "tier": 8,
           "damage": 28,
-          "cooldown": 0.90,
+          "cooldown": 0.9,
           "range": 420,
           "aoe_radius": 130,
           "slow_pct": 0.48,
@@ -776,7 +803,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 7,
+          "damage": 10,
           "cooldown": 1.44,
           "range": 340,
           "aoe_radius": 74,
@@ -796,7 +823,7 @@
           "aoe_radius": 80,
           "dot_dps": 15,
           "dot_dur": 4.6,
-          "slow_pct": 0.30,
+          "slow_pct": 0.3,
           "slow_dur": 2.4,
           "root_dur": 0.75,
           "pull_exp_gems": true,
@@ -833,7 +860,7 @@
         {
           "tier": 5,
           "damage": 18,
-          "cooldown": 1.20,
+          "cooldown": 1.2,
           "range": 386,
           "aoe_radius": 104,
           "dot_dps": 32,

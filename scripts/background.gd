@@ -81,7 +81,9 @@ var _road_decals: Array[Dictionary] = []
 var _hazard_sites: Array[Dictionary] = []
 var _center_array_tex: Texture2D = null
 var _road_decal_tex: Texture2D = null
+var _road_cross_tex: Texture2D = null
 var _decal_layer: DecalLayerNode = null
+var _tutorial_managed_by_arena_map: bool = false
 
 var _redraw_accum: float = 0.0
 var _last_cam_center: Vector2 = Vector2.INF
@@ -153,18 +155,28 @@ func apply_chapter(chapter: Dictionary) -> void:
 	_hazard_sites.clear()
 	_center_array_tex = null
 	_road_decal_tex = null
+	_road_cross_tex = null
 	_tile_tex = CH1_TILE
 	_tile_size = CH1_TILE_SIZE
-
-	var arena_map := _find_arena_map()
-	if arena_map != null and arena_map.has_method("clear_realm"):
-		arena_map.call("clear_realm")
 
 	_rebuild_boundary_walls()
 	_build_landmarks()
 	_scatter_props()
 	_rebuild_obstacles()
 	_apply_camera_limits()
+
+	var arena_map := _find_arena_map()
+	_tutorial_managed_by_arena_map = false
+	if arena_map != null and arena_map.has_method("build_tutorial_props"):
+		arena_map.call("build_tutorial_props", SPAWN_CENTER, _pillars, _landmarks, CH1_PINE, CH1_LANDMARK_TEXTURES)
+		_tutorial_managed_by_arena_map = true
+		var extra_pillars: Variant = arena_map.get("cover_pillars_data")
+		if extra_pillars is Array:
+			for ep in extra_pillars:
+				if ep is Dictionary:
+					_pillars.append(ep)
+	elif arena_map != null and arena_map.has_method("clear_realm"):
+		arena_map.call("clear_realm")
 
 	var landmarks := _find_landmarks_controller()
 	if landmarks != null and landmarks.has_method("set_classic_mode"):
@@ -195,6 +207,8 @@ func _apply_realm_chapter(realm_id: String, realm_cfg: Dictionary) -> void:
 
 	_center_array_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "center_array")
 	_road_decal_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "road_decal")
+	_road_cross_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "road_cross_decal")
+	_tutorial_managed_by_arena_map = false
 	_build_realm_roads(map_sz, realm_cfg)
 	_build_realm_hazards(realm_id, map_sz, realm_cfg)
 
@@ -227,27 +241,51 @@ func _apply_realm_chapter(realm_id: String, realm_cfg: Dictionary) -> void:
 func _build_realm_roads(map_sz: float, realm_cfg: Dictionary) -> void:
 	_road_decals.clear()
 	var arr_size := float(realm_cfg.get("center_array_size", 640.0))
-	var start_r := arr_size * 0.52
+	var start_r := arr_size * 0.50
 	var end_r := float(realm_cfg.get("road_end_radius", map_sz * 0.5 - 220.0))
-	var step := 135.0
 	var tex_w := float(_road_decal_tex.get_width()) if _road_decal_tex != null else 512.0
 	var base_sc := 165.0 / maxf(1.0, tex_w)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = int(realm_cfg.get("seed", 20261126)) + 17
-	var dirs := [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
+	var step := tex_w * base_sc * 0.92
+	var cross_dist := float(realm_cfg.get("courtyard_ring_dist", 0.0))
+
+	var dirs: Array[Vector2] = [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
 	for d in dirs:
-		var perp := Vector2(-d.y, d.x)
-		var dist := start_r
+		var is_vert := absf(d.y) > 0.5
+		var base_rot := PI * 0.5 if is_vert else 0.0
+		var dist := start_r + step * 0.45
 		while dist < end_r:
-			var jitter_rot := rng.randf_range(-0.18, 0.18)
-			var base_rot := 0.0 if absf(d.y) > 0.5 else PI * 0.5
+			var pos: Vector2 = SPAWN_CENTER + d * dist
+			var is_cross := cross_dist > 0.0 and _road_cross_tex != null and absf(dist - cross_dist) < step * 0.48
 			_road_decals.append({
-				"pos": SPAWN_CENTER + d * dist + perp * rng.randf_range(-14.0, 14.0),
-				"rot": base_rot + jitter_rot,
-				"scale": base_sc * rng.randf_range(0.92, 1.08),
-				"flip_h": rng.randf() < 0.5,
+				"pos": pos,
+				"rot": 0.0 if is_cross else base_rot,
+				"scale": base_sc,
+				"flip_h": false,
+				"is_cross": is_cross,
 			})
 			dist += step
+
+	if cross_dist > 0.0:
+		# Four clean courtyard branches leading from the 4 crossroad junctions to the 4 quadrant landmarks
+		var branch_specs := [
+			{"start": Vector2(0.0, -cross_dist), "dir": Vector2.LEFT},
+			{"start": Vector2(0.0, -cross_dist), "dir": Vector2.RIGHT},
+			{"start": Vector2(0.0, cross_dist), "dir": Vector2.LEFT},
+			{"start": Vector2(0.0, cross_dist), "dir": Vector2.RIGHT},
+		]
+		for bs in branch_specs:
+			var b_start: Vector2 = bs["start"]
+			var b_dir: Vector2 = bs["dir"]
+			var b_dist := step * 0.85
+			while b_dist <= cross_dist - step * 0.4:
+				_road_decals.append({
+					"pos": SPAWN_CENTER + b_start + b_dir * b_dist,
+					"rot": 0.0,
+					"scale": base_sc,
+					"flip_h": false,
+					"is_cross": false,
+				})
+				b_dist += step
 
 func _build_realm_hazards(_realm_id: String, _map_sz: float, realm_cfg: Dictionary) -> void:
 	_hazard_sites.clear()
@@ -560,7 +598,8 @@ func _draw() -> void:
 
 	if _map_mode == MapMode.CLASSIC:
 		_draw_roads_and_landmarks(vis)
-		_draw_pillars(vis)
+		if not _tutorial_managed_by_arena_map:
+			_draw_pillars(vis)
 		_draw_props(vis)
 	_draw_boundary_barrier()
 
@@ -568,15 +607,17 @@ func _draw_realm_decals(canvas: Node2D) -> void:
 	if _map_mode != MapMode.REALM:
 		return
 	if _road_decal_tex != null:
-		var r_sz := Vector2(_road_decal_tex.get_width(), _road_decal_tex.get_height())
 		for stamp in _road_decals:
+			var use_cross := bool(stamp.get("is_cross", false)) and _road_cross_tex != null
+			var r_tex := _road_cross_tex if use_cross else _road_decal_tex
+			var r_sz := Vector2(r_tex.get_width(), r_tex.get_height())
 			var pos: Vector2 = stamp["pos"]
 			var sc: float = float(stamp["scale"])
 			var rot: float = float(stamp["rot"])
 			var flip_x := bool(stamp.get("flip_h", false))
 			var sz := r_sz * sc
 			canvas.draw_set_transform(pos, rot, Vector2(-1.0 if flip_x else 1.0, 1.0))
-			canvas.draw_texture_rect(_road_decal_tex, Rect2(-sz * 0.5, sz), false, Color(0.95, 0.95, 0.95, 0.92))
+			canvas.draw_texture_rect(r_tex, Rect2(-sz * 0.5, sz), false, Color(0.95, 0.95, 0.95, 0.92))
 		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if _center_array_tex != null:
@@ -601,19 +642,20 @@ func _draw_roads_and_landmarks(vis: Rect2) -> void:
 		var ring_size := Vector2(CH1_CENTER_RING.get_width(), CH1_CENTER_RING.get_height()) * CH1_CENTER_RING_SCALE
 		draw_texture_rect(CH1_CENTER_RING, Rect2(SPAWN_CENTER - ring_size * 0.5, ring_size), false, Color.WHITE)
 
-	for lm in _landmarks:
-		var lp: Vector2 = lm["pos"]
-		if not padded.has_point(lp):
-			continue
-		var rad: float = float(lm["radius"])
-		var poi_tex: Texture2D = CH1_LANDMARK_TEXTURES.get(String(lm["id"]), null)
-		if poi_tex != null:
-			var poi_scale := clampf(rad * 1.55 / float(maxi(poi_tex.get_width(), poi_tex.get_height())), 0.52, 0.88)
-			var poi_size := Vector2(poi_tex.get_width(), poi_tex.get_height()) * poi_scale
-			draw_set_transform(lp + Vector2(0.0, 14.0), 0.0, Vector2(1.12, 0.44))
-			draw_circle(Vector2.ZERO, poi_size.x * 0.34, Color(0.04, 0.09, 0.06, 0.22))
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-			draw_texture_rect(poi_tex, Rect2(lp - poi_size * 0.5, poi_size), false, Color.WHITE)
+	if not _tutorial_managed_by_arena_map:
+		for lm in _landmarks:
+			var lp: Vector2 = lm["pos"]
+			if not padded.has_point(lp):
+				continue
+			var rad: float = float(lm["radius"])
+			var poi_tex: Texture2D = CH1_LANDMARK_TEXTURES.get(String(lm["id"]), null)
+			if poi_tex != null:
+				var poi_scale := clampf(rad * 1.55 / float(maxi(poi_tex.get_width(), poi_tex.get_height())), 0.52, 0.88)
+				var poi_size := Vector2(poi_tex.get_width(), poi_tex.get_height()) * poi_scale
+				draw_set_transform(lp + Vector2(0.0, 14.0), 0.0, Vector2(1.12, 0.44))
+				draw_circle(Vector2.ZERO, poi_size.x * 0.34, Color(0.04, 0.09, 0.06, 0.22))
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+				draw_texture_rect(poi_tex, Rect2(lp - poi_size * 0.5, poi_size), false, Color.WHITE)
 
 func _draw_pillars(vis: Rect2) -> void:
 	var padded := vis.grow(140.0)
@@ -643,6 +685,9 @@ func _draw_props(vis: Rect2) -> void:
 		draw_texture_rect(tex, rect, false, tint)
 
 func _draw_boundary_barrier() -> void:
+	if _map_mode == MapMode.REALM:
+		draw_polyline(_boundary_pts, Color(0.06, 0.10, 0.09, 0.26), 12.0)
+		return
 	var pulse := 0.55 + 0.20 * sin(_anim_time * 3.0)
 	draw_polyline(_boundary_pts, Color(_gold_color.r, _gold_color.g, _gold_color.b, pulse * 0.55), 8.0)
 	draw_polyline(_boundary_pts, Color(_accent_color.r, _accent_color.g, _accent_color.b, pulse * 0.85), 3.5)

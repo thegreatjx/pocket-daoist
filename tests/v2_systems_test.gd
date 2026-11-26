@@ -45,6 +45,7 @@ func _ready() -> void:
 	_test_batch10a_bell_and_banner(loader)
 	_test_batch10b_awakened_vfx(loader)
 	await _test_flying_sword_dummy_and_debug_isolation()
+	_test_batch11_rebalance_6slots_and_maps(loader)
 	Stats.selected_character_id = saved_char
 	await get_tree().process_frame
 	for c in get_tree().get_nodes_in_group("chests"):
@@ -68,9 +69,9 @@ func _test_data_loader() -> V2DataLoader:
 	check("data_load_all", loaded, "load_all() returned false")
 	check("data_weapons_count", loader.weapons_by_id.size() >= 6, "got %d" % loader.weapons_by_id.size())
 	check("data_fusions_count", loader.fusion_recipes.is_empty(), "got %d" % loader.fusion_recipes.size())
-	check("data_max_weapon_slots", loader.max_weapon_slots == 4, "got %d" % loader.max_weapon_slots)
+	check("data_max_weapon_slots", loader.max_weapon_slots == 6, "got %d" % loader.max_weapon_slots)
 	check("data_max_weapon_level", loader.max_weapon_level == 8, "got %d" % loader.max_weapon_level)
-	check("data_realm_slot_unlocks", loader.realm_slot_unlocks.size() == 4, "got %d" % loader.realm_slot_unlocks.size())
+	check("data_realm_slot_unlocks", loader.realm_slot_unlocks.size() == 6, "got %d" % loader.realm_slot_unlocks.size())
 	check("data_reactions_count", loader.reactions_list.size() == 5 and not loader.shatter_reaction.is_empty(), "list=%d shatter=%s" % [loader.reactions_list.size(), str(loader.shatter_reaction.get("id", ""))])
 	check("data_items_count", loader.items_by_id.size() == 16, "got %d" % loader.items_by_id.size())
 	var tradeoff_items := 0
@@ -168,8 +169,8 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 	check("orbit_unlock_one_adds_first", rig3.add_weapon("wpn_jade_sword", 1), "first add failed")
 	check("orbit_unlock_one_rejects_second", not rig3.add_weapon("wpn_fire_gourd", 1), "second slot should be locked")
 	check("orbit_unlock_one_allows_in_place", rig3.add_weapon("wpn_jade_sword", 1) and rig3.slots.size() == 1 and int(rig3.slots[0]["tier"]) == 2, str(rig3.slots))
-	rig3.set_unlocked_slots(4)
-	check("orbit_unlock_four_free_slot", rig3.has_free_slot() and rig3.get_unlocked_slots() == 4, "unlock 4 failed")
+	rig3.set_unlocked_slots(6)
+	check("orbit_unlock_six_free_slot", rig3.has_free_slot() and rig3.get_unlocked_slots() == 6, "unlock 6 failed")
 	var sold: Dictionary = rig3.sell_weapon(0)
 	check("orbit_sell_weapon", not sold.is_empty() and rig3.slots.is_empty(), "slots=%d" % rig3.slots.size())
 
@@ -186,9 +187,9 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 	var rig_full := OrbitWeaponRig.new()
 	add_child(rig_full)
 	rig_full.setup(full_loader)
-	for wid in ["wpn_jade_sword", "wpn_thunder_talisman", "wpn_ice_mirror", "wpn_venom_banner"]:
+	for wid in ["wpn_jade_sword", "wpn_thunder_talisman", "wpn_ice_mirror", "wpn_venom_banner", "wpn_jade_vase", "wpn_gold_bell"]:
 		rig_full.add_weapon(wid, 1)
-	check("orbit_full_four_slots", rig_full.slots.size() == 4, "slots=%d" % rig_full.slots.size())
+	check("orbit_full_six_slots", rig_full.slots.size() == 6, "slots=%d" % rig_full.slots.size())
 	check("orbit_full_rejects_unrelated_new", not rig_full.add_weapon("wpn_fire_gourd", 1), "unrelated new weapon should be rejected")
 
 	var rig_full_max := OrbitWeaponRig.new()
@@ -196,9 +197,9 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 	rig_full_max.setup(full_loader)
 	for _lv in range(OrbitWeaponRig.MAX_WEAPON_TIER):
 		rig_full_max.add_weapon("wpn_jade_sword", 1)
-	for wid in ["wpn_thunder_talisman", "wpn_ice_mirror", "wpn_venom_banner"]:
+	for wid in ["wpn_thunder_talisman", "wpn_ice_mirror", "wpn_venom_banner", "wpn_jade_vase", "wpn_gold_bell"]:
 		rig_full_max.add_weapon(wid, 1)
-	check("orbit_full_max_setup", rig_full_max.slots.size() == 4 and rig_full_max.get_weapon_tier("wpn_jade_sword") == OrbitWeaponRig.MAX_WEAPON_TIER, str(rig_full_max.slots))
+	check("orbit_full_max_setup", rig_full_max.slots.size() == 6 and rig_full_max.get_weapon_tier("wpn_jade_sword") == OrbitWeaponRig.MAX_WEAPON_TIER, str(rig_full_max.slots))
 	check(
 		"orbit_full_rejects_companion_when_fusion_disabled",
 		not rig_full_max.add_weapon("wpn_fire_gourd", OrbitWeaponRig.MAX_WEAPON_TIER) and not rig_full_max.has_fusion("fusion_flame_sword_array"),
@@ -210,26 +211,27 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 	var cc: V2CombatController = p.v2_combat
 	check("realm_initial_one_slot", cc != null and cc.get_unlocked_slots() == 1 and cc.orbit_rig.get_unlocked_slots() == 1, "initial slots mismatch")
 	var table_ok := true
-	for pair in [[1, 1], [4, 1], [5, 2], [10, 2], [11, 3], [17, 3], [18, 4], [30, 4]]:
+	for pair in [[1, 1], [2, 1], [3, 2], [5, 2], [6, 3], [9, 3], [10, 4], [13, 4], [14, 5], [17, 5], [18, 6], [30, 6]]:
 		if cc.calc_unlocked_slots(int(pair[0])) != int(pair[1]):
 			table_ok = false
 	check("realm_level_table", table_ok, "realm slot table mismatch")
-	var info := cc.get_realm_info_for_level(4)
+	var info := cc.get_realm_info_for_level(2)
 	check(
-		"realm_info_lv4",
-		int(info.get("slots", 0)) == 1 and String(info.get("realm", "")) == "练气" and int(info.get("next_level", 0)) == 5 and String(info.get("next_realm", "")) == "筑基",
+		"realm_info_lv2",
+		int(info.get("slots", 0)) == 1 and String(info.get("realm", "")) == "练气" and int(info.get("next_level", 0)) == 3 and String(info.get("next_realm", "")) == "筑基",
 		str(info)
 	)
-	check("realm_next_unlock_initial", int(cc.get_next_slot_unlock_info().get("level", 0)) == 5, str(cc.get_next_slot_unlock_info()))
-	p.level = 5
-	p.leveled_up.emit(5)
+	check("realm_next_unlock_initial", int(cc.get_next_slot_unlock_info().get("level", 0)) == 3, str(cc.get_next_slot_unlock_info()))
+	p.level = 3
+	p.leveled_up.emit(3)
 	check("realm_player_signal_unlocks", cc.get_unlocked_slots() == 2 and cc.orbit_rig.get_unlocked_slots() == 2, "level signal did not sync slots")
-	check("realm_next_unlock_lv5", int(cc.get_next_slot_unlock_info().get("level", 0)) == 11, str(cc.get_next_slot_unlock_info()))
+	check("realm_next_unlock_lv3", int(cc.get_next_slot_unlock_info().get("level", 0)) == 6, str(cc.get_next_slot_unlock_info()))
 	cc.notify_elite_killed()
-	check("realm_one_elite_not_enough", cc.get_unlocked_slots() == 2, "one elite kill should not jump to 4")
+	check("realm_one_elite_not_enough", cc.get_unlocked_slots() == 2, "one elite kill should not jump to 6")
 	cc.notify_elite_killed()
-	check("realm_two_elites_unlock_four", cc.get_unlocked_slots() == 4 and cc.orbit_rig.get_unlocked_slots() == 4, "two elite kills should unlock all slots")
-	check("realm_next_unlock_empty", cc.get_next_slot_unlock_info().is_empty(), "next unlock should be empty at 4")
+	cc.notify_elite_killed()
+	check("realm_three_elites_unlock_six", cc.get_unlocked_slots() == 6 and cc.orbit_rig.get_unlocked_slots() == 6, "three elite kills should unlock all 6 slots")
+	check("realm_next_unlock_empty", cc.get_next_slot_unlock_info().is_empty(), "next unlock should be empty at 6")
 	p.queue_free()
 
 func _test_reaction_engine(loader: V2DataLoader) -> void:
@@ -668,7 +670,7 @@ func _test_t2b_pools_luck_and_shop(_loader: V2DataLoader) -> void:
 	var w_new_elem := cc.get_weapon_offer_weight("wpn_ice_mirror")
 	check(
 		"t2b_companion_weight_no_fusion_boost",
-		is_equal_approx(w_companion, w_new_elem),
+		w_companion > w_new_elem,
 		"companion=%.2f new_elem=%.2f" % [w_companion, w_new_elem]
 	)
 	check(
@@ -684,6 +686,7 @@ func _test_t2b_pools_luck_and_shop(_loader: V2DataLoader) -> void:
 	add_child(um)
 	um.reset_run_controls()
 	p2.v2_combat.orbit_rig.set_unlocked_slots(2)
+	p2.v2_combat.unlocked_weapon_slots = 2
 	check("t2b_no_breakthrough_flag_initially", not p2.v2_combat.should_offer_breakthrough_pick(), "should be false before realm unlock")
 	var saw_new := false
 	for _i in range(10):
@@ -695,9 +698,9 @@ func _test_t2b_pools_luck_and_shop(_loader: V2DataLoader) -> void:
 			break
 	check("t2b_free_slot_allows_new_weapon", saw_new, "free slot should offer unowned weapon")
 
-	p2.level = 5
-	p2.leveled_up.emit(5)
-	check("t2b_realm_breakthrough_enables_new_pick", p2.v2_combat.should_offer_breakthrough_pick(), "should be true on Lv5 unlock")
+	p2.level = 6
+	p2.leveled_up.emit(6)
+	check("t2b_realm_breakthrough_enables_new_pick", p2.v2_combat.should_offer_breakthrough_pick(), "should be true on Lv6 unlock")
 	var bt_choices := um.get_v2_level_choices(p2, 3)
 	var all_new := bt_choices.size() == 3
 	for c in bt_choices:
@@ -747,7 +750,7 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 	)
 	var imp_hp := float(loader.enemy_archetypes.get("enemy_swarm_imp", {}).get("base_hp", 0.0))
 	var golem_hp := float(loader.enemy_archetypes.get("enemy_bulwark_golem", {}).get("base_hp", 0.0))
-	check("t2c_enemy_hp_scaled_up", imp_hp >= 10.0 and golem_hp >= imp_hp * 8.0, "imp=%.1f golem=%.1f" % [imp_hp, golem_hp])
+	check("t2c_enemy_hp_scaled_up", imp_hp >= 10.0 and golem_hp >= imp_hp * 5.0, "imp=%.1f golem=%.1f" % [imp_hp, golem_hp])
 
 	var p := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
 	add_child(p)
@@ -852,7 +855,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	var sm0: Dictionary = d0.get("summary", {})
 	check(
 		"t2d_codex_counts",
-		(d0.get("reactions", []) as Array).size() == 5 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).is_empty() and (d0.get("realms", []) as Array).size() == 4 and (d0.get("items", []) as Array).size() == 16,
+		(d0.get("reactions", []) as Array).size() == 5 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).is_empty() and (d0.get("realms", []) as Array).size() == 6 and (d0.get("items", []) as Array).size() == 16,
 		str(sm0)
 	)
 	check("t2d_codex_initial_0_reactions", int(sm0.get("active_reaction_count", -1)) == 0, str(sm0))
@@ -1770,15 +1773,15 @@ func _test_batch8a_chest_never_empty() -> void:
 	add_child(um)
 	um.reset_run_controls()
 
-	cc.orbit_rig.set_unlocked_slots(4)
-	for wid in ["wpn_jade_sword", "wpn_thunder_talisman", "wpn_venom_banner", "wpn_jade_vase"]:
+	cc.orbit_rig.set_unlocked_slots(6)
+	for wid in ["wpn_jade_sword", "wpn_thunder_talisman", "wpn_venom_banner", "wpn_jade_vase", "wpn_fire_gourd", "wpn_ice_mirror"]:
 		for _i in range(OrbitWeaponRig.MAX_WEAPON_TIER):
 			cc.add_weapon(wid, 1)
-	var all_max := cc.orbit_rig.slots.size() == 4
+	var all_max := cc.orbit_rig.slots.size() == 6
 	for s in cc.orbit_rig.slots:
 		if bool(s["is_fusion"]) or int(s["tier"]) != OrbitWeaponRig.MAX_WEAPON_TIER:
 			all_max = false
-	_check("b8a_four_slots_all_lv8", all_max, str(cc.orbit_rig.slots))
+	_check("b8a_six_slots_all_lv8", all_max, str(cc.orbit_rig.slots))
 
 	var gold_before_chest: int = cc.run_gold
 	var roll_ok := true
@@ -2427,3 +2430,67 @@ func _test_flying_sword_dummy_and_debug_isolation() -> void:
 	dbg_scene.free()
 	ObjectPools.clear()
 	await get_tree().process_frame
+
+func _test_batch11_rebalance_6slots_and_maps(loader: V2DataLoader) -> void:
+	var rig_sword := HeroMotionRig.new()
+	add_child(rig_sword)
+	rig_sword.setup(loader.get_character("sword_immortal"))
+	var rig_gourd := HeroMotionRig.new()
+	add_child(rig_gourd)
+	rig_gourd.setup(loader.get_character("gourd_daoist"))
+	_check("b11_sword_immortal_floating_sword", rig_sword._has_floating_sword and not rig_gourd._has_floating_sword, "sword=%s gourd=%s" % [str(rig_sword._has_floating_sword), str(rig_gourd._has_floating_sword)])
+	rig_sword.free()
+	rig_gourd.free()
+
+	var jiangshi_hp := float(loader.enemy_archetypes.get("enemy_hopper_jiangshi", {}).get("base_hp", 999.0))
+	var ch4_cfg := loader.get_stage(4)
+	var ch4_hp_mult := float(ch4_cfg.get("hp_mult", 1.0))
+	var ch4_w1_scale := float(ch4_cfg.get("waves", [{}])[0].get("hp_scale", 1.0))
+	var ch4_w1_jiangshi := jiangshi_hp * ch4_hp_mult * ch4_w1_scale
+	_check("b11_enemy_hp_rebalance_no_bloat", jiangshi_hp <= 16.0 and ch4_w1_jiangshi <= 25.0, "jiangshi=%.1f ch4_w1=%.1f" % [jiangshi_hp, ch4_w1_jiangshi])
+
+	Stats.selected_character_id = "sword_immortal"
+	var p := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+	add_child(p)
+	p.v2_combat.orbit_rig.set_unlocked_slots(6)
+	p.v2_combat.unlocked_weapon_slots = 6
+	var um := UpgradeManager.new()
+	add_child(um)
+	var synergy_ok := true
+	var saw_pending_new := false
+	for _i in range(25):
+		var bundle := um.roll_v2_chest_bundle(p, true)
+		for r in (bundle.get("rewards", []) as Array):
+			if r is Dictionary and String((r as Dictionary).get("reward_kind", "")) == "pending_new_weapon":
+				saw_pending_new = true
+				var wid := String((r as Dictionary).get("weapon_id", ""))
+				var elem := String(loader.weapons_by_id.get(wid, {}).get("element", "none"))
+				if elem != "none" and p.v2_combat.get_weapon_reaction_synergies(wid).is_empty():
+					synergy_ok = false
+	_check("b11_chest_synergy_and_defer", saw_pending_new and synergy_ok, "saw_pending=%s synergy_ok=%s" % [str(saw_pending_new), str(synergy_ok)])
+
+	var gold_before := p.v2_combat.run_gold
+	var pending_reject := [{
+		"reward_kind": "pending_new_weapon",
+		"weapon_id": "wpn_fire_gourd",
+		"salvage_stones": 30,
+		"accepted": false,
+	}]
+	um.resolve_chest_pending_rewards(pending_reject, p)
+	_check("b11_chest_salvage_instead_of_equip", p.v2_combat.orbit_rig.get_weapon_tier("wpn_fire_gourd") == 0 and p.v2_combat.run_gold >= gold_before + 30, "tier=%d gold=%d->%d" % [p.v2_combat.orbit_rig.get_weapon_tier("wpn_fire_gourd"), gold_before, p.v2_combat.run_gold])
+	um.free()
+	p.free()
+
+	var cross_tex := MapRealmCatalog.load_tex_safe(String(MapRealmCatalog.get_realm("forest").get("road_cross_decal", "")))
+	var border_ok := cross_tex != null
+	for ch in [2, 3, 4]:
+		var am := ArenaMapController.new()
+		add_child(am)
+		var r_cfg := MapRealmCatalog.get_realm(MapRealmCatalog.resolve_realm_id({"id": ch}))
+		var empty_hazards: Array[Dictionary] = []
+		am.build_realm(r_cfg, Rect2(-2100, -2100, 4200, 4200), Vector2.ZERO, empty_hazards)
+		var cliff_body := am.get_node_or_null("BorderCliffColliders") as StaticBody2D
+		if cliff_body == null or cliff_body.collision_layer != 1 or cliff_body.get_child_count() != 4:
+			border_ok = false
+		am.free()
+	_check("b11_map_border_colliders_and_cross_decal", border_ok, "cross=%s" % [str(cross_tex != null)])

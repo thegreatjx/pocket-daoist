@@ -16,6 +16,7 @@ var is_game_over: bool = false
 var jars_broken_count: int = 0
 var _show_scheduled: bool = false
 var _current_upgrade_is_breakthrough: bool = false
+var _active_chest_rewards: Array = []
 
 func _ready() -> void:
 	add_to_group("game_manager")
@@ -197,10 +198,12 @@ func _show_next_modal() -> void:
 			if not GameFlow.request_upgrade():
 				return
 		pending_chests -= 1
-		var bundle: Dictionary = upgrade_mgr.roll_v2_chest_bundle(player)
+		var bundle: Dictionary = upgrade_mgr.roll_v2_chest_bundle(player, true)
 		var rewards: Array = bundle.get("rewards", [])
+		_active_chest_rewards = rewards
 		_refresh_hud_loadout()
-		chest_ui.show_rewards(rewards, int(bundle.get("stones", 0)), int(bundle.get("tier", 0)))
+		var v2_ref: V2CombatController = player.v2_combat if (player != null and "v2_combat" in player) else null
+		chest_ui.show_rewards(rewards, int(bundle.get("stones", 0)), int(bundle.get("tier", 0)), v2_ref)
 		return
 
 	if pending_level_ups > 0 and upgrade_ui != null:
@@ -300,6 +303,9 @@ func _on_skip_requested() -> void:
 		_finish_upgrade_queue()
 
 func _on_chest_closed() -> void:
+	if upgrade_mgr != null and not _active_chest_rewards.is_empty():
+		upgrade_mgr.resolve_chest_pending_rewards(_active_chest_rewards, player)
+	_active_chest_rewards.clear()
 	_refresh_hud_loadout()
 	if (pending_chests > 0 or pending_level_ups > 0) and not is_game_over:
 		_show_next_modal()

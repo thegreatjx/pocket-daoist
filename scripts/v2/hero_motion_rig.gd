@@ -2,6 +2,7 @@ class_name HeroMotionRig
 extends Node2D
 
 const TEX_FLYING_SWORD: Texture2D = preload("res://assets/v2/heroes/mount_jade_sword.png")
+const TEX_COMPANION_SWORD: Texture2D = preload("res://assets/v2/weapons/wpn_jade_sword.png")
 
 var _tex: Texture2D = null
 var _motion_mode: String = "hover_ride"
@@ -35,6 +36,8 @@ var _aim_dir: Vector2 = Vector2.RIGHT
 
 var _trail_puffs: Array[Dictionary] = []
 var _trail_spawn_acc: float = 0.0
+var _has_floating_sword: bool = false
+var _sword_pulse: float = 0.0
 
 func setup(cfg: Dictionary) -> void:
 	var sprite_path := str(cfg.get("sprite", ""))
@@ -42,6 +45,8 @@ func setup(cfg: Dictionary) -> void:
 		_tex = load(sprite_path) as Texture2D
 	_motion_mode = str(cfg.get("motion_mode", "hover_ride"))
 	_mount_type = str(cfg.get("mount_type", "none"))
+	_has_floating_sword = bool(cfg.get("floating_sword", false))
+	_sword_pulse = 0.0
 	var default_h := 86.0 if _motion_mode == "hover_ride" else 66.0
 	_draw_height = float(cfg.get("draw_height", default_h))
 	_run_anim_rate = clampf(float(cfg.get("anim_run_rate", 1.0)), 0.25, 4.0)
@@ -80,6 +85,7 @@ func _setup_animations(cfg: Dictionary) -> void:
 func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, aim_dir: Vector2 = Vector2.RIGHT) -> void:
 	var safe_delta: float = maxf(0.0, delta)
 	_time += safe_delta
+	_sword_pulse = maxf(0.0, _sword_pulse - safe_delta * 5.2)
 	_last_vel = velocity
 	_is_dashing = is_dashing
 	if aim_dir.length_squared() > 0.001:
@@ -232,6 +238,7 @@ func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, ai
 func trigger_attack(dir: Vector2 = Vector2.ZERO) -> void:
 	if dir.length_squared() > 0.001:
 		_aim_dir = dir.normalized()
+	_sword_pulse = 1.0
 	if _anim_attack != null:
 		_anim_attack.reset()
 		_attack_anim_timer = _anim_attack.duration
@@ -330,4 +337,19 @@ func _draw() -> void:
 			Vector2(eff_squash.x * render_fx, eff_squash.y)
 		)
 		draw_texture_rect(_tex, Rect2(-draw_w * 0.5, -draw_h, draw_w, draw_h), false, Color.WHITE)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+	if _has_floating_sword and TEX_COMPANION_SWORD != null:
+		var pulse_wave := sin(_sword_pulse * PI)
+		var hover_pos := Vector2(-render_fx * 30.0, _body_y - 66.0 + sin(_time * 3.4) * 4.5)
+		var lunge_pos := hover_pos + _aim_dir * (pulse_wave * 22.0)
+		var sw_sz := TEX_COMPANION_SWORD.get_size()
+		var sw_w := 46.0
+		var sw_h := sw_w * (sw_sz.y / maxf(1.0, sw_sz.x))
+		var base_rot := sin(_time * 2.4) * 0.09
+		var aim_rot := (_aim_dir.angle() + 0.68) if render_fx >= 0.0 else (_aim_dir.angle() + PI - 0.68)
+		var sw_rot := lerpf(base_rot, wrapf(aim_rot, -PI, PI), pulse_wave * 0.75)
+		draw_circle(lunge_pos, 13.0 + pulse_wave * 5.0, Color(0.26, 0.94, 0.82, 0.18 + pulse_wave * 0.20))
+		draw_set_transform(lunge_pos, sw_rot, Vector2(render_fx * (1.0 + pulse_wave * 0.14), 1.0 + pulse_wave * 0.08))
+		draw_texture_rect(TEX_COMPANION_SWORD, Rect2(-sw_w * 0.5, -sw_h * 0.5, sw_w, sw_h), false, Color(1.0, 1.0, 1.0, 0.96))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

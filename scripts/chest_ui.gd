@@ -2,6 +2,7 @@ extends CanvasLayer
 class_name ChestUI
 
 signal closed
+signal closed_with_rewards(rewards: Array)
 
 enum AnimState {
 	HIDDEN,
@@ -36,6 +37,8 @@ var _chest_tier: int = 1
 var _revealed_count: int = 0
 var _cards: Array[Control] = []
 var _card_tweens: Array[Tween] = []
+var _rewards_data: Array = []
+var _v2_ref: V2CombatController = null
 var _panel_tween: Tween = null
 var _chest_base_pos: Vector2 = Vector2.ZERO
 var _has_chest_base_pos: bool = false
@@ -162,7 +165,8 @@ func _kill_tweens() -> void:
 			tw.kill()
 	_card_tweens.clear()
 
-func show_rewards(rewards: Array, stones_gained: int = 0, chest_tier: int = 0) -> void:
+func show_rewards(rewards: Array, stones_gained: int = 0, chest_tier: int = 0, v2_ref: V2CombatController = null) -> void:
+	_v2_ref = v2_ref
 	var shown: Array = []
 	for item in rewards:
 		if item is Dictionary:
@@ -176,6 +180,7 @@ func show_rewards(rewards: Array, stones_gained: int = 0, chest_tier: int = 0) -
 			"icon": "res://assets/props/treasure_chest.png",
 		})
 
+	_rewards_data = shown
 	_kill_tweens()
 	for c in reward_box.get_children():
 		reward_box.remove_child(c)
@@ -208,8 +213,9 @@ func show_rewards(rewards: Array, stones_gained: int = 0, chest_tier: int = 0) -
 		_stone_banner.visible = _stones_target > 0
 		_stone_label.text = "灵石 +0"
 
-	for item in shown:
-		var card := _make_reward_card(item, shown.size())
+	for idx in range(shown.size()):
+		var item: Dictionary = shown[idx]
+		var card := _make_reward_card(item, shown.size(), idx)
 		card.visible = true
 		card.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		card.scale = Vector2(0.76, 0.76)
@@ -381,12 +387,13 @@ func _burst_fountain_wave(count: int) -> void:
 		return
 	_fx_layer.spawn_stone_fountain(_get_chest_center(), count, _chest_tier)
 
-func _make_reward_card(item: Dictionary, total_count: int) -> Control:
+func _make_reward_card(item: Dictionary, total_count: int, card_idx: int = 0) -> Control:
 	var is_evo: bool = bool(item.get("is_evo", false))
+	var is_pending_wpn: bool = String(item.get("reward_kind", "")) == "pending_new_weapon"
 	var card := PanelContainer.new()
 	card.clip_contents = true
 	var w := 420.0 if is_evo else (162.0 if total_count >= 5 else (238.0 if total_count >= 3 else 360.0))
-	var h := 196.0 if total_count >= 5 else 210.0
+	var h := 236.0 if is_pending_wpn else (196.0 if total_count >= 5 else 210.0)
 	card.custom_minimum_size = Vector2(w, h)
 	var card_bg := Color(1.0, 0.96, 0.86, 1.0) if is_evo else XianxiaUITheme.COL_PAPER_CARD
 	var card_border := Color(0.88, 0.34, 0.18, 1.0) if is_evo else XianxiaUITheme.COL_JADE
@@ -394,9 +401,10 @@ func _make_reward_card(item: Dictionary, total_count: int) -> Control:
 
 	var vb := VBoxContainer.new()
 	vb.alignment = BoxContainer.ALIGNMENT_CENTER
-	vb.add_theme_constant_override("separation", 6)
+	vb.add_theme_constant_override("separation", 5)
 	card.add_child(vb)
 
+	var tr: TextureRect = null
 	var icon_path := str(item.get("icon", ""))
 	if icon_path != "" and ResourceLoader.exists(icon_path):
 		var holder := CenterContainer.new()
@@ -406,9 +414,9 @@ func _make_reward_card(item: Dictionary, total_count: int) -> Control:
 			"panel",
 			XianxiaUITheme.make_flat_box(XianxiaUITheme.COL_PLATE_DARK, badge_border, 2, 8, 5)
 		)
-		var tr := TextureRect.new()
+		tr = TextureRect.new()
 		tr.texture = load(icon_path)
-		tr.custom_minimum_size = Vector2(46, 46)
+		tr.custom_minimum_size = Vector2(44, 44)
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		badge.add_child(tr)
@@ -421,7 +429,7 @@ func _make_reward_card(item: Dictionary, total_count: int) -> Control:
 	name_lbl.custom_minimum_size = Vector2(10, 0)
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_lbl.add_theme_font_size_override("font_size", 22 if is_evo else (17 if total_count >= 5 else 18))
+	name_lbl.add_theme_font_size_override("font_size", 22 if is_evo else (16 if total_count >= 5 else 18))
 	name_lbl.add_theme_color_override("font_color", XianxiaUITheme.COL_CINNABAR if is_evo else XianxiaUITheme.COL_INK)
 	vb.add_child(name_lbl)
 
@@ -431,7 +439,7 @@ func _make_reward_card(item: Dictionary, total_count: int) -> Control:
 	sub_lbl.custom_minimum_size = Vector2(10, 0)
 	sub_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sub_lbl.add_theme_font_size_override("font_size", 14)
+	sub_lbl.add_theme_font_size_override("font_size", 13 if total_count >= 5 else 14)
 	sub_lbl.add_theme_color_override("font_color", Color(0.68, 0.44, 0.10))
 	vb.add_child(sub_lbl)
 
@@ -441,11 +449,121 @@ func _make_reward_card(item: Dictionary, total_count: int) -> Control:
 	desc_lbl.custom_minimum_size = Vector2(10, 0)
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_font_size_override("font_size", 14 if total_count >= 5 else 16)
+	desc_lbl.add_theme_font_size_override("font_size", 12 if total_count >= 5 else 14)
 	desc_lbl.add_theme_color_override("font_color", XianxiaUITheme.COL_INK_MUTED)
 	vb.add_child(desc_lbl)
 
+	if is_pending_wpn:
+		var btn_row := HBoxContainer.new()
+		btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		btn_row.add_theme_constant_override("separation", 6)
+		vb.add_child(btn_row)
+
+		var alts: Array = item.get("alt_weapon_ids", [])
+		var swap_btn := Button.new()
+		swap_btn.text = "换一把"
+		swap_btn.focus_mode = Control.FOCUS_NONE
+		swap_btn.add_theme_font_size_override("font_size", 12 if total_count >= 5 else 13)
+		XianxiaUITheme.style_button(swap_btn, "primary")
+		swap_btn.visible = not alts.is_empty() and not bool(item.get("rerolled", false))
+		btn_row.add_child(swap_btn)
+
+		var salvage_val := int(item.get("salvage_stones", 30))
+		var toggle_btn := Button.new()
+		toggle_btn.text = "熔炼+%d" % salvage_val
+		toggle_btn.focus_mode = Control.FOCUS_NONE
+		toggle_btn.add_theme_font_size_override("font_size", 12 if total_count >= 5 else 13)
+		XianxiaUITheme.style_button(toggle_btn, "secondary")
+		btn_row.add_child(toggle_btn)
+
+		swap_btn.pressed.connect(func() -> void:
+			if anim_state != AnimState.READY:
+				return
+			_on_swap_pending_weapon(card_idx, tr, name_lbl, sub_lbl, desc_lbl, swap_btn)
+		)
+		toggle_btn.pressed.connect(func() -> void:
+			if anim_state != AnimState.READY:
+				return
+			_on_toggle_salvage_weapon(card_idx, card, sub_lbl, desc_lbl, toggle_btn, swap_btn)
+		)
+
 	return card
+
+func _on_swap_pending_weapon(
+	card_idx: int,
+	icon_rect: TextureRect,
+	name_lbl: Label,
+	sub_lbl: Label,
+	desc_lbl: Label,
+	swap_btn: Button
+) -> void:
+	if card_idx < 0 or card_idx >= _rewards_data.size() or _v2_ref == null or _v2_ref.loader == null:
+		return
+	var item: Dictionary = _rewards_data[card_idx]
+	var alts: Array = item.get("alt_weapon_ids", [])
+	if alts.is_empty() or bool(item.get("rerolled", false)):
+		return
+	var cur_wid := String(item.get("weapon_id", ""))
+	var next_wid := String(alts[0])
+	for cand in alts:
+		var cid := String(cand)
+		if cid != cur_wid and _v2_ref.orbit_rig != null and _v2_ref.orbit_rig.get_weapon_tier(cid) == 0:
+			next_wid = cid
+			break
+	if not _v2_ref.loader.weapons_by_id.has(next_wid):
+		return
+	var w: Dictionary = _v2_ref.loader.weapons_by_id[next_wid]
+	var elem := String(w.get("element", "none"))
+	var syns: Array[Dictionary] = _v2_ref.get_weapon_reaction_synergies(next_wid)
+	var syn_hint := "✦ 器道百搭 · 不占反应，高伤卷经验" if elem == "none" else (
+		"✦ 可与【%s】触发：%s（%s）" % [syns[0]["partner_name"], syns[0]["rx_name"], syns[0]["role_tag"]] if not syns.is_empty() else "✦ 可触发五行反应"
+	)
+	var elem_cn := String(UpgradeManager.V2_ELEM_NAMES.get(elem, "器道奇宝"))
+	item["weapon_id"] = next_wid
+	item["accepted"] = true
+	item["rerolled"] = true
+	item["title"] = String(w.get("name", next_wid))
+	item["subtitle"] = "天机赐宝 · 协同换宝"
+	item["desc"] = "%s · Lv.1\n%s" % [elem_cn, syn_hint]
+	item["icon"] = String(w.get("icon", ""))
+	if icon_rect != null and ResourceLoader.exists(String(item["icon"])):
+		icon_rect.texture = load(String(item["icon"]))
+	name_lbl.text = String(item["title"])
+	sub_lbl.text = String(item["subtitle"])
+	desc_lbl.text = String(item["desc"])
+	swap_btn.visible = false
+	Sfx.play_gem_pickup()
+
+func _on_toggle_salvage_weapon(
+	card_idx: int,
+	card: PanelContainer,
+	sub_lbl: Label,
+	desc_lbl: Label,
+	toggle_btn: Button,
+	swap_btn: Button
+) -> void:
+	if card_idx < 0 or card_idx >= _rewards_data.size():
+		return
+	var item: Dictionary = _rewards_data[card_idx]
+	var next_acc := not bool(item.get("accepted", true))
+	item["accepted"] = next_acc
+	var salvage_val := int(item.get("salvage_stones", 30))
+	if next_acc:
+		sub_lbl.text = "天机赐宝 · 协同新法宝"
+		desc_lbl.text = String(item.get("desc", ""))
+		toggle_btn.text = "熔炼+%d" % salvage_val
+		XianxiaUITheme.style_button(toggle_btn, "secondary")
+		card.modulate = Color.WHITE
+		var alts: Array = item.get("alt_weapon_ids", [])
+		swap_btn.visible = not alts.is_empty() and not bool(item.get("rerolled", false))
+	else:
+		sub_lbl.text = "已改为熔炼 · 不占法宝槽"
+		desc_lbl.text = "关闭宝箱时转化为 +%d 灵石 · 回复 15 气血" % salvage_val
+		toggle_btn.text = "改回装备"
+		XianxiaUITheme.style_button(toggle_btn, "dark_gold")
+		card.modulate = Color(0.95, 0.92, 0.86, 0.92)
+		swap_btn.visible = false
+	Sfx.play_gem_pickup()
 
 func _input(event: InputEvent) -> void:
 	if anim_state == AnimState.HIDDEN or not visible:
@@ -486,7 +604,9 @@ func _on_confirm_pressed() -> void:
 func _on_confirm() -> void:
 	if anim_state == AnimState.HIDDEN:
 		return
+	var out_rewards := _rewards_data.duplicate(true)
 	hide_panel()
+	emit_signal("closed_with_rewards", out_rewards)
 	emit_signal("closed")
 
 func hide_panel() -> void:

@@ -773,30 +773,30 @@ func debug_clear_enemies() -> void:
 func _scale_to_chapter(enemy: Node) -> void:
 	if enemy == null or not is_instance_valid(enemy) or enemy.is_boss:
 		return
-	var base_hp := 32.0
+	var base_hp := 16.0
 	match enemy.species:
-		1: base_hp = 24.0
-		2: base_hp = 44.0
-		3: base_hp = 30.0
-		4: base_hp = 58.0
-		5: base_hp = 22.0
-		6: base_hp = 46.0
-		7: base_hp = 26.0
-		8: base_hp = 34.0
-		9: base_hp = 60.0
-		10: base_hp = 48.0
-		11: base_hp = 150.0
-		12: base_hp = 220.0
-		13: base_hp = 17.0
-		14: base_hp = 13.0
-		15: base_hp = 19.0
-		16: base_hp = 23.0
-		17: base_hp = 14.0
-		18: base_hp = 67.0
-		19: base_hp = 30.0
-		20: base_hp = 25.0
-		21: base_hp = 15.0
-		22: base_hp = 99.0
+		1: base_hp = 12.0
+		2: base_hp = 30.0
+		3: base_hp = 14.0
+		4: base_hp = 64.0
+		5: base_hp = 11.0
+		6: base_hp = 32.0
+		7: base_hp = 12.0
+		8: base_hp = 14.0
+		9: base_hp = 26.0
+		10: base_hp = 28.0
+		11: base_hp = 58.0
+		12: base_hp = 74.0
+		13: base_hp = 14.0
+		14: base_hp = 11.0
+		15: base_hp = 15.0
+		16: base_hp = 15.0
+		17: base_hp = 12.0
+		18: base_hp = 51.0
+		19: base_hp = 17.0
+		20: base_hp = 16.0
+		21: base_hp = 13.0
+		22: base_hp = 61.0
 	var time_ramp := 1.0 + _stage_hp_ramp_per_min * (_chapter_elapsed / 60.0)
 	var hp := base_hp * _stage_hp_mult * _wave_hp_scale * time_ramp
 	if enemy.enemy_type == Enemy.Type.ELITE:
