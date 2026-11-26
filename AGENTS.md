@@ -32,3 +32,8 @@
   godot --headless --path . res://tests/v2_systems_test.tscn
   .\run.ps1 -Test -Fast
   ```
+
+## 6. 每次改动自动提交（Git Commit）
+- 每次任务改动完成并通过第 5 节巡检与测试后，自动执行 `git add` 与 `git commit`，不再等待额外口头催促。
+- 只暂存并提交本次任务涉及的改动文件及配套产物（如 `.import`、由本次改动触发更新的台账/看板文件）；若工作区已有与本次任务无关的未提交改动，必须保留在工作区，禁止混入同一次提交或擅自回滚。
+- 提交信息沿用仓库约定（`<type>(<scope>): <简体中文说明>`，如 `feat(art): ...`、`fix(v2): ...`、`docs: ...`）；除非用户明确要求，不自动执行 `git push`。
