@@ -36,10 +36,10 @@
     "mode": "preserved",
     "legacyMode": "preserved-source-canvas"
   },
-  "fps": 12.0,
-  "fpsRational": "12/1",
+  "fps": 24.0,
+  "fpsRational": "24/1",
   "frameCount": 23,
-  "durationSeconds": 1.9166666666666667,
+  "durationSeconds": 0.9583333333333334,
   "loop": true,
   "reviewStatus": "needs-visual-review",
   "hitEvents": [],
