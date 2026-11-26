@@ -198,15 +198,20 @@
       "chapter_id": "ch4_ice_realm",
       "name": "第三章 · 玄冰剑冢",
       "map_size": 4600,
-      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png",
-      "floor_tint": "#D8ECFA",
+      "floor_tile": "res://assets/v2/maps/ice/tile_ground_snow.png",
+      "floor_tint": "#DCE6F0",
       "center_anchor": {
-        "texture": "res://assets/v2/map_ch1/prop_center_stone_ring.png",
+        "texture": "res://assets/v2/maps/ice/decal_sword_array.png",
         "pos": [0, 0],
         "scale": 1.05
       },
-      "cover_pillars": [],
-      "landmarks": []
+      "cover_pillars": [
+        {"id": "ice_sword", "texture": "res://assets/v2/maps/ice/prop_giant_sword.png", "pos": [-900, -900], "trunk_radius": 34}
+      ],
+      "landmarks": [
+        {"id": "ice_pond", "name": "寒潭薄冰", "texture": "res://assets/v2/maps/ice/decal_frozen_pond.png", "pos": [-670, -670], "trigger_radius": 165},
+        {"id": "ice_stele", "name": "无主古剑碑", "texture": "res://assets/v2/maps/ice/prop_sword_stele.png", "pos": [155, -1120], "trigger_radius": 135}
+      ]
     }
   ]
 }

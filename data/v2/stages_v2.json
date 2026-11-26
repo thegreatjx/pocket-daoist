@@ -1989,7 +1989,7 @@
           "elite_every_sec": 0.0
         }
       ],
-      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png",
+      "floor_tile": "res://assets/v2/maps/ice/tile_ground_snow.png",
       "realm_id": "ice",
       "chapter_badge": "第三章"
     }

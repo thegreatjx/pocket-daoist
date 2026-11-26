@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 17:24:00）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 17:34:25）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -65,7 +65,7 @@
 - 第 1 关 `青岚问道坪` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/map_ch1/tile_grass_512.png` | 已配地标
 - 第 2 关 `青冥古林` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/maps/forest/tile_ground_grass.png` | 已配地标
 - 第 3 关 `赤炎丹谷` | Boss `成精八卦丹炉` (`cauldron`) | 地砖 `res://assets/v2/maps/volcano/tile_ground_basalt.png` | 已配地标
-- 第 4 关 `玄冰剑冢` | Boss `万剑魔尊` (`swordmaster`) | 地砖 `res://assets/terrain/tile_ch3_nether_altar_512.png` | 已配地标
+- 第 4 关 `玄冰剑冢` | Boss `万剑魔尊` (`swordmaster`) | 地砖 `res://assets/v2/maps/ice/tile_ground_snow.png` | 已配地标
 
 ### 怪物与精英精灵表（`scripts/enemy_visual.gd`）
 - `enemy_swarm_imp` (幽冥小鬼, species=1) -> `res://assets/sprites/anim_paper_doll_float.png`

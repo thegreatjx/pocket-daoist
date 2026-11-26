@@ -6,6 +6,7 @@ const FADE_ALPHA := 0.42
 var collider_radius: float = 30.0
 var _visual_w: float = 160.0
 var _visual_h: float = 180.0
+var _enable_occlusion_fade: bool = true
 var _sprite: Sprite2D = null
 var _player: Node2D = null
 var _target_alpha: float = 1.0
@@ -15,11 +16,24 @@ func _ready() -> void:
 	collision_mask = 0
 
 func setup(tex: Texture2D, base_scale: float, flip_h: bool, collider_radius_override: float = -1.0) -> void:
+	var tex_h := float(tex.get_height()) if tex != null else 256.0
+	setup_sized(tex, tex_h * base_scale, 0.25, true, flip_h, collider_radius_override)
+
+func setup_sized(
+	tex: Texture2D,
+	target_height: float,
+	coll_ratio: float = 0.25,
+	occlude: bool = true,
+	flip_h: bool = false,
+	collider_radius_override: float = -1.0
+) -> void:
 	var tex_w := float(tex.get_width()) if tex != null else 256.0
 	var tex_h := float(tex.get_height()) if tex != null else 256.0
+	var base_scale := target_height / maxf(tex_h, 1.0)
 	_visual_w = tex_w * base_scale
-	_visual_h = tex_h * base_scale
-	collider_radius = collider_radius_override if collider_radius_override > 0.0 else clampf(_visual_w * 0.21, 24.0, 44.0)
+	_visual_h = target_height
+	_enable_occlusion_fade = occlude
+	collider_radius = collider_radius_override if collider_radius_override > 0.0 else clampf(_visual_w * maxf(0.18, coll_ratio * 0.85), 24.0, 44.0)
 
 	_sprite = Sprite2D.new()
 	_sprite.texture = tex
@@ -38,7 +52,7 @@ func setup(tex: Texture2D, base_scale: float, flip_h: bool, collider_radius_over
 	queue_redraw()
 
 func _process(delta: float) -> void:
-	if _sprite == null:
+	if not _enable_occlusion_fade or _sprite == null:
 		return
 	if _player == null or not is_instance_valid(_player):
 		var tree := get_tree()
@@ -49,14 +63,14 @@ func _process(delta: float) -> void:
 		var g_pos := global_position
 		var behind := (
 			p_pos.y < g_pos.y - 6.0
-			and p_pos.y > g_pos.y - _visual_h * 0.95
-			and absf(p_pos.x - g_pos.x) < _visual_w * 0.44
+			and p_pos.y > g_pos.y - _visual_h * 0.90
+			and absf(p_pos.x - g_pos.x) < _visual_w * 0.42
 		)
 		_target_alpha = FADE_ALPHA if behind else 1.0
 	else:
 		_target_alpha = 1.0
 	if not is_equal_approx(_sprite.modulate.a, _target_alpha):
-		_sprite.modulate.a = move_toward(_sprite.modulate.a, _target_alpha, delta * 6.0)
+		_sprite.modulate.a = move_toward(_sprite.modulate.a, _target_alpha, delta * 5.5)
 
 func _draw() -> void:
 	draw_set_transform(Vector2(0.0, 4.0), 0.0, Vector2(1.15, 0.42))

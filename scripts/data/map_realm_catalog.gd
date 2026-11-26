@@ -9,84 +9,107 @@ const REALMS := {
 	},
 	"forest": {
 		"mode": "realm",
+		"seed": 1001,
 		"map_size": 4200.0,
 		"center_dojo_radius": 560.0,
-		"center_array_radius": 270.0,
-		"road_half_width": 105.0,
-		"obstacle_count": 22,
-		"obstacle_min_spacing": 260.0,
-		"seed": 202611261,
+		"center_array_size": 640.0,
+		"center_array_radius": 320.0,
+		"road_half_width": 85.0,
+		"road_end_radius": 1880.0,
+		"obstacle_count": 20,
+		"obstacle_min_spacing": 280.0,
 		"ground_tile": "res://assets/v2/maps/forest/tile_ground_grass.png",
-		"ground_tint": Color(0.92, 0.96, 0.90, 1.0),
+		"ground_tint": Color(0.94, 0.97, 0.92, 1.0),
 		"road_decal": "res://assets/v2/maps/forest/decal_road_stone.png",
 		"center_array": "res://assets/v2/maps/forest/decal_spirit_array.png",
 		"center_array_name": "聚灵大阵",
-		"props": [
-			"res://assets/v2/maps/forest/prop_ancient_pine.png",
-			"res://assets/v2/maps/forest/prop_jade_rock.png",
-			"res://assets/v2/maps/forest/prop_lantern_stele.png",
-		],
-		"prop_scales": [0.42, 0.34, 0.30],
 		"border": "res://assets/v2/maps/forest/border_cliff_trees.png",
-		"hazard_textures": {
-			"spring_pool": "res://assets/v2/maps/forest/decal_spring_pool.png",
-		},
-		"hazards": ["spring_pool"],
-		"particles": "petals_fireflies",
+		"border_step": 220.0,
+		"border_scale": 0.62,
+		"prop_pool": [
+			{"tex": "res://assets/v2/maps/forest/prop_ancient_pine.png", "weight": 0.60, "height": 230.0, "coll_ratio": 0.24, "occlude": true},
+			{"tex": "res://assets/v2/maps/forest/prop_jade_rock.png", "weight": 0.40, "height": 136.0, "coll_ratio": 0.30, "occlude": false},
+		],
+		"fixed_landmarks": [
+			{"type": "spring_pool", "pos": Vector2(720, -720), "radius": 155.0, "tex": "res://assets/v2/maps/forest/decal_spring_pool.png"},
+			{"type": "spring_pool", "pos": Vector2(-720, 720), "radius": 155.0, "tex": "res://assets/v2/maps/forest/decal_spring_pool.png"},
+			{"type": "prop_anchor", "pos": Vector2(-720, -720), "height": 175.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+			{"type": "prop_anchor", "pos": Vector2(720, 720), "height": 175.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+			{"type": "prop_anchor", "pos": Vector2(140, -1150), "height": 155.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+			{"type": "prop_anchor", "pos": Vector2(-140, 1150), "height": 155.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+			{"type": "prop_anchor", "pos": Vector2(1150, 140), "height": 155.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+			{"type": "prop_anchor", "pos": Vector2(-1150, -140), "height": 155.0, "tex": "res://assets/v2/maps/forest/prop_lantern_stele.png"},
+		],
+		"particles": "forest",
 	},
 	"volcano": {
 		"mode": "realm",
+		"seed": 2002,
 		"map_size": 4400.0,
-		"center_dojo_radius": 560.0,
-		"center_array_radius": 270.0,
-		"road_half_width": 105.0,
-		"obstacle_count": 24,
-		"obstacle_min_spacing": 260.0,
-		"seed": 202611262,
+		"center_dojo_radius": 580.0,
+		"center_array_size": 680.0,
+		"center_array_radius": 340.0,
+		"road_half_width": 88.0,
+		"road_end_radius": 1980.0,
+		"obstacle_count": 22,
+		"obstacle_min_spacing": 280.0,
 		"ground_tile": "res://assets/v2/maps/volcano/tile_ground_basalt.png",
 		"ground_tint": Color(0.95, 0.90, 0.88, 1.0),
 		"road_decal": "res://assets/v2/maps/volcano/decal_road_basalt.png",
 		"center_array": "res://assets/v2/maps/volcano/decal_alchemy_array.png",
 		"center_array_name": "八卦丹炉阵",
-		"props": [
-			"res://assets/v2/maps/volcano/prop_bronze_cauldron.png",
-			"res://assets/v2/maps/volcano/prop_danxia_pillar.png",
-		],
-		"prop_scales": [0.38, 0.44],
 		"border": "res://assets/v2/maps/volcano/border_volcano_cliff.png",
-		"hazard_textures": {
-			"lava_vent": "res://assets/v2/maps/volcano/decal_lava_vent.png",
-		},
-		"hazards": ["lava_vent"],
-		"particles": "embers",
+		"border_step": 225.0,
+		"border_scale": 0.64,
+		"prop_pool": [
+			{"tex": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png", "weight": 0.35, "height": 210.0, "coll_ratio": 0.25, "occlude": true},
+			{"tex": "res://assets/v2/maps/volcano/prop_danxia_pillar.png", "weight": 0.65, "height": 168.0, "coll_ratio": 0.26, "occlude": true},
+		],
+		"fixed_landmarks": [
+			{"type": "lava_vent", "pos": Vector2(680, -680), "radius": 145.0, "phase_offset": 0.0, "tex": "res://assets/v2/maps/volcano/decal_lava_vent.png"},
+			{"type": "lava_vent", "pos": Vector2(-680, 680), "radius": 145.0, "phase_offset": 0.0, "tex": "res://assets/v2/maps/volcano/decal_lava_vent.png"},
+			{"type": "lava_vent", "pos": Vector2(-680, -680), "radius": 145.0, "phase_offset": 5.5, "tex": "res://assets/v2/maps/volcano/decal_lava_vent.png"},
+			{"type": "lava_vent", "pos": Vector2(680, 680), "radius": 145.0, "phase_offset": 5.5, "tex": "res://assets/v2/maps/volcano/decal_lava_vent.png"},
+			{"type": "prop_anchor", "pos": Vector2(180, -1360), "height": 238.0, "tex": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png"},
+			{"type": "prop_anchor", "pos": Vector2(-180, 1360), "height": 238.0, "tex": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png"},
+			{"type": "prop_anchor", "pos": Vector2(1360, 180), "height": 238.0, "tex": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png"},
+			{"type": "prop_anchor", "pos": Vector2(-1360, -180), "height": 238.0, "tex": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png"},
+		],
+		"particles": "volcano",
 	},
 	"ice": {
 		"mode": "realm",
+		"seed": 3003,
 		"map_size": 4600.0,
-		"center_dojo_radius": 560.0,
-		"center_array_radius": 270.0,
-		"road_half_width": 105.0,
+		"center_dojo_radius": 600.0,
+		"center_array_size": 700.0,
+		"center_array_radius": 350.0,
+		"road_half_width": 90.0,
+		"road_end_radius": 2080.0,
 		"obstacle_count": 24,
-		"obstacle_min_spacing": 260.0,
-		"seed": 202611263,
-		"asset_root": "assets/v2/maps/ice",
-		"ground_tile_file": "tile_ground_snow.png",
-		"ground_tint": Color(0.92, 0.96, 1.0, 1.0),
-		"road_decal_file": "decal_road_ice.png",
-		"center_array_file": "decal_sword_array.png",
+		"obstacle_min_spacing": 290.0,
+		"ground_tile": "res://assets/v2/maps/ice/tile_ground_snow.png",
+		"ground_tint": Color(0.86, 0.90, 0.94, 1.0),
+		"road_decal": "res://assets/v2/maps/ice/decal_road_froststone.png",
+		"center_array": "res://assets/v2/maps/ice/decal_sword_array.png",
 		"center_array_name": "太极剑阵",
-		"prop_files": [
-			"prop_giant_sword.png",
-			"prop_ice_crystal.png",
+		"border": "res://assets/v2/maps/ice/border_ice_ridge.png",
+		"border_step": 230.0,
+		"border_scale": 0.65,
+		"prop_pool": [
+			{"tex": "res://assets/v2/maps/ice/prop_giant_sword.png", "weight": 1.0, "height": 220.0, "coll_ratio": 0.24, "occlude": true},
 		],
-		"prop_scales": [0.42, 0.36],
-		"border_file": "border_ice_cliff.png",
-		"hazard_files": {
-			"frozen_pond": "decal_frozen_pond.png",
-			"sword_stele": "prop_sword_stele.png",
-		},
-		"hazards": ["frozen_pond", "sword_stele"],
-		"particles": "snowflakes",
+		"fixed_landmarks": [
+			{"type": "frozen_pond", "pos": Vector2(670, -670), "radius": 165.0, "tex": "res://assets/v2/maps/ice/decal_frozen_pond.png"},
+			{"type": "frozen_pond", "pos": Vector2(-670, 670), "radius": 165.0, "tex": "res://assets/v2/maps/ice/decal_frozen_pond.png"},
+			{"type": "frozen_pond", "pos": Vector2(-670, -670), "radius": 165.0, "tex": "res://assets/v2/maps/ice/decal_frozen_pond.png"},
+			{"type": "frozen_pond", "pos": Vector2(670, 670), "radius": 165.0, "tex": "res://assets/v2/maps/ice/decal_frozen_pond.png"},
+			{"type": "sword_stele", "pos": Vector2(155, -1120), "radius": 135.0, "height": 220.0, "tex": "res://assets/v2/maps/ice/prop_sword_stele.png"},
+			{"type": "sword_stele", "pos": Vector2(-155, 1120), "radius": 135.0, "height": 220.0, "tex": "res://assets/v2/maps/ice/prop_sword_stele.png"},
+			{"type": "sword_stele", "pos": Vector2(1120, 155), "radius": 135.0, "height": 220.0, "tex": "res://assets/v2/maps/ice/prop_sword_stele.png"},
+			{"type": "sword_stele", "pos": Vector2(-1120, -155), "radius": 135.0, "height": 220.0, "tex": "res://assets/v2/maps/ice/prop_sword_stele.png"},
+		],
+		"particles": "ice",
 	},
 }
 
@@ -107,121 +130,30 @@ static func get_realm(realm_id: String) -> Dictionary:
 		return (REALMS[realm_id] as Dictionary).duplicate(true)
 	return (REALMS["tutorial"] as Dictionary).duplicate(true)
 
+static func load_tex_safe(path: String) -> Texture2D:
+	if path.is_empty():
+		return null
+	if _tex_cache.has(path):
+		return _tex_cache[path] as Texture2D
+	if ResourceLoader.exists(path):
+		var res := load(path)
+		if res is Texture2D:
+			_tex_cache[path] = res
+			return res as Texture2D
+	return null
+
 static func load_realm_texture(realm_cfg: Dictionary, slot: String, index: int = 0, subkey: String = "") -> Texture2D:
-	var path := _resolve_path(realm_cfg, slot, index, subkey)
-	if not path.is_empty():
-		if _tex_cache.has(path):
-			return _tex_cache[path] as Texture2D
-		if ResourceLoader.exists(path):
-			var loaded := load(path) as Texture2D
-			if loaded != null:
-				_tex_cache[path] = loaded
-				return loaded
-	var cache_key := "proc:%s:%s:%d:%s" % [String(realm_cfg.get("particles", "ice")), slot, index, subkey]
-	if _tex_cache.has(cache_key):
-		return _tex_cache[cache_key] as Texture2D
-	var proc := _build_fallback_texture(slot, index, subkey)
-	_tex_cache[cache_key] = proc
-	return proc
-
-static func _resolve_path(realm_cfg: Dictionary, slot: String, index: int, subkey: String) -> String:
-	var asset_root := String(realm_cfg.get("asset_root", ""))
+	var path := ""
 	match slot:
-		"ground_tile":
-			var p := String(realm_cfg.get("ground_tile", ""))
-			if p.is_empty() and not asset_root.is_empty():
-				p = "res://" + asset_root + "/" + String(realm_cfg.get("ground_tile_file", ""))
-			return p
-		"road_decal":
-			var p := String(realm_cfg.get("road_decal", ""))
-			if p.is_empty() and not asset_root.is_empty():
-				p = "res://" + asset_root + "/" + String(realm_cfg.get("road_decal_file", ""))
-			return p
-		"center_array":
-			var p := String(realm_cfg.get("center_array", ""))
-			if p.is_empty() and not asset_root.is_empty():
-				p = "res://" + asset_root + "/" + String(realm_cfg.get("center_array_file", ""))
-			return p
-		"border":
-			var p := String(realm_cfg.get("border", ""))
-			if p.is_empty() and not asset_root.is_empty():
-				p = "res://" + asset_root + "/" + String(realm_cfg.get("border_file", ""))
-			return p
+		"ground_tile", "road_decal", "center_array", "border":
+			path = String(realm_cfg.get(slot, ""))
 		"prop":
-			var props: Array = realm_cfg.get("props", [])
-			if index >= 0 and index < props.size():
-				return String(props[index])
-			var files: Array = realm_cfg.get("prop_files", [])
-			if not asset_root.is_empty() and index >= 0 and index < files.size():
-				return "res://" + asset_root + "/" + String(files[index])
-			return ""
+			var pool: Array = realm_cfg.get("prop_pool", [])
+			if index >= 0 and index < pool.size():
+				path = String((pool[index] as Dictionary).get("tex", ""))
 		"hazard":
-			var hmap: Dictionary = realm_cfg.get("hazard_textures", {})
-			if hmap.has(subkey):
-				return String(hmap[subkey])
-			var hfiles: Dictionary = realm_cfg.get("hazard_files", {})
-			if not asset_root.is_empty() and hfiles.has(subkey):
-				return "res://" + asset_root + "/" + String(hfiles[subkey])
-			return ""
-	return ""
-
-static func _build_fallback_texture(slot: String, index: int, subkey: String) -> Texture2D:
-	var sz := 256
-	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
-	var c := Vector2(sz * 0.5, sz * 0.5)
-	if slot == "ground_tile":
-		img.fill(Color(0.24, 0.31, 0.39, 1.0))
-		for y in range(sz):
-			for x in range(sz):
-				var wave := sin(float(x) * 0.06) * cos(float(y) * 0.06) * 0.04
-				var speck := fmod(float(x * 73 + y * 139), 29.0)
-				var lum := 0.25 + wave + (0.03 if speck < 2.0 else 0.0)
-				img.set_pixel(x, y, Color(lum * 0.85, lum * 1.05, lum * 1.28, 1.0))
-		return ImageTexture.create_from_image(img)
-
-	img.fill(Color(0, 0, 0, 0))
-	match slot:
-		"road_decal":
-			for y in range(sz):
-				for x in range(sz):
-					var dx := absf(float(x) - c.x)
-					var dy := absf(float(y) - c.y)
-					if (dx < 104.0 and dy < 66.0) or (dy < 104.0 and dx < 66.0):
-						var seam := (int(x) % 44 < 3) or (int(y) % 44 < 3)
-						var col := Color(0.32, 0.42, 0.52, 0.92) if seam else Color(0.56, 0.68, 0.78, 0.92)
-						img.set_pixel(x, y, col)
-		"center_array":
-			for y in range(sz):
-				for x in range(sz):
-					var d := Vector2(x, y).distance_to(c)
-					if d <= 118.0:
-						var ring := (d >= 104.0) or (d >= 66.0 and d <= 74.0) or (d <= 26.0)
-						var col := Color(0.62, 0.88, 0.98, 0.95) if ring else Color(0.20, 0.32, 0.44, 0.86)
-						img.set_pixel(x, y, col)
-		"hazard":
-			if subkey == "frozen_pond":
-				for y in range(sz):
-					for x in range(sz):
-						var d := Vector2(x, y).distance_to(c)
-						if d <= 110.0:
-							var rim := d >= 96.0
-							var col := Color(0.74, 0.92, 0.99, 0.85) if rim else Color(0.44, 0.76, 0.94, 0.72)
-							img.set_pixel(x, y, col)
-			else:
-				_draw_rect_box(img, Rect2i(92, 32, 72, 204), Color(0.30, 0.44, 0.56, 1.0), Color(0.75, 0.92, 1.0, 1.0))
-				_draw_rect_box(img, Rect2i(118, 60, 20, 110), Color(0.95, 0.84, 0.44, 1.0), Color(0.95, 0.84, 0.44, 1.0))
-		"border":
-			_draw_rect_box(img, Rect2i(18, 72, 220, 168), Color(0.26, 0.38, 0.48, 1.0), Color(0.72, 0.88, 0.98, 1.0))
-		_:
-			if index % 2 == 0:
-				_draw_rect_box(img, Rect2i(108, 22, 40, 212), Color(0.44, 0.56, 0.68, 1.0), Color(0.84, 0.94, 1.0, 1.0))
-				_draw_rect_box(img, Rect2i(76, 70, 104, 22), Color(0.78, 0.66, 0.34, 1.0), Color(0.96, 0.86, 0.52, 1.0))
-			else:
-				_draw_rect_box(img, Rect2i(72, 48, 112, 188), Color(0.50, 0.82, 0.96, 0.94), Color(0.86, 0.97, 1.0, 1.0))
-	return ImageTexture.create_from_image(img)
-
-static func _draw_rect_box(img: Image, rect: Rect2i, fill_col: Color, border_col: Color) -> void:
-	for y in range(maxi(0, rect.position.y), mini(img.get_height(), rect.end.y)):
-		for x in range(maxi(0, rect.position.x), mini(img.get_width(), rect.end.x)):
-			var is_border := x <= rect.position.x + 2 or x >= rect.end.x - 3 or y <= rect.position.y + 2 or y >= rect.end.y - 3
-			img.set_pixel(x, y, border_col if is_border else fill_col)
+			for lm in realm_cfg.get("fixed_landmarks", []):
+				if String((lm as Dictionary).get("type", "")) == subkey:
+					path = String((lm as Dictionary).get("tex", ""))
+					break
+	return load_tex_safe(path)

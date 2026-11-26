@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 17:24:00",
-    "active_media_count": 220,
-    "used_media_count": 213,
+    "generated_at": "2026-11-26 17:34:25",
+    "active_media_count": 227,
+    "used_media_count": 220,
     "orphan_media_count": 7,
     "legacy_count": 50,
-    "usage_rate_pct": 96.8,
+    "usage_rate_pct": 96.9,
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 2,
@@ -606,7 +606,7 @@
       "boss_type": "swordmaster",
       "boss_hp": 28000.0,
       "boss_sprite": "",
-      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png",
+      "floor_tile": "res://assets/v2/maps/ice/tile_ground_snow.png",
       "palette": {
         "ground": "#364654",
         "tint": "#7dd3fc"
@@ -622,9 +622,20 @@
       "map_arena": {
         "configured": true,
         "chapter_name": "第三章 · 玄冰剑冢",
-        "center_anchor": "res://assets/v2/map_ch1/prop_center_stone_ring.png",
-        "cover_count": 0,
-        "landmarks": []
+        "center_anchor": "res://assets/v2/maps/ice/decal_sword_array.png",
+        "cover_count": 1,
+        "landmarks": [
+          {
+            "id": "ice_pond",
+            "name": "寒潭薄冰",
+            "texture": "res://assets/v2/maps/ice/decal_frozen_pond.png"
+          },
+          {
+            "id": "ice_stele",
+            "name": "无主古剑碑",
+            "texture": "res://assets/v2/maps/ice/prop_sword_stele.png"
+          }
+        ]
       },
       "wave_count": 10,
       "events_count": 4,
@@ -6626,8 +6637,6 @@
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
-        "data/v2/map_arena_v2.json",
-        "data/v2/stages_v2.json",
         "scripts/background.gd"
       ],
       "status": "used",
@@ -7654,6 +7663,152 @@
       "is_image": true,
       "is_audio": false,
       "size_bytes": 228018,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "data/v2/stages_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "tile"
+    },
+    {
+      "path": "assets/v2/maps/ice/border_ice_ridge.png",
+      "res_path": "res://assets/v2/maps/ice/border_ice_ridge.png",
+      "name": "border_ice_ridge.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 144975,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "border"
+    },
+    {
+      "path": "assets/v2/maps/ice/decal_frozen_pond.png",
+      "res_path": "res://assets/v2/maps/ice/decal_frozen_pond.png",
+      "name": "decal_frozen_pond.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 308160,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/ice/decal_road_froststone.png",
+      "res_path": "res://assets/v2/maps/ice/decal_road_froststone.png",
+      "name": "decal_road_froststone.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 324414,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/ice/decal_sword_array.png",
+      "res_path": "res://assets/v2/maps/ice/decal_sword_array.png",
+      "name": "decal_sword_array.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 411918,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/ice/prop_giant_sword.png",
+      "res_path": "res://assets/v2/maps/ice/prop_giant_sword.png",
+      "name": "prop_giant_sword.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 197211,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/ice/prop_sword_stele.png",
+      "res_path": "res://assets/v2/maps/ice/prop_sword_stele.png",
+      "name": "prop_sword_stele.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 171109,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/ice/tile_ground_snow.png",
+      "res_path": "res://assets/v2/maps/ice/tile_ground_snow.png",
+      "name": "tile_ground_snow.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 306513,
       "width": 512,
       "height": 512,
       "duration_sec": null,

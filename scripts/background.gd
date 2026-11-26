@@ -226,46 +226,46 @@ func _apply_realm_chapter(realm_id: String, realm_cfg: Dictionary) -> void:
 
 func _build_realm_roads(map_sz: float, realm_cfg: Dictionary) -> void:
 	_road_decals.clear()
-	var center_r := float(realm_cfg.get("center_array_radius", 270.0))
-	var half_span := map_sz * 0.5 - 210.0
-	var step := 165.0
+	var arr_size := float(realm_cfg.get("center_array_size", 640.0))
+	var start_r := arr_size * 0.52
+	var end_r := float(realm_cfg.get("road_end_radius", map_sz * 0.5 - 220.0))
+	var step := 135.0
+	var tex_w := float(_road_decal_tex.get_width()) if _road_decal_tex != null else 512.0
+	var base_sc := 165.0 / maxf(1.0, tex_w)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(realm_cfg.get("seed", 20261126)) + 17
 	var dirs := [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
 	for d in dirs:
-		var dist := center_r + 35.0
-		while dist <= half_span:
-			var jitter_rot := rng.randf_range(-0.07, 0.07)
+		var perp := Vector2(-d.y, d.x)
+		var dist := start_r
+		while dist < end_r:
+			var jitter_rot := rng.randf_range(-0.18, 0.18)
 			var base_rot := 0.0 if absf(d.y) > 0.5 else PI * 0.5
 			_road_decals.append({
-				"pos": SPAWN_CENTER + d * dist,
+				"pos": SPAWN_CENTER + d * dist + perp * rng.randf_range(-14.0, 14.0),
 				"rot": base_rot + jitter_rot,
-				"scale": rng.randf_range(0.42, 0.48),
+				"scale": base_sc * rng.randf_range(0.92, 1.08),
+				"flip_h": rng.randf() < 0.5,
 			})
 			dist += step
 
-func _build_realm_hazards(realm_id: String, map_sz: float, realm_cfg: Dictionary) -> void:
+func _build_realm_hazards(_realm_id: String, _map_sz: float, realm_cfg: Dictionary) -> void:
 	_hazard_sites.clear()
-	var mid_d := map_sz * 0.205
-	var offsets := [
-		Vector2(-mid_d, -mid_d),
-		Vector2(mid_d, -mid_d),
-		Vector2(-mid_d, mid_d),
-		Vector2(mid_d, mid_d),
-	]
-	for i in range(offsets.size()):
-		var htype := "spring_pool"
-		if realm_id == "volcano":
-			htype = "lava_vent"
-		elif realm_id == "ice":
-			htype = "frozen_pond" if (i == 0 or i == 3) else "sword_stele"
-		var rad := 155.0 if htype == "lava_vent" else (130.0 if htype == "sword_stele" else 160.0)
-		var tex := MapRealmCatalog.load_realm_texture(realm_cfg, "hazard", 0, htype)
+	var fixed: Array = realm_cfg.get("fixed_landmarks", [])
+	for i in range(fixed.size()):
+		var item: Dictionary = fixed[i]
+		var htype := String(item.get("type", ""))
+		var rel_pos: Vector2 = item.get("pos", Vector2.ZERO)
+		var tex_path := String(item.get("tex", ""))
+		var tex := MapRealmCatalog.load_tex_safe(tex_path)
 		_hazard_sites.append({
 			"id": "%s_%d" % [htype, i],
 			"type": htype,
-			"pos": SPAWN_CENTER + offsets[i],
-			"radius": rad,
+			"pos": SPAWN_CENTER + rel_pos,
+			"radius": float(item.get("radius", 150.0)),
+			"height": float(item.get("height", 180.0)),
+			"phase_offset": float(item.get("phase_offset", 0.0)),
+			"tex_path": tex_path,
 			"tex": tex,
 		})
 
@@ -573,24 +573,26 @@ func _draw_realm_decals(canvas: Node2D) -> void:
 			var pos: Vector2 = stamp["pos"]
 			var sc: float = float(stamp["scale"])
 			var rot: float = float(stamp["rot"])
+			var flip_x := bool(stamp.get("flip_h", false))
 			var sz := r_sz * sc
-			canvas.draw_set_transform(pos, rot, Vector2.ONE)
+			canvas.draw_set_transform(pos, rot, Vector2(-1.0 if flip_x else 1.0, 1.0))
 			canvas.draw_texture_rect(_road_decal_tex, Rect2(-sz * 0.5, sz), false, Color(0.95, 0.95, 0.95, 0.92))
 		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if _center_array_tex != null:
-		var arr_r := float(_realm_cfg.get("center_array_radius", 270.0))
-		var arr_sz := Vector2(arr_r * 2.0, arr_r * 2.0)
-		canvas.draw_texture_rect(_center_array_tex, Rect2(SPAWN_CENTER - arr_sz * 0.5, arr_sz), false, Color(1.0, 1.0, 1.0, 0.94))
+		var arr_sz_px := float(_realm_cfg.get("center_array_size", 640.0))
+		var arr_sz := Vector2(arr_sz_px, arr_sz_px)
+		canvas.draw_texture_rect(_center_array_tex, Rect2(SPAWN_CENTER - arr_sz * 0.5, arr_sz), false, Color(1.0, 1.0, 1.0, 0.90))
 
 	for h in _hazard_sites:
-		if String(h.get("type", "")) == "sword_stele":
+		var ht := String(h.get("type", ""))
+		if ht == "sword_stele" or ht == "prop_anchor":
 			continue
 		var tex: Texture2D = h.get("tex", null) as Texture2D
 		if tex == null:
 			continue
 		var rad := float(h.get("radius", 155.0))
-		var h_sz := Vector2(rad * 2.05, rad * 2.05)
+		var h_sz := Vector2(rad * 2.35, rad * 2.35)
 		canvas.draw_texture_rect(tex, Rect2((h["pos"] as Vector2) - h_sz * 0.5, h_sz), false, Color(1.0, 1.0, 1.0, 0.94))
 
 func _draw_roads_and_landmarks(vis: Rect2) -> void:

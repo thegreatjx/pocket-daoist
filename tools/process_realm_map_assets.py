@@ -6,7 +6,9 @@ from PIL import Image
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FOREST_SRC = r"C:\Users\jiang\Pictures\百宝\秘境 1：青冥古林"
 VOLCANO_SRC = r"C:\Users\jiang\Pictures\百宝\秘境 2：赤炎丹谷"
+ICE_SRC = r"C:\Users\jiang\Pictures\百宝\秘境 3：玄冰剑冢"
 CHECK_SHEET = r"C:\Users\jiang\.gemini\antigravity\brain\199bd3ce-222c-4710-9224-c90982285b91\scratch\realm_cutouts_check.png"
+ICE_CHECK_SHEET = r"C:\Users\jiang\.gemini\antigravity\brain\199bd3ce-222c-4710-9224-c90982285b91\scratch\realm_ice_check.png"
 
 
 def _sample_corner_bg(rgb: np.ndarray) -> np.ndarray:
@@ -237,10 +239,12 @@ def build_contact_sheet(paths: list[str], out_path: str) -> None:
 def main() -> None:
     forest_dst = os.path.join(PROJECT_ROOT, "assets", "v2", "maps", "forest")
     volcano_dst = os.path.join(PROJECT_ROOT, "assets", "v2", "maps", "volcano")
+    ice_dst = os.path.join(PROJECT_ROOT, "assets", "v2", "maps", "ice")
 
-    # Forest tiles & decals & props
+    # Forest, Volcano & Ice tiles
     process_seamless_tile(os.path.join(FOREST_SRC, "L1tile_ground_grass.jpg"), os.path.join(forest_dst, "tile_ground_grass.png"))
     process_seamless_tile(os.path.join(VOLCANO_SRC, "tile_ground_basalt.jpg"), os.path.join(volcano_dst, "tile_ground_basalt.png"))
+    process_seamless_tile(os.path.join(ICE_SRC, "Gemini_Generated_Image_h7s5yh7s5yh7s5yh.jpg"), os.path.join(ice_dst, "tile_ground_snow.png"))
 
     cutout_jobs = [
         # (src_path, dst_path, mode, anchor, kwargs)
@@ -258,21 +262,32 @@ def main() -> None:
         (os.path.join(VOLCANO_SRC, "rop_bronze_cauldron.jpg"), os.path.join(volcano_dst, "prop_bronze_cauldron.png"), "magenta", "bottom", {"fringe_radius": 5}),
         (os.path.join(VOLCANO_SRC, "Gemini_Generated_Image_24rvee24rvee24rv.jpg"), os.path.join(volcano_dst, "prop_danxia_pillar.png"), "blue", "bottom", {"fringe_radius": 5, "hard_dist": 72.0, "hard_tint": 24.0}),
         (os.path.join(VOLCANO_SRC, "border_volcano_cliff.jpg"), os.path.join(volcano_dst, "border_volcano_cliff.png"), "blue", "bottom", {"fringe_radius": 5, "hard_dist": 60.0, "hard_tint": 22.0}),
+
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_u6i627u6i627u6i6.jpg"), os.path.join(ice_dst, "decal_road_froststone.png"), "magenta", "center", {"fringe_radius": 5}),
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_3ghhx03ghhx03ghh.jpg"), os.path.join(ice_dst, "decal_sword_array.png"), "magenta", "center", {"fringe_radius": 5}),
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_mavlu5mavlu5mavl.jpg"), os.path.join(ice_dst, "decal_frozen_pond.png"), "magenta", "center", {"fringe_radius": 5}),
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_h0i85ph0i85ph0i8.jpg"), os.path.join(ice_dst, "prop_giant_sword.png"), "magenta", "bottom", {"fringe_radius": 5}),
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_zcw7emzcw7emzcw7.jpg"), os.path.join(ice_dst, "prop_sword_stele.png"), "magenta", "bottom", {"fringe_radius": 5}),
+        (os.path.join(ICE_SRC, "Gemini_Generated_Image_sbwxm7sbwxm7sbwx.jpg"), os.path.join(ice_dst, "border_ice_ridge.png"), "magenta", "bottom", {"fringe_radius": 5}),
     ]
 
     generated: list[str] = [
         os.path.join(forest_dst, "tile_ground_grass.png"),
         os.path.join(volcano_dst, "tile_ground_basalt.png"),
     ]
+    ice_generated: list[str] = [os.path.join(ice_dst, "tile_ground_snow.png")]
     for src, dst, mode, anchor, kw in cutout_jobs:
         rgb = np.array(Image.open(src).convert("RGB"), dtype=np.uint8)
         rgba = key_white_watercolor(rgb) if mode == "white" else key_chroma_4pass(rgb, mode, **kw)
         save_fitted_rgba(rgba, dst, target_size=512, anchor=anchor)
         generated.append(dst)
+        if dst.startswith(ice_dst):
+            ice_generated.append(dst)
         print(f"Processed {os.path.basename(dst)}")
 
     build_contact_sheet(generated, CHECK_SHEET)
-    print(f"Generated {len(generated)} assets and contact sheet -> {CHECK_SHEET}")
+    build_contact_sheet(ice_generated, ICE_CHECK_SHEET)
+    print(f"Generated {len(generated)} assets and ice contact sheet -> {ICE_CHECK_SHEET}")
 
 
 if __name__ == "__main__":

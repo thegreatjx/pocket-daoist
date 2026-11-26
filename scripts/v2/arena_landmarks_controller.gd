@@ -13,13 +13,13 @@ const ARRAY_TRIGGER_RADIUS := 145.0
 const ARRAY_CHARGE_SEC := 2.5
 const ARRAY_BUFF_SEC := 8.0
 
-const LAVA_IDLE_SEC := 7.3
+const LAVA_IDLE_SEC := 8.3
 const LAVA_WARN_SEC := 1.5
 const LAVA_ERUPT_SEC := 1.2
 const STELE_CHARGE_SEC := 1.2
 const STELE_COOLDOWN_SEC := 25.0
-const STELE_AWAKEN_RADIUS := 130.0
-const STELE_SEARCH_RADIUS := 560.0
+const STELE_AWAKEN_RADIUS := 135.0
+const STELE_SEARCH_RADIUS := 680.0
 
 class DemonSealingStele:
 	extends Node2D
@@ -69,6 +69,7 @@ var _spring_heal_timer: float = 0.0
 var _ice_aura_cd_by_enemy: Dictionary = {}
 var _ice_prune_timer: float = 0.0
 var _current_wave: int = 1
+var _active_sword_bolts: Array[Dictionary] = []
 
 var spirit_arrays: Array[Dictionary] = []
 var demon_steles: Array[Dictionary] = []
@@ -114,6 +115,8 @@ func apply_realm(realm_id: String, realm_cfg: Dictionary, center: Vector2, hazar
 	for i in range(hazard_sites.size()):
 		var site: Dictionary = hazard_sites[i]
 		var htype := String(site.get("type", ""))
+		if htype == "prop_anchor":
+			continue
 		var entry := {
 			"id": String(site.get("id", "hz_%d" % i)),
 			"type": htype,
@@ -121,7 +124,7 @@ func apply_realm(realm_id: String, realm_cfg: Dictionary, center: Vector2, hazar
 			"radius": float(site.get("radius", 155.0)),
 			"tick_timer": 0.0,
 			"vent_state": VentState.IDLE,
-			"vent_timer": fmod(float(i) * 2.5, LAVA_IDLE_SEC),
+			"vent_timer": fmod(float(site.get("phase_offset", 0.0)), LAVA_IDLE_SEC),
 			"erupt_hit_ids": {},
 			"erupt_hit_player": false,
 			"stele_state": SteleState.READY,
@@ -129,6 +132,7 @@ func apply_realm(realm_id: String, realm_cfg: Dictionary, center: Vector2, hazar
 			"stele_cd": 0.0,
 		}
 		_hazards.append(entry)
+	_active_sword_bolts.clear()
 	queue_redraw()
 
 func has_active_spirit_array() -> bool:
@@ -274,6 +278,11 @@ func _step_realm_process(delta: float) -> void:
 	if v2 != null:
 		v2.set_arena_bonuses(bonuses)
 
+	for i in range(_active_sword_bolts.size() - 1, -1, -1):
+		_active_sword_bolts[i]["life"] = float(_active_sword_bolts[i]["life"]) - delta
+		if float(_active_sword_bolts[i]["life"]) <= 0.0:
+			_active_sword_bolts.remove_at(i)
+
 	_ice_prune_timer += delta
 	if _ice_prune_timer >= 3.0:
 		_ice_prune_timer = 0.0
@@ -392,10 +401,14 @@ func _fire_sword_stele_salvo(origin: Vector2, v2: V2CombatController) -> void:
 	var candidates := _query_enemies(origin, STELE_SEARCH_RADIUS)
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a: Node2D, b: Node2D) -> bool:
-			var af := bool(a.is_frozen()) if a.has_method("is_frozen") else false
-			var bf := bool(b.is_frozen()) if b.has_method("is_frozen") else false
-			if af != bf:
-				return af
+			var a_frozen := bool(a.is_frozen()) if a.has_method("is_frozen") else false
+			var b_frozen := bool(b.is_frozen()) if b.has_method("is_frozen") else false
+			var a_sh := float(a.get("current_shield")) if "current_shield" in a else 0.0
+			var b_sh := float(b.get("current_shield")) if "current_shield" in b else 0.0
+			var a_prio := (2 if a_frozen else 0) + (1 if a_sh > 0.0 else 0)
+			var b_prio := (2 if b_frozen else 0) + (1 if b_sh > 0.0 else 0)
+			if a_prio != b_prio:
+				return a_prio > b_prio
 			return a.global_position.distance_squared_to(origin) < b.global_position.distance_squared_to(origin)
 		)
 	var parent_n := get_parent()
@@ -404,6 +417,7 @@ func _fire_sword_stele_salvo(origin: Vector2, v2: V2CombatController) -> void:
 	for i in range(shot_count):
 		var target_e: Node2D = candidates[i % candidates.size()] if not candidates.is_empty() else null
 		var dest := target_e.global_position if target_e != null else origin + Vector2.from_angle(TAU * float(i) / float(shot_count)) * 320.0
+		_active_sword_bolts.append({"from": origin + Vector2(0.0, -110.0), "to": dest, "life": 0.26, "max_life": 0.26})
 		if parent_n != null:
 			V2VfxFactory.spawn_hit_spark(parent_n, dest, "metal", true, Color(1.0, 0.88, 0.36, 0.94))
 		if target_e != null and v2 != null:
@@ -541,6 +555,9 @@ func _draw_realm_hazards() -> void:
 						Color(1.0, 0.92, 0.48, 0.98),
 						Color(0.68, 0.94, 1.0, 0.94)
 					)
+	for b in _active_sword_bolts:
+		var a := clampf(float(b["life"]) / float(b["max_life"]), 0.0, 1.0)
+		draw_line(b["from"] as Vector2, b["to"] as Vector2, Color(1.0, 0.90, 0.48, a), 4.5)
 
 func _draw_world_label(pos: Vector2, rad: float, main_txt: String, sub_txt: String, main_col: Color, sub_col: Color) -> void:
 	var font := ThemeDB.fallback_font

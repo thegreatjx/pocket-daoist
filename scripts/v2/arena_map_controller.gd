@@ -53,25 +53,44 @@ func build_realm(
 
 	arena_half_size = arena_rect.size * 0.5
 	var dojo_r := float(realm_cfg.get("center_dojo_radius", 560.0))
-	var road_hw := float(realm_cfg.get("road_half_width", 105.0))
-	var min_spacing := float(realm_cfg.get("obstacle_min_spacing", 260.0))
-	var target_count := clampi(int(realm_cfg.get("obstacle_count", 22)), 18, 26)
-	var prop_scales: Array = realm_cfg.get("prop_scales", [])
-
-	var prop_textures: Array[Texture2D] = []
-	var prop_base_scales: Array[float] = []
-	var raw_props: Array = realm_cfg.get("props", realm_cfg.get("prop_files", []))
-	for i in range(raw_props.size()):
-		var tex := MapRealmCatalog.load_realm_texture(realm_cfg, "prop", i)
-		if tex != null:
-			prop_textures.append(tex)
-			prop_base_scales.append(float(prop_scales[i]) if i < prop_scales.size() else 0.36)
+	var road_hw := float(realm_cfg.get("road_half_width", 85.0))
+	var min_spacing := float(realm_cfg.get("obstacle_min_spacing", 280.0))
+	var target_count := clampi(int(realm_cfg.get("obstacle_count", 20)), 18, 26)
+	var prop_pool: Array = realm_cfg.get("prop_pool", [])
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(realm_cfg.get("seed", 20261126))
 
+	var forbidden: Array[Dictionary] = []
+	var anchor_idx := 0
+	for h in hazard_sites:
+		var htype := String(h.get("type", ""))
+		var hpos: Vector2 = h["pos"]
+		if htype == "prop_anchor" or htype == "sword_stele":
+			var tex := h.get("tex", null) as Texture2D
+			if tex == null:
+				tex = MapRealmCatalog.load_tex_safe(String(h.get("tex_path", "")))
+			if tex != null:
+				var obs := MapPropObstacle.new()
+				obs.position = hpos
+				add_child(obs)
+				obs.setup_sized(tex, float(h.get("height", 180.0)), 0.25, true, false, 34.0 if htype == "sword_stele" else -1.0)
+				_realm_nodes.append(obs)
+				var tag := "sword_stele" if htype == "sword_stele" else "landmark_anchor_%d" % anchor_idx
+				anchor_idx += 1
+				cover_pillars_data.append({
+					"id": cover_pillars_data.size(),
+					"tag": tag,
+					"pos": hpos,
+					"radius": obs.collider_radius,
+					"is_core_pillar": false,
+				})
+			forbidden.append({"pos": hpos, "r": 240.0 if htype == "prop_anchor" else float(h.get("radius", 135.0)) + 140.0})
+		else:
+			forbidden.append({"pos": hpos, "r": float(h.get("radius", 155.0)) + 140.0})
+
 	var placed_positions: Array[Vector2] = []
-	var inner_rect := arena_rect.grow(-280.0)
+	var inner_rect := arena_rect.grow(-300.0)
 	var attempts := 0
 	while placed_positions.size() < target_count and attempts < target_count * 40:
 		attempts += 1
@@ -79,13 +98,13 @@ func build_realm(
 			rng.randf_range(inner_rect.position.x, inner_rect.end.x),
 			rng.randf_range(inner_rect.position.y, inner_rect.end.y)
 		)
-		if pos.distance_to(center) < dojo_r + 70.0:
+		if pos.distance_to(center) < dojo_r + 80.0:
 			continue
-		if absf(pos.x - center.x) < road_hw + 95.0 or absf(pos.y - center.y) < road_hw + 95.0:
+		if absf(pos.x - center.x) < road_hw + 90.0 or absf(pos.y - center.y) < road_hw + 90.0:
 			continue
 		var valid := true
-		for h in hazard_sites:
-			if pos.distance_to(h["pos"] as Vector2) < 230.0:
+		for fz in forbidden:
+			if pos.distance_to(fz["pos"] as Vector2) < float(fz["r"]):
 				valid = false
 				break
 		if not valid:
@@ -98,53 +117,47 @@ func build_realm(
 			continue
 
 		placed_positions.append(pos)
-		if not prop_textures.is_empty():
-			var idx := rng.randi_range(0, prop_textures.size() - 1)
-			var sc := prop_base_scales[idx] * rng.randf_range(0.90, 1.12)
-			var obs := MapPropObstacle.new()
-			obs.position = pos
-			add_child(obs)
-			obs.setup(prop_textures[idx], sc, rng.randf() < 0.5)
-			_realm_nodes.append(obs)
-			cover_pillars_data.append({
-				"id": cover_pillars_data.size(),
-				"tag": "realm_prop_%d" % cover_pillars_data.size(),
-				"pos": pos,
-				"radius": obs.collider_radius,
-				"is_core_pillar": false,
-			})
-
-	for h in hazard_sites:
-		if String(h.get("type", "")) != "sword_stele":
-			continue
-		var stele_tex := MapRealmCatalog.load_realm_texture(realm_cfg, "hazard", 0, "sword_stele")
-		if stele_tex != null:
-			var spos: Vector2 = h["pos"]
-			var obs := MapPropObstacle.new()
-			obs.position = spos
-			add_child(obs)
-			obs.setup(stele_tex, 0.36, false, 34.0)
-			_realm_nodes.append(obs)
-			cover_pillars_data.append({
-				"id": cover_pillars_data.size(),
-				"tag": "sword_stele",
-				"pos": spos,
-				"radius": obs.collider_radius,
-				"is_core_pillar": false,
-			})
+		if not prop_pool.is_empty():
+			var spec := _pick_weighted_prop(prop_pool, rng)
+			var tex := MapRealmCatalog.load_tex_safe(String(spec.get("tex", "")))
+			if tex != null:
+				var h_px := float(spec.get("height", 190.0)) * rng.randf_range(0.90, 1.12)
+				var obs := MapPropObstacle.new()
+				obs.position = pos
+				add_child(obs)
+				obs.setup_sized(tex, h_px, float(spec.get("coll_ratio", 0.25)), bool(spec.get("occlude", true)), rng.randf() < 0.5)
+				_realm_nodes.append(obs)
+				cover_pillars_data.append({
+					"id": cover_pillars_data.size(),
+					"tag": "realm_prop_%d" % placed_positions.size(),
+					"pos": pos,
+					"radius": obs.collider_radius,
+					"is_core_pillar": false,
+				})
 
 	_spawn_border_cliffs(realm_cfg, arena_rect, rng)
 	_spawn_ambient_particles(String(realm_cfg.get("particles", "")))
 	return cover_pillars_data.duplicate(true)
 
+func _pick_weighted_prop(pool: Array, rng: RandomNumberGenerator) -> Dictionary:
+	var total := 0.0
+	for s in pool:
+		total += float((s as Dictionary).get("weight", 1.0))
+	var r := rng.randf() * maxf(0.01, total)
+	for s in pool:
+		r -= float((s as Dictionary).get("weight", 1.0))
+		if r <= 0.0:
+			return s as Dictionary
+	return pool[0] as Dictionary
+
 func _spawn_border_cliffs(realm_cfg: Dictionary, arena_rect: Rect2, rng: RandomNumberGenerator) -> void:
 	var border_tex := MapRealmCatalog.load_realm_texture(realm_cfg, "border")
 	if border_tex == null:
 		return
-	var step := 230.0
+	var step := float(realm_cfg.get("border_step", 225.0))
 	var bw := float(border_tex.get_width())
 	var bh := float(border_tex.get_height())
-	var base_sc := 290.0 / maxf(1.0, bw)
+	var base_sc := (512.0 * float(realm_cfg.get("border_scale", 0.62))) / maxf(1.0, bw)
 
 	var edges := [
 		{"a": arena_rect.position, "b": Vector2(arena_rect.end.x, arena_rect.position.y), "out": Vector2(0.0, -34.0)},
@@ -164,7 +177,7 @@ func _spawn_border_cliffs(realm_cfg: Dictionary, arena_rect: Rect2, rng: RandomN
 			var sp := Sprite2D.new()
 			sp.texture = border_tex
 			sp.flip_h = ((i + edge_idx) % 2) == 1
-			var sc := base_sc * rng.randf_range(0.92, 1.14)
+			var sc := base_sc * rng.randf_range(0.92, 1.12)
 			sp.scale = Vector2(sc, sc)
 			sp.offset = Vector2(0.0, -bh * 0.25)
 			sp.position = pos
@@ -180,49 +193,44 @@ func _spawn_ambient_particles(kind: String) -> void:
 	_ambient_layer.z_index = 80
 	add_child(_ambient_layer)
 
+	var dot_tex := _make_soft_dot_tex()
+	match kind:
+		"forest", "petals_fireflies":
+			_ambient_layer.add_child(_make_ambient_emitter(dot_tex, 24, 6.0, Vector3(-18.0, 26.0, 0.0), Color("#F6B8C8", 0.72), 0.40, 0.75))
+			_ambient_layer.add_child(_make_ambient_emitter(dot_tex, 16, 4.5, Vector3(0.0, -10.0, 0.0), Color("#B8F2C6", 0.55), 0.25, 0.45))
+		"volcano", "embers":
+			_ambient_layer.add_child(_make_ambient_emitter(dot_tex, 30, 4.2, Vector3(12.0, -42.0, 0.0), Color("#FF9C4A", 0.65), 0.22, 0.50))
+		_:
+			_ambient_layer.add_child(_make_ambient_emitter(dot_tex, 36, 5.5, Vector3(-28.0, 46.0, 0.0), Color("#D8EEFA", 0.68), 0.22, 0.45))
+			_ambient_layer.add_child(_make_ambient_emitter(dot_tex, 6, 9.0, Vector3(-20.0, 4.0, 0.0), Color("#CFE6F2", 0.09), 5.0, 8.5))
+
+func _make_ambient_emitter(tex: Texture2D, amount: int, life: float, gravity_vec: Vector3, col: Color, s_min: float, s_max: float) -> GPUParticles2D:
 	var p := GPUParticles2D.new()
-	p.amount = 28 if kind == "petals_fireflies" else 34
-	p.lifetime = 4.2
-	p.preprocess = 2.0
-
-	var img := Image.create(12, 12, false, Image.FORMAT_RGBA8)
-	for y in range(12):
-		for x in range(12):
-			var d := Vector2(float(x) - 5.5, float(y) - 5.5).length() / 5.5
-			var a := clampf(1.0 - d, 0.0, 1.0)
-			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a * a))
-	p.texture = ImageTexture.create_from_image(img)
-
+	p.amount = amount
+	p.lifetime = life
+	p.preprocess = minf(2.0, life)
+	p.texture = tex
 	var proc := ParticleProcessMaterial.new()
 	proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	proc.emission_box_extents = Vector3(760.0, 460.0, 0.0)
-	match kind:
-		"petals_fireflies":
-			proc.direction = Vector3(0.4, 0.8, 0.0)
-			proc.gravity = Vector3(6.0, 12.0, 0.0)
-			proc.initial_velocity_min = 12.0
-			proc.initial_velocity_max = 28.0
-			proc.scale_min = 0.45
-			proc.scale_max = 0.95
-			proc.color = Color(0.98, 0.84, 0.88, 0.65)
-		"embers":
-			proc.direction = Vector3(0.2, -1.0, 0.0)
-			proc.gravity = Vector3(4.0, -18.0, 0.0)
-			proc.initial_velocity_min = 24.0
-			proc.initial_velocity_max = 52.0
-			proc.scale_min = 0.35
-			proc.scale_max = 0.85
-			proc.color = Color(1.0, 0.56, 0.22, 0.72)
-		_:
-			proc.direction = Vector3(-0.35, 1.0, 0.0)
-			proc.gravity = Vector3(-10.0, 22.0, 0.0)
-			proc.initial_velocity_min = 18.0
-			proc.initial_velocity_max = 40.0
-			proc.scale_min = 0.40
-			proc.scale_max = 0.90
-			proc.color = Color(0.84, 0.95, 1.0, 0.70)
+	proc.emission_box_extents = Vector3(780.0, 460.0, 0.0)
+	proc.direction = gravity_vec.normalized() if gravity_vec.length_squared() > 0.01 else Vector3(0.0, 1.0, 0.0)
+	proc.gravity = gravity_vec
+	proc.initial_velocity_min = 4.0
+	proc.initial_velocity_max = 18.0
+	proc.scale_min = s_min
+	proc.scale_max = s_max
+	proc.color = col
 	p.process_material = proc
-	_ambient_layer.add_child(p)
+	return p
+
+func _make_soft_dot_tex() -> Texture2D:
+	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	for y in range(16):
+		for x in range(16):
+			var d := Vector2(float(x) - 7.5, float(y) - 7.5).length() / 7.5
+			var a := clampf(1.0 - d, 0.0, 1.0)
+			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a * a))
+	return ImageTexture.create_from_image(img)
 
 func load_chapter(chapter_index: int = 0, json_path: String = "res://data/v2/map_arena_v2.json") -> bool:
 	if not FileAccess.file_exists(json_path):

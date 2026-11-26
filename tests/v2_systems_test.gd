@@ -1578,6 +1578,10 @@ func _test_batch4_ch1_map() -> void:
 	alm.setup(bg, player)
 
 	var expected_sizes := {2: 4200.0, 3: 4400.0, 4: 4600.0}
+	var expected_counts := {2: 20, 3: 22, 4: 24}
+	var expected_spacing := {2: 279.0, 3: 279.0, 4: 289.0}
+	var expected_dojo := {2: 560.0, 3: 580.0, 4: 600.0}
+	var expected_road := {2: 85.0, 3: 88.0, 4: 90.0}
 	for st in stages:
 		var sid := int((st as Dictionary).get("id", 1))
 		if sid == 1:
@@ -1593,21 +1597,42 @@ func _test_batch4_ch1_map() -> void:
 			if String((p as Dictionary).get("tag", "")).begins_with("realm_prop_"):
 				prop_count += 1
 				obs_positions.append(p["pos"] as Vector2)
-		_check("b4_realm_%d_prop_count" % sid, prop_count >= 18 and prop_count <= 26, "count=%d" % prop_count)
+		_check("b4_realm_%d_prop_count" % sid, prop_count == int(expected_counts[sid]), "count=%d" % prop_count)
 		var spacing_ok := true
 		var dojo_clear := true
 		var road_clear := true
 		var center := Vector2(640.0, 360.0)
+		var min_sp: float = float(expected_spacing[sid])
+		var min_dojo: float = float(expected_dojo[sid])
+		var min_road: float = float(expected_road[sid])
 		for i in range(obs_positions.size()):
 			var pos := obs_positions[i]
-			if pos.distance_to(center) < 560.0:
+			if pos.distance_to(center) < min_dojo:
 				dojo_clear = false
-			if absf(pos.x - center.x) < 105.0 or absf(pos.y - center.y) < 105.0:
+			if absf(pos.x - center.x) < min_road or absf(pos.y - center.y) < min_road:
 				road_clear = false
 			for j in range(i + 1, obs_positions.size()):
-				if pos.distance_to(obs_positions[j]) < 259.0:
+				if pos.distance_to(obs_positions[j]) < min_sp:
 					spacing_ok = false
 		_check("b4_realm_%d_layout_rules" % sid, spacing_ok and dojo_clear and road_clear, "spacing=%s dojo=%s road=%s" % [str(spacing_ok), str(dojo_clear), str(road_clear)])
+
+	var all_22_ok := true
+	var missing_22: Array[String] = []
+	for r_id in ["forest", "volcano", "ice"]:
+		var r_cfg := MapRealmCatalog.get_realm(r_id)
+		for slot in ["ground_tile", "road_decal", "center_array", "border"]:
+			if MapRealmCatalog.load_tex_safe(String(r_cfg.get(slot, ""))) == null:
+				all_22_ok = false
+				missing_22.append(String(r_cfg.get(slot, "")))
+		for pp in r_cfg.get("prop_pool", []):
+			if MapRealmCatalog.load_tex_safe(String((pp as Dictionary).get("tex", ""))) == null:
+				all_22_ok = false
+				missing_22.append(String((pp as Dictionary).get("tex", "")))
+		for lm in r_cfg.get("fixed_landmarks", []):
+			if MapRealmCatalog.load_tex_safe(String((lm as Dictionary).get("tex", ""))) == null:
+				all_22_ok = false
+				missing_22.append(String((lm as Dictionary).get("tex", "")))
+	_check("b4_all_22_realm_textures_load", all_22_ok, str(missing_22))
 
 	var obs_layer_ok := true
 	for ch_node in amap.get_children():
@@ -1636,7 +1661,7 @@ func _test_batch4_ch1_map() -> void:
 	lv_e.current_health = 500.0
 	lv_e.global_position = alm._hazards[0]["pos"] as Vector2
 	alm._hazards[0]["vent_state"] = ArenaLandmarksController.VentState.IDLE
-	alm._hazards[0]["vent_timer"] = 7.3
+	alm._hazards[0]["vent_timer"] = 8.3
 	alm._process(0.05)
 	var lv_warn := int(alm._hazards[0]["vent_state"]) == ArenaLandmarksController.VentState.WARNING
 	alm._hazards[0]["vent_timer"] = 1.5
