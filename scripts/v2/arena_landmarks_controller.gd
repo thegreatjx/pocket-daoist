@@ -101,7 +101,7 @@ func _sync_from_background() -> void:
 	spirit_arrays = _bg.get_landmarks_by_role("spirit_array")
 	demon_steles = _bg.get_landmarks_by_role("demon_stele")
 
-func activate_wave(wave: int, stele_interval: int = 3) -> void:
+func activate_wave(wave: int, _stele_interval: int = 3) -> void:
 	if spirit_arrays.is_empty():
 		_sync_from_background()
 	if not spirit_arrays.is_empty():
@@ -110,32 +110,10 @@ func activate_wave(wave: int, stele_interval: int = 3) -> void:
 		active_array_index = -1
 	charge_progress = 0.0
 	array_consumed = false
-
-	var step := maxi(1, stele_interval)
-	if wave >= step and wave % step == 0 and wave != _last_stele_wave:
-		_last_stele_wave = wave
-		spawn_stele(wave)
 	queue_redraw()
 
-func spawn_stele(wave: int = 3) -> DemonSealingStele:
-	if demon_steles.is_empty():
-		_sync_from_background()
-	if demon_steles.is_empty():
-		return null
-	if active_stele != null and is_instance_valid(active_stele):
-		return active_stele
-
-	var idx: int = (wave / 3) % demon_steles.size()
-	var pos: Vector2 = demon_steles[idx]["pos"]
-	var stele := DemonSealingStele.new()
-	stele.max_hp = 100.0 + float(wave) * 20.0
-	stele.hp = stele.max_hp
-	stele.global_position = pos
-	stele.shattered.connect(_on_stele_shattered)
-	var parent_node: Node = get_parent() if get_parent() != null else self
-	parent_node.add_child(stele)
-	active_stele = stele
-	return stele
+func spawn_stele(_wave: int = 3) -> DemonSealingStele:
+	return null
 
 func _process(delta: float) -> void:
 	_anim_t += delta

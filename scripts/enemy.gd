@@ -267,12 +267,17 @@ func apply_archetype(arch: Dictionary, variant: int = 1) -> void:
 	gold_value = int(arch.get("gold_value", 1))
 	tier_variant = clampi(variant, 1, 3)
 	chase_mode = String(arch.get("chase_mode", "direct"))
-	var ra: Variant = arch.get("ranged_attack", null)
-	ranged_attack = (ra as Dictionary).duplicate(true) if ra is Dictionary else {}
-	var dt: Variant = arch.get("dash_telegraph", null)
-	dash_telegraph = (dt as Dictionary).duplicate(true) if dt is Dictionary else {}
-	var db: Variant = arch.get("death_burst", null)
-	death_burst = (db as Dictionary).duplicate(true) if db is Dictionary else {}
+	if enemy_type == Type.MINION:
+		ranged_attack.clear()
+		dash_telegraph.clear()
+		death_burst.clear()
+	else:
+		var ra: Variant = arch.get("ranged_attack", null)
+		ranged_attack = (ra as Dictionary).duplicate(true) if ra is Dictionary else {}
+		var dt: Variant = arch.get("dash_telegraph", null)
+		dash_telegraph = (dt as Dictionary).duplicate(true) if dt is Dictionary else {}
+		var db: Variant = arch.get("death_burst", null)
+		death_burst = (db as Dictionary).duplicate(true) if db is Dictionary else {}
 	var res: Variant = arch.get("resistances", null)
 	resistances = (res as Dictionary).duplicate(true) if res is Dictionary else {}
 	var em: Variant = arch.get("element_multipliers", null)
@@ -641,7 +646,7 @@ func _physics_process(delta: float) -> void:
 			apply_stun(1.2)
 			move_and_slide()
 			return
-		elif not is_boss and _charger_state == 2 and not dash_telegraph.is_empty() and EnemySteeringDirector.check_pillar_collision(global_position, separation_radius * 0.85, pillars, 6.0):
+		elif enemy_type != Type.MINION and not is_boss and _charger_state == 2 and not dash_telegraph.is_empty() and EnemySteeringDirector.check_pillar_collision(global_position, separation_radius * 0.85, pillars, 6.0):
 			_charger_state = 0
 			_charger_cd = float(dash_telegraph.get("cooldown_sec", 2.8))
 			apply_stun(float(dash_telegraph.get("stun_on_pillar", 1.2)))
@@ -670,69 +675,11 @@ func _physics_process(delta: float) -> void:
 		if target.has_method("take_damage"):
 			target.take_damage(contact_damage)
 
-func _process_minion_ai(delta: float) -> void:
+func _process_minion_ai(_delta: float) -> void:
 	var to_p := target.global_position - global_position
 	var dist := to_p.length()
 	var dir := to_p / maxf(1.0, dist)
 	var eff_spd := speed * (1.0 - _slow_ratio)
-
-	if not dash_telegraph.is_empty():
-		match _charger_state:
-			0:
-				velocity = dir * eff_spd
-				_charger_cd -= delta
-				if _charger_cd <= 0.0 and dist >= 95.0 and dist <= 320.0:
-					_charger_state = 1
-					var tele_sec := float(dash_telegraph.get("telegraph_sec", 0.60))
-					_charger_timer = tele_sec
-					_charger_windup_total = tele_sec
-					_charger_aim = dir
-					if get_parent() != null:
-						var atk := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
-						if atk != null:
-							var d_len := float(dash_telegraph.get("dash_length", 260.0))
-							var d_w := float(dash_telegraph.get("dash_width", 42.0))
-							atk.setup_line_dash(self, global_position, _charger_aim, d_len, d_w, tele_sec)
-							var col_str := String(dash_telegraph.get("color", ""))
-							if not col_str.is_empty():
-								var c := Color.from_string(col_str, Color(0.95, 0.20, 0.25, 0.85))
-								c.a = 0.85
-								atk.color_primary = c
-			1:
-				velocity = Vector2.ZERO
-				_charger_timer -= delta
-				if _charger_timer <= 0.0:
-					_charger_state = 2
-					_charger_timer = float(dash_telegraph.get("charge_dur_sec", 0.50))
-			2:
-				var c_spd := float(dash_telegraph.get("charge_speed", float(dash_telegraph.get("charge_speed_pct", 282.0)) * 0.01 * V2DataLoader.BASE_ENEMY_SPEED))
-				velocity = _charger_aim * c_spd
-				_charger_timer -= delta
-				if _charger_timer <= 0.0:
-					_charger_state = 0
-					_charger_cd = float(dash_telegraph.get("cooldown_sec", 2.8))
-		return
-
-	if chase_mode == "strafe_kiter":
-		var d_min := float(ranged_attack.get("preferred_dist_min", 210.0))
-		var d_max := float(ranged_attack.get("preferred_dist_max", 320.0))
-		var strafe := Vector2(-dir.y, dir.x) * sin(_spawn_elapsed + float(get_instance_id() % 13)) * 0.65
-		if dist < d_min:
-			velocity = (-dir * 0.6 + strafe).normalized() * eff_spd
-		elif dist > d_max:
-			velocity = (dir + strafe * 0.4).normalized() * eff_spd
-		else:
-			velocity = strafe.normalized() * eff_spd
-		_ranged_cd -= delta
-		if _ranged_cd <= 0.0 and dist <= d_max + 100.0 and get_parent() != null:
-			_ranged_cd = float(ranged_attack.get("fire_cooldown", 2.4))
-			var orb := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
-			if orb != null:
-				var b_spd := float(ranged_attack.get("bullet_speed", 215.0))
-				var b_rad := float(ranged_attack.get("bullet_radius", 11.0))
-				var b_col := Color.from_string(String(ranged_attack.get("color", "#F238AD")), Color(0.95, 0.22, 0.68, 1.0))
-				orb.setup_projectile(self, global_position, dir, b_spd, maxf(6.0, contact_damage), b_rad, b_col)
-		return
 
 	if chase_mode == "hop":
 		var hop_phase := fmod(_spawn_elapsed * 7.5, TAU)
@@ -741,16 +688,9 @@ func _process_minion_ai(delta: float) -> void:
 	elif chase_mode == "snake":
 		var jitter := Vector2(-dir.y, dir.x) * sin(_spawn_elapsed * 7.0 + float(get_instance_id() % 7)) * 0.35
 		velocity = (dir + jitter).normalized() * eff_spd
-	elif archetype_id.is_empty() and species == 1:
+	elif species == 1:
 		var strafe := Vector2(-dir.y, dir.x) * sin(_spawn_elapsed + float(get_instance_id() % 13)) * 0.28
 		velocity = (dir + strafe).normalized() * eff_spd
-		if _spawn_elapsed >= 180.0 and dist >= 140.0 and dist <= 360.0 and get_parent() != null:
-			_ranged_cd -= delta
-			if _ranged_cd <= 0.0:
-				_ranged_cd = 4.8
-				var orb := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
-				if orb != null:
-					orb.setup_projectile(self, global_position, dir, 195.0, 10.0, 10.0)
 	else:
 		velocity = dir * eff_spd
 
@@ -857,7 +797,7 @@ func apply_knockback(impulse: Vector2) -> void:
 	if is_dead:
 		return
 	var resist := knockback_resistance
-	if _charger_state == 1 and dash_telegraph.has("windup_kb_resist"):
+	if (_elite_state == 1 or _charger_state == 1) and dash_telegraph.has("windup_kb_resist"):
 		resist = maxf(resist, float(dash_telegraph["windup_kb_resist"]))
 	_knockback += impulse * (1.0 - clampf(resist, 0.0, 1.0))
 
@@ -1162,7 +1102,7 @@ func die() -> void:
 		if v2.has_method("try_spawn_qiankun_bag_drop"):
 			v2.try_spawn_qiankun_bag_drop(global_position, int(enemy_type))
 
-	if not death_burst.is_empty() and get_parent() != null:
+	if enemy_type != Type.MINION and not death_burst.is_empty() and get_parent() != null:
 		var slam := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
 		if slam != null:
 			slam.persist_after_owner_death = true

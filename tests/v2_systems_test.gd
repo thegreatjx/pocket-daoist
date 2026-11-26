@@ -533,12 +533,8 @@ func _test_landmarks_and_pillar_combat() -> void:
 	player._physics_process(4.5)
 	check("landmark_spirit_buff_expires_8s", is_equal_approx(player.limit_haste_bonus, 0.0) and is_equal_approx(player.limit_might_bonus, 0.0), "buff did not expire")
 
-	var stele_fired: Array = [false]
-	ctrl.stele_shattered.connect(func(_p: Vector2) -> void: stele_fired[0] = true)
 	var stele := ctrl.spawn_stele(3)
-	check("landmark_stele_in_breakables", stele != null and stele.is_in_group("breakables"), "stele missing breakables group")
-	stele.take_damage(999.0)
-	check("landmark_stele_shatters_and_telegraphs", bool(stele_fired[0]) and get_tree().get_nodes_in_group("spawn_telegraphs").size() >= 3, "telegraphs=%d" % get_tree().get_nodes_in_group("spawn_telegraphs").size())
+	check("landmark_red_door_stele_disabled", stele == null and get_tree().get_nodes_in_group("breakables").is_empty(), "stele should not spawn")
 
 	var pillars: Array = bg.call("get_pillars")
 	var p0: Vector2 = pillars[0]["pos"]
@@ -1051,7 +1047,7 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 
 	var boar := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(boar)
-	boar.setup_type(Enemy.Type.MINION, 0.0, 2)
+	boar.setup_type(Enemy.Type.ELITE, 0.0, 2)
 	boar.apply_archetype(loader.enemy_archetypes["enemy_charger_boar"], 1)
 	boar._charger_state = 1
 	boar._knockback = Vector2.ZERO
@@ -1062,7 +1058,7 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 	boar._charger_timer = 0.30
 	boar.global_position = (pillars[0]["pos"] as Vector2) + Vector2(50.0, 0.0)
 	boar._physics_process(0.016)
-	check("t3_minion_charger_pillar_stun", boar._stun_timer > 1.0 and boar._charger_state == 0, "stun=%.2f state=%d" % [boar._stun_timer, boar._charger_state])
+	check("t3_elite_charger_pillar_stun", boar._stun_timer > 1.0 and boar._charger_state == 0, "stun=%.2f state=%d" % [boar._stun_timer, boar._charger_state])
 
 	var jiangshi := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(jiangshi)
@@ -1071,14 +1067,31 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 	jiangshi.apply_slow(0.40, 2.0)
 	check("t3_slow_resist_applied", is_equal_approx(jiangshi._slow_ratio, 0.30), "slow=%.3f" % jiangshi._slow_ratio)
 
-	var bomber := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
-	add_child(bomber)
-	bomber.setup_type(Enemy.Type.MINION, 0.0, 1)
-	bomber.apply_archetype(loader.enemy_archetypes["enemy_bomber_wisp"], 1)
 	var atk_before := get_tree().get_nodes_in_group("boss_attacks").size()
-	bomber.die()
-	var atk_after := get_tree().get_nodes_in_group("boss_attacks").size()
-	check("t3_death_burst_component_spawns_slam", atk_after > atk_before, "before=%d after=%d" % [atk_before, atk_after])
+	var bomber_minion := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
+	add_child(bomber_minion)
+	bomber_minion.setup_type(Enemy.Type.MINION, 240.0, 1)
+	bomber_minion.apply_archetype(loader.enemy_archetypes["enemy_bomber_wisp"], 1)
+	bomber_minion.target = p
+	bomber_minion.global_position = p.global_position + Vector2(200.0, 0.0)
+	bomber_minion._ranged_cd = 0.0
+	bomber_minion._physics_process(0.016)
+	var atk_after_minion_ai := get_tree().get_nodes_in_group("boss_attacks").size()
+	bomber_minion.die()
+	var atk_after_minion_die := get_tree().get_nodes_in_group("boss_attacks").size()
+	check(
+		"t3_minion_no_skills_or_death_burst",
+		bomber_minion.dash_telegraph.is_empty() and bomber_minion.ranged_attack.is_empty() and bomber_minion.death_burst.is_empty() and atk_after_minion_ai == atk_before and atk_after_minion_die == atk_before,
+		"before=%d ai=%d die=%d" % [atk_before, atk_after_minion_ai, atk_after_minion_die]
+	)
+
+	var bomber_elite := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
+	add_child(bomber_elite)
+	bomber_elite.setup_type(Enemy.Type.ELITE, 0.0, 1)
+	bomber_elite.apply_archetype(loader.enemy_archetypes["enemy_bomber_wisp"], 1)
+	bomber_elite.die()
+	var atk_after_elite := get_tree().get_nodes_in_group("boss_attacks").size()
+	check("t3_elite_death_burst_spawns_slam", atk_after_elite > atk_after_minion_die, "before=%d after=%d" % [atk_after_minion_die, atk_after_elite])
 
 	for e in [huodou, golem, boar, jiangshi]:
 		if is_instance_valid(e):
@@ -1271,11 +1284,11 @@ func _test_t4_feel_and_feedback(loader: V2DataLoader) -> void:
 	)
 	var boar_e := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(boar_e)
-	boar_e.setup_type(Enemy.Type.MINION, 0.0, 2)
+	boar_e.setup_type(Enemy.Type.ELITE, 0.0, 2)
 	boar_e.apply_archetype(loader.enemy_archetypes["enemy_charger_boar"], 1)
-	boar_e._charger_state = 1
-	boar_e._charger_windup_total = 0.65
-	boar_e._charger_timer = 0.40 * (1.0 / 3.0)
+	boar_e._elite_state = 1
+	boar_e._elite_windup_total = 0.65
+	boar_e._elite_timer = 0.40 * (1.0 / 3.0)
 	boar_e.visual_node._process(0.016)
 	var boar_sq: Vector2 = boar_e.visual_node.last_charge_squash
 	check("t4_charger_visual_tracks_windup_squash", boar_sq.x > 1.05 and boar_sq.y < 0.95, str(boar_sq))
