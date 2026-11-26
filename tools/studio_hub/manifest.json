@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 18:13:45",
-    "active_media_count": 241,
-    "used_media_count": 224,
-    "orphan_media_count": 17,
+    "generated_at": "2026-11-26 18:32:49",
+    "active_media_count": 261,
+    "used_media_count": 234,
+    "orphan_media_count": 27,
     "legacy_count": 54,
-    "usage_rate_pct": 92.9,
+    "usage_rate_pct": 89.7,
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 2,
@@ -187,8 +187,8 @@
       "id": "ISS-008",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 17 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 17 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：enemy(10), hero(6), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 27 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 27 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：anim(10), enemy(10), hero(6), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -268,6 +268,18 @@
           "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
+          "id": "enemy_lingzhi_gujing",
+          "name": "灵芝菇精",
+          "species": 21,
+          "sprite": "res://assets/sprites/enemy_lingzhi_gujing.png"
+        },
+        {
+          "id": "enemy_bichi_zhongsi",
+          "name": "碧翅螽斯",
+          "species": 17,
+          "sprite": "res://assets/sprites/enemy_bichi_zhongsi.png"
+        },
+        {
           "id": "enemy_skitter_shenjing",
           "name": "地灵参精",
           "species": 5,
@@ -289,13 +301,19 @@
           "id": "enemy_zhusha_zhiren",
           "name": "朱砂纸人",
           "species": 7,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_zhusha_zhiren_run.png"
+        },
+        {
+          "id": "enemy_duyan_tangsan",
+          "name": "独眼唐伞",
+          "species": 16,
+          "sprite": "res://assets/sprites/enemy_duyan_tangsan.png"
         },
         {
           "id": "enemy_canjian_jiankui",
           "name": "残剑剑傀",
           "species": 10,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_canjian_jiankui_run.png"
         },
         {
           "id": "enemy_bulwark_golem",
@@ -328,16 +346,22 @@
           "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
+          "id": "enemy_qingyan_denglong",
+          "name": "青焰灯笼",
+          "species": 15,
+          "sprite": "res://assets/sprites/enemy_qingyan_denglong.png"
+        },
+        {
           "id": "enemy_chihuo_danling",
           "name": "炽火丹灵",
           "species": 8,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_chihuo_danling_run.png"
         },
         {
           "id": "enemy_wudu_zhangchan",
           "name": "五毒蟾蜍",
           "species": 9,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_wudu_zhangchan_run.png"
         }
       ],
       "achievements": [
@@ -388,16 +412,28 @@
       "events_count": 4,
       "enemies": [
         {
-          "id": "enemy_swarm_imp",
-          "name": "幽冥小鬼",
-          "species": 1,
-          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+          "id": "enemy_bichi_zhongsi",
+          "name": "碧翅螽斯",
+          "species": 17,
+          "sprite": "res://assets/sprites/enemy_bichi_zhongsi.png"
+        },
+        {
+          "id": "enemy_lingzhi_gujing",
+          "name": "灵芝菇精",
+          "species": 21,
+          "sprite": "res://assets/sprites/enemy_lingzhi_gujing.png"
         },
         {
           "id": "enemy_skitter_shenjing",
           "name": "地灵参精",
           "species": 5,
           "sprite": "res://assets/sprites/anim_shenjing_run.png"
+        },
+        {
+          "id": "enemy_swarm_imp",
+          "name": "幽冥小鬼",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
           "id": "enemy_hopper_jiangshi",
@@ -415,13 +451,25 @@
           "id": "enemy_zhusha_zhiren",
           "name": "朱砂纸人",
           "species": 7,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_zhusha_zhiren_run.png"
+        },
+        {
+          "id": "enemy_xueyi_yefu",
+          "name": "血翼夜蝠",
+          "species": 14,
+          "sprite": "res://assets/sprites/enemy_xueyi_yefu.png"
+        },
+        {
+          "id": "enemy_qingyan_denglong",
+          "name": "青焰灯笼",
+          "species": 15,
+          "sprite": "res://assets/sprites/enemy_qingyan_denglong.png"
         },
         {
           "id": "enemy_canjian_jiankui",
           "name": "残剑剑傀",
           "species": 10,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_canjian_jiankui_run.png"
         },
         {
           "id": "enemy_bulwark_golem",
@@ -434,6 +482,18 @@
           "name": "三足金蟾",
           "species": 4,
           "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_linjia_chuanshan",
+          "name": "鳞甲穿山",
+          "species": 18,
+          "sprite": "res://assets/sprites/enemy_linjia_chuanshan.png"
+        },
+        {
+          "id": "enemy_tongke_xiejiang",
+          "name": "铜壳蟹将",
+          "species": 22,
+          "sprite": "res://assets/sprites/enemy_tongke_xiejiang.png"
         },
         {
           "id": "enemy_charger_boar",
@@ -454,16 +514,28 @@
           "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
+          "id": "enemy_chihuan_wugong",
+          "name": "赤环蜈蚣",
+          "species": 19,
+          "sprite": "res://assets/sprites/enemy_chihuan_wugong.png"
+        },
+        {
+          "id": "enemy_kulou_dizhu",
+          "name": "骷髅地蛛",
+          "species": 20,
+          "sprite": "res://assets/sprites/enemy_kulou_dizhu.png"
+        },
+        {
           "id": "enemy_chihuo_danling",
           "name": "炽火丹灵",
           "species": 8,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_chihuo_danling_run.png"
         },
         {
           "id": "enemy_wudu_zhangchan",
           "name": "五毒蟾蜍",
           "species": 9,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_wudu_zhangchan_run.png"
         }
       ],
       "achievements": [
@@ -514,6 +586,24 @@
       "events_count": 4,
       "enemies": [
         {
+          "id": "enemy_fenyu_sanya",
+          "name": "焚羽三鸦",
+          "species": 13,
+          "sprite": "res://assets/sprites/enemy_fenyu_sanya.png"
+        },
+        {
+          "id": "enemy_chihuan_wugong",
+          "name": "赤环蜈蚣",
+          "species": 19,
+          "sprite": "res://assets/sprites/enemy_chihuan_wugong.png"
+        },
+        {
+          "id": "enemy_chihuo_danling",
+          "name": "炽火丹灵",
+          "species": 8,
+          "sprite": "res://assets/sprites/anim_chihuo_danling_run.png"
+        },
+        {
           "id": "enemy_swarm_imp",
           "name": "幽冥小鬼",
           "species": 1,
@@ -541,13 +631,13 @@
           "id": "enemy_zhusha_zhiren",
           "name": "朱砂纸人",
           "species": 7,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_zhusha_zhiren_run.png"
         },
         {
           "id": "enemy_canjian_jiankui",
           "name": "残剑剑傀",
           "species": 10,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_canjian_jiankui_run.png"
         },
         {
           "id": "enemy_bulwark_golem",
@@ -560,6 +650,18 @@
           "name": "三足金蟾",
           "species": 4,
           "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_linjia_chuanshan",
+          "name": "鳞甲穿山",
+          "species": 18,
+          "sprite": "res://assets/sprites/enemy_linjia_chuanshan.png"
+        },
+        {
+          "id": "enemy_tongke_xiejiang",
+          "name": "铜壳蟹将",
+          "species": 22,
+          "sprite": "res://assets/sprites/enemy_tongke_xiejiang.png"
         },
         {
           "id": "enemy_charger_boar",
@@ -580,16 +682,16 @@
           "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
-          "id": "enemy_chihuo_danling",
-          "name": "炽火丹灵",
-          "species": 8,
-          "sprite": ""
-        },
-        {
           "id": "enemy_wudu_zhangchan",
           "name": "五毒蟾蜍",
           "species": 9,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_wudu_zhangchan_run.png"
+        },
+        {
+          "id": "enemy_xueyi_yefu",
+          "name": "血翼夜蝠",
+          "species": 14,
+          "sprite": "res://assets/sprites/enemy_xueyi_yefu.png"
         }
       ],
       "achievements": [
@@ -645,6 +747,24 @@
       "events_count": 4,
       "enemies": [
         {
+          "id": "enemy_qingyan_denglong",
+          "name": "青焰灯笼",
+          "species": 15,
+          "sprite": "res://assets/sprites/enemy_qingyan_denglong.png"
+        },
+        {
+          "id": "enemy_duyan_tangsan",
+          "name": "独眼唐伞",
+          "species": 16,
+          "sprite": "res://assets/sprites/enemy_duyan_tangsan.png"
+        },
+        {
+          "id": "enemy_xueyi_yefu",
+          "name": "血翼夜蝠",
+          "species": 14,
+          "sprite": "res://assets/sprites/enemy_xueyi_yefu.png"
+        },
+        {
           "id": "enemy_swarm_imp",
           "name": "幽冥小鬼",
           "species": 1,
@@ -672,13 +792,19 @@
           "id": "enemy_zhusha_zhiren",
           "name": "朱砂纸人",
           "species": 7,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_zhusha_zhiren_run.png"
+        },
+        {
+          "id": "enemy_kulou_dizhu",
+          "name": "骷髅地蛛",
+          "species": 20,
+          "sprite": "res://assets/sprites/enemy_kulou_dizhu.png"
         },
         {
           "id": "enemy_canjian_jiankui",
           "name": "残剑剑傀",
           "species": 10,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_canjian_jiankui_run.png"
         },
         {
           "id": "enemy_bulwark_golem",
@@ -691,6 +817,12 @@
           "name": "三足金蟾",
           "species": 4,
           "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_tongke_xiejiang",
+          "name": "铜壳蟹将",
+          "species": 22,
+          "sprite": "res://assets/sprites/enemy_tongke_xiejiang.png"
         },
         {
           "id": "enemy_charger_boar",
@@ -711,16 +843,10 @@
           "sprite": "res://assets/sprites/anim_paper_doll_float.png"
         },
         {
-          "id": "enemy_chihuo_danling",
-          "name": "炽火丹灵",
-          "species": 8,
-          "sprite": ""
-        },
-        {
           "id": "enemy_wudu_zhangchan",
           "name": "五毒蟾蜍",
           "species": 9,
-          "sprite": ""
+          "sprite": "res://assets/sprites/anim_wudu_zhangchan_run.png"
         }
       ],
       "achievements": [
@@ -2638,7 +2764,7 @@
         },
         "notes": "朱砂符纸扎成的小人，边跑边挥臂，成群结队扑向生人。",
         "elite_chance": 0.1,
-        "resolved_sprite": ""
+        "resolved_sprite": "res://assets/sprites/anim_zhusha_zhiren_run.png"
       },
       {
         "id": "enemy_chihuo_danling",
@@ -2668,7 +2794,7 @@
         },
         "notes": "丹炉逸出的火灵，贴身即炸，留下一圈灼烧余烬。",
         "elite_chance": 0.1,
-        "resolved_sprite": ""
+        "resolved_sprite": "res://assets/sprites/anim_chihuo_danling_run.png"
       },
       {
         "id": "enemy_wudu_zhangchan",
@@ -2703,7 +2829,7 @@
         },
         "notes": "吞食五毒长大的紫蟾，保持距离喷吐毒涎，皮糙肉厚。",
         "elite_chance": 0.12,
-        "resolved_sprite": ""
+        "resolved_sprite": "res://assets/sprites/anim_wudu_zhangchan_run.png"
       },
       {
         "id": "enemy_canjian_jiankui",
@@ -2741,7 +2867,7 @@
         },
         "notes": "断剑通灵化傀，蓄势后化作一道青芒直刺而来。",
         "elite_chance": 0.12,
-        "resolved_sprite": ""
+        "resolved_sprite": "res://assets/sprites/anim_canjian_jiankui_run.png"
       },
       {
         "id": "enemy_yinsha_daotong",
@@ -2792,6 +2918,257 @@
         "elite_chance": 0.0,
         "elite_only": true,
         "resolved_sprite": ""
+      },
+      {
+        "id": "enemy_fenyu_sanya",
+        "name": "焚羽三鸦",
+        "species": 13,
+        "sprite": "res://assets/sprites/enemy_fenyu_sanya.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "direct",
+        "hp_units": 1.05,
+        "speed_pct": 132,
+        "base_dmg": 9,
+        "radius": 18,
+        "xp_value": 3,
+        "gold_value": 2,
+        "spawn_cost": 1.8,
+        "knockback_resist": 0.0,
+        "resistances": {},
+        "element_multipliers": {
+          "fire": 0.65,
+          "ice": 1.35
+        },
+        "notes": "三首赤焰魔鸦，振翅疾掠扑击，抗火弱冰。",
+        "elite_chance": 0.1,
+        "resolved_sprite": "res://assets/sprites/enemy_fenyu_sanya.png"
+      },
+      {
+        "id": "enemy_xueyi_yefu",
+        "name": "血翼夜蝠",
+        "species": 14,
+        "sprite": "res://assets/sprites/enemy_xueyi_yefu.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "snake",
+        "hp_units": 0.8,
+        "speed_pct": 140,
+        "base_dmg": 7,
+        "radius": 16,
+        "xp_value": 2,
+        "gold_value": 2,
+        "spawn_cost": 1.3,
+        "knockback_resist": 0.0,
+        "resistances": {},
+        "element_multipliers": {
+          "thunder": 1.25,
+          "fire": 1.15
+        },
+        "notes": "夜行血翼妖蝠，蛇形高速穿插骚扰，弱雷火。",
+        "elite_chance": 0.09,
+        "resolved_sprite": "res://assets/sprites/enemy_xueyi_yefu.png"
+      },
+      {
+        "id": "enemy_qingyan_denglong",
+        "name": "青焰灯笼",
+        "species": 15,
+        "sprite": "res://assets/sprites/enemy_qingyan_denglong.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "direct",
+        "hp_units": 1.2,
+        "speed_pct": 112,
+        "base_dmg": 12,
+        "radius": 18,
+        "xp_value": 3,
+        "gold_value": 2,
+        "spawn_cost": 2.0,
+        "knockback_resist": 0.1,
+        "resistances": {
+          "knockback_resist": 0.1
+        },
+        "element_multipliers": {
+          "thunder": 1.25,
+          "fire": 1.2
+        },
+        "notes": "幽冥鬼火灯笼精，凌空漂浮直逼而来，触碰伤高。",
+        "elite_chance": 0.11,
+        "resolved_sprite": "res://assets/sprites/enemy_qingyan_denglong.png"
+      },
+      {
+        "id": "enemy_duyan_tangsan",
+        "name": "独眼唐伞",
+        "species": 16,
+        "sprite": "res://assets/sprites/enemy_duyan_tangsan.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "hop",
+        "hp_units": 1.45,
+        "speed_pct": 114,
+        "base_dmg": 9,
+        "radius": 18,
+        "xp_value": 3,
+        "gold_value": 2,
+        "spawn_cost": 1.7,
+        "knockback_resist": 0.0,
+        "resistances": {
+          "slow_resist": 0.2
+        },
+        "element_multipliers": {
+          "fire": 1.25
+        },
+        "notes": "独足木屐妖伞，灵动跳跃追击，抗 20% 减速、弱火。",
+        "elite_chance": 0.11,
+        "resolved_sprite": "res://assets/sprites/enemy_duyan_tangsan.png"
+      },
+      {
+        "id": "enemy_bichi_zhongsi",
+        "name": "碧翅螽斯",
+        "species": 17,
+        "sprite": "res://assets/sprites/enemy_bichi_zhongsi.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "hop",
+        "hp_units": 0.9,
+        "speed_pct": 134,
+        "base_dmg": 6,
+        "radius": 16,
+        "xp_value": 2,
+        "gold_value": 1,
+        "spawn_cost": 1.3,
+        "knockback_resist": 0.0,
+        "resistances": {},
+        "element_multipliers": {
+          "fire": 1.3,
+          "ice": 1.2
+        },
+        "notes": "林间金翠妖蝗，弹跳疾行成群袭来，弱火冰。",
+        "elite_chance": 0.08,
+        "resolved_sprite": "res://assets/sprites/enemy_bichi_zhongsi.png"
+      },
+      {
+        "id": "enemy_linjia_chuanshan",
+        "name": "鳞甲穿山",
+        "species": 18,
+        "sprite": "res://assets/sprites/enemy_linjia_chuanshan.png",
+        "ai_behavior": "shield_bulwark",
+        "chase_mode": "direct",
+        "hp_units": 4.2,
+        "speed_pct": 68,
+        "base_dmg": 14,
+        "radius": 24,
+        "xp_value": 4,
+        "gold_value": 4,
+        "spawn_cost": 3.2,
+        "knockback_resist": 0.55,
+        "resistances": {
+          "knockback_resist": 0.55
+        },
+        "element_multipliers": {
+          "water": 1.25,
+          "thunder": 1.2
+        },
+        "notes": "金鳞穿山甲妖，破土沉稳推进、高抗击退，弱水雷。",
+        "elite_chance": 0.12,
+        "resolved_sprite": "res://assets/sprites/enemy_linjia_chuanshan.png"
+      },
+      {
+        "id": "enemy_chihuan_wugong",
+        "name": "赤环蜈蚣",
+        "species": 19,
+        "sprite": "res://assets/sprites/enemy_chihuan_wugong.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "snake",
+        "hp_units": 1.85,
+        "speed_pct": 116,
+        "base_dmg": 11,
+        "radius": 20,
+        "xp_value": 3,
+        "gold_value": 3,
+        "spawn_cost": 2.3,
+        "knockback_resist": 0.1,
+        "resistances": {
+          "knockback_resist": 0.1
+        },
+        "element_multipliers": {
+          "fire": 0.75,
+          "ice": 1.3
+        },
+        "notes": "火纹赤环百足妖，蛇形扭动纠缠，抗火弱冰。",
+        "elite_chance": 0.11,
+        "resolved_sprite": "res://assets/sprites/enemy_chihuan_wugong.png"
+      },
+      {
+        "id": "enemy_kulou_dizhu",
+        "name": "骷髅地蛛",
+        "species": 20,
+        "sprite": "res://assets/sprites/enemy_kulou_dizhu.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "snake",
+        "hp_units": 1.55,
+        "speed_pct": 122,
+        "base_dmg": 10,
+        "radius": 19,
+        "xp_value": 3,
+        "gold_value": 3,
+        "spawn_cost": 2.1,
+        "knockback_resist": 0.0,
+        "resistances": {
+          "slow_resist": 0.25
+        },
+        "element_multipliers": {
+          "fire": 1.25,
+          "thunder": 1.2
+        },
+        "notes": "玄紫骷髅蜘蛛精，多足蛇行穿插，抗 25% 减速。",
+        "elite_chance": 0.11,
+        "resolved_sprite": "res://assets/sprites/enemy_kulou_dizhu.png"
+      },
+      {
+        "id": "enemy_lingzhi_gujing",
+        "name": "灵芝菇精",
+        "species": 21,
+        "sprite": "res://assets/sprites/enemy_lingzhi_gujing.png",
+        "ai_behavior": "swarm_chaser",
+        "chase_mode": "hop",
+        "hp_units": 0.95,
+        "speed_pct": 108,
+        "base_dmg": 5,
+        "radius": 16,
+        "xp_value": 4,
+        "gold_value": 3,
+        "spawn_cost": 1.4,
+        "knockback_resist": 0.0,
+        "resistances": {},
+        "element_multipliers": {
+          "fire": 1.25
+        },
+        "notes": "粉润灵芝小菇怪，Q 弹跳动但经验灵石丰厚，弱火。",
+        "elite_chance": 0.1,
+        "resolved_sprite": "res://assets/sprites/enemy_lingzhi_gujing.png"
+      },
+      {
+        "id": "enemy_tongke_xiejiang",
+        "name": "铜壳蟹将",
+        "species": 22,
+        "sprite": "res://assets/sprites/enemy_tongke_xiejiang.png",
+        "ai_behavior": "shield_bulwark",
+        "chase_mode": "direct",
+        "hp_units": 6.2,
+        "speed_pct": 54,
+        "base_dmg": 16,
+        "radius": 26,
+        "xp_value": 5,
+        "gold_value": 6,
+        "spawn_cost": 4.0,
+        "knockback_resist": 0.7,
+        "resistances": {
+          "knockback_resist": 0.7,
+          "phys_reduction": 0.15
+        },
+        "element_multipliers": {
+          "thunder": 1.3,
+          "fire": 1.15
+        },
+        "notes": "八卦铜甲蟹将，重甲横行防高抗击退，弱雷火。",
+        "elite_chance": 0.14,
+        "resolved_sprite": "res://assets/sprites/enemy_tongke_xiejiang.png"
       }
     ],
     "elites": [
@@ -5391,6 +5768,27 @@
       "cluster": "anim"
     },
     {
+      "path": "assets/sprites/anim_cangming_longjiang_run.png",
+      "res_path": "res://assets/sprites/anim_cangming_longjiang_run.png",
+      "name": "anim_cangming_longjiang_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 513041,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
       "path": "assets/sprites/anim_canjian_jiankui_run.png",
       "res_path": "res://assets/sprites/anim_canjian_jiankui_run.png",
       "name": "anim_canjian_jiankui_run.png",
@@ -5856,6 +6254,90 @@
       "cluster": "anim"
     },
     {
+      "path": "assets/sprites/anim_jinjia_shenjiang_run.png",
+      "res_path": "res://assets/sprites/anim_jinjia_shenjiang_run.png",
+      "name": "anim_jinjia_shenjiang_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 444135,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_jinyan_jiuwei_run.png",
+      "res_path": "res://assets/sprites/anim_jinyan_jiuwei_run.png",
+      "name": "anim_jinyan_jiuwei_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 502337,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_jiuxiao_leijun_run.png",
+      "res_path": "res://assets/sprites/anim_jiuxiao_leijun_run.png",
+      "name": "anim_jiuxiao_leijun_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 566201,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_liubi_xiemo_run.png",
+      "res_path": "res://assets/sprites/anim_liubi_xiemo_run.png",
+      "name": "anim_liubi_xiemo_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 494043,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
       "path": "assets/sprites/anim_paper_doll_float.png",
       "res_path": "res://assets/sprites/anim_paper_doll_float.png",
       "name": "anim_paper_doll_float.png",
@@ -5876,6 +6358,27 @@
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_qianshou_mofo_run.png",
+      "res_path": "res://assets/sprites/anim_qianshou_mofo_run.png",
+      "name": "anim_qianshou_mofo_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 429320,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
       "cluster": "anim"
     },
     {
@@ -5925,6 +6428,48 @@
       "cluster": "anim"
     },
     {
+      "path": "assets/sprites/anim_sibi_gumo_run.png",
+      "res_path": "res://assets/sprites/anim_sibi_gumo_run.png",
+      "name": "anim_sibi_gumo_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 497150,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_taohua_meiji_run.png",
+      "res_path": "res://assets/sprites/anim_taohua_meiji_run.png",
+      "name": "anim_taohua_meiji_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 475449,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
       "path": "assets/sprites/anim_tongjia_shiwang_run.png",
       "res_path": "res://assets/sprites/anim_tongjia_shiwang_run.png",
       "name": "anim_tongjia_shiwang_run.png",
@@ -5946,6 +6491,27 @@
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
+      "cluster": "anim"
+    },
+    {
+      "path": "assets/sprites/anim_tunxing_juchan_run.png",
+      "res_path": "res://assets/sprites/anim_tunxing_juchan_run.png",
+      "name": "anim_tunxing_juchan_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 529421,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
       "cluster": "anim"
     },
     {
@@ -6044,6 +6610,27 @@
       "cluster": "anim"
     },
     {
+      "path": "assets/sprites/anim_youming_zihu_run.png",
+      "res_path": "res://assets/sprites/anim_youming_zihu_run.png",
+      "name": "anim_youming_zihu_run.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 426228,
+      "width": 1792,
+      "height": 224,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 8,
+        "rows": 1
+      },
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "anim"
+    },
+    {
       "path": "assets/sprites/anim_zhenhun_shidun_run.png",
       "res_path": "res://assets/sprites/anim_zhenhun_shidun_run.png",
       "name": "anim_zhenhun_shidun_run.png",
@@ -6125,6 +6712,27 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_cangming_longjiang.png",
+      "res_path": "res://assets/sprites/enemy_cangming_longjiang.png",
+      "name": "enemy_cangming_longjiang.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 99814,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
       "used_by": [],
       "status": "orphan",
       "cluster": "enemy"
@@ -6163,8 +6771,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6201,8 +6812,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6366,8 +6980,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6391,6 +7008,60 @@
       "cluster": "enemy"
     },
     {
+      "path": "assets/sprites/enemy_jinjia_shenjiang.png",
+      "res_path": "res://assets/sprites/enemy_jinjia_shenjiang.png",
+      "name": "enemy_jinjia_shenjiang.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 92198,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_jinyan_jiuwei.png",
+      "res_path": "res://assets/sprites/enemy_jinyan_jiuwei.png",
+      "name": "enemy_jinyan_jiuwei.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 103330,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_jiuxiao_leijun.png",
+      "res_path": "res://assets/sprites/enemy_jiuxiao_leijun.png",
+      "name": "enemy_jiuxiao_leijun.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 105933,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "enemy"
+    },
+    {
       "path": "assets/sprites/enemy_kulou_dizhu.png",
       "res_path": "res://assets/sprites/enemy_kulou_dizhu.png",
       "name": "enemy_kulou_dizhu.png",
@@ -6404,8 +7075,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6422,8 +7096,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6436,6 +7113,45 @@
       "is_image": true,
       "is_audio": false,
       "size_bytes": 87009,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_liubi_xiemo.png",
+      "res_path": "res://assets/sprites/enemy_liubi_xiemo.png",
+      "name": "enemy_liubi_xiemo.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 102377,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_qianshou_mofo.png",
+      "res_path": "res://assets/sprites/enemy_qianshou_mofo.png",
+      "name": "enemy_qianshou_mofo.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 89982,
       "width": 256,
       "height": 256,
       "duration_sec": null,
@@ -6454,6 +7170,45 @@
       "is_image": true,
       "is_audio": false,
       "size_bytes": 57359,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_sibi_gumo.png",
+      "res_path": "res://assets/sprites/enemy_sibi_gumo.png",
+      "name": "enemy_sibi_gumo.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 90349,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_taohua_meiji.png",
+      "res_path": "res://assets/sprites/enemy_taohua_meiji.png",
+      "name": "enemy_taohua_meiji.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 94383,
       "width": 256,
       "height": 256,
       "duration_sec": null,
@@ -6492,6 +7247,27 @@
       "is_image": true,
       "is_audio": false,
       "size_bytes": 96801,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_tunxing_juchan.png",
+      "res_path": "res://assets/sprites/enemy_tunxing_juchan.png",
+      "name": "enemy_tunxing_juchan.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 118965,
       "width": 256,
       "height": 256,
       "duration_sec": null,
@@ -6554,8 +7330,11 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json",
+        "scripts/enemy_visual.gd"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -6577,6 +7356,24 @@
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
+      "cluster": "enemy"
+    },
+    {
+      "path": "assets/sprites/enemy_youming_zihu.png",
+      "res_path": "res://assets/sprites/enemy_youming_zihu.png",
+      "name": "enemy_youming_zihu.png",
+      "category": "enemies",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 90278,
+      "width": 256,
+      "height": 256,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
       "cluster": "enemy"
     },
     {
@@ -10019,6 +10816,7 @@
       "shaders/burn_dissolve.gdshader",
       "shaders/circle_avatar.gdshader",
       "shaders/electric_arc.gdshader",
+      "shaders/enemy_still_motion.gdshader",
       "shaders/fire_flame_2d.gdshader",
       "shaders/flame_tongue.gdshader",
       "shaders/ground_scorch.gdshader",
@@ -10055,7 +10853,7 @@
         {
           "id": "enemies_waves_v2",
           "label": "enemies_waves_v2.json",
-          "count": 15,
+          "count": 25,
           "group": "combat",
           "x": 340,
           "y": 50

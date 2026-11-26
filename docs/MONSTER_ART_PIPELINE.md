@@ -64,6 +64,8 @@ python tools/build_monster_video_sheets.py --verify
 | contact sheet 看着没问题，实机偏小 | 预览按格子缩放，掩盖了显示尺寸问题 | 必须用 `tests/showcase_new_monsters.tscn` 同款实机截图验收，看 60/85/180px 三档 |
 | 蝙蝠格里冒出火鸦的火苗、蜈蚣格里带着穿山甲的尾巴 | 按画布宽度等比五等分切格，相邻角色跨过了等分线 | 列边界用**上下两排投影同时为空的列**（本例 `632 / 1137 / 1660 / 2185`），行带取 `740` |
 | 缩小后角色外圈发绿 | 羽化环（alpha 0.55）里留着绿幕色，缩放时的 alpha 除法把它放大成绿边 | 环上再压一道 `G ≤ (R+B)/2 + 4`，缩放改成预乘 alpha 再 LANCZOS |
+| 绿幕视频中段动作挥砍跨格串扰 | 10s 视频中段（约 2–7s）部分角色大招特效侵入邻格，全片均匀抽 8 帧会带入残影 | `_pick_clean_loop_window` 按角色遍历 `48/56/64` 帧连续窗口，优先左右边界像素碰撞最低、内部动作流畅且首尾闭环差最小的 8 帧 |
+| 1280×720 视频内部封闭绿幕空洞漏掏 | 视频分辨率面积只有概念图的 1/4.6，沿用 `hole_min_area=200` 会漏掉雷鼓/飘带/手臂间的中小空洞 | 用 `label(cand)` 一次完成边界连通域抠像，并按 `hole_dist=45, hole_min_area=8` 将命中的封闭 `cand` 连通域整块并入背景 |
 
 ---
 
@@ -104,3 +106,18 @@ python tools/build_monster_video_sheets.py --verify   # 资产巡检会顺带跑
 - 切格不用等比五等分：列边界写在 `STILL_COL_SPLITS`，取上下两排像素投影同时为空的列；行带写在 `STILL_ROW_BANDS`（本例 `740`），概念图无标签文字时不需要给文字留白。
 - 产物：`assets/sprites/enemy_<id>.png`（256²，脚底落在 96%），预览见 `.tmp/monsters/contact_stills.png`。
 - 只校验尺寸、底部残留、低透明碎片与绿边；进池时仍需在 `enemies_waves_v2.json` 与 `enemy_visual.gd` 登记，才不会再报 orphan。
+
+---
+
+## 7. 第二批首领/小Boss/精英（`--boss-batch2`）
+
+整套 10 只（幽冥紫虎、九霄雷君、沧溟龙将、四臂骨魔、桃花魅姬、六臂蝎魔、吞星巨蟾、金甲神将、金焰九尾、千手魔佛）统一按 `boss` 规格导出，方便后续按需分配为关底大 Boss、小 Boss 或精英怪：
+
+```bash
+python tools/build_monster_video_sheets.py --boss-batch2
+python tools/build_monster_video_sheets.py --verify
+```
+
+- 角色清单：`BOSS_BATCH2_MONSTERS`，按行使用非均匀列边界（`BOSS_BATCH2_CONCEPT_COLS` / `BOSS_BATCH2_VIDEO_COLS`）切格，并对 `liubi_xiemo` 右界微扩以完整保留刀尖。
+- 产物：`assets/sprites/enemy_<id>.png`（256²）与 `assets/sprites/anim_<id>_run.png`（1792×224，8 帧横排）；预览见 `.tmp/monsters/contact_concept_boss_batch2.png` 与 `.tmp/monsters/contact_video_boss_batch2.png`。
+- 校验只检查立绘与图集文件规格与质量，不强制要求预先写入 `enemies_waves_v2.json` 与 `enemy_visual.gd`。

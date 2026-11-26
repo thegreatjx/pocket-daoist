@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 18:13:45）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 18:32:49）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -41,7 +41,7 @@
 | `GAP` (MISSING_ART_SLOT) | 商店宝物缺少独立图标 (16/16) | `data/v2/items_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 天道道韵缺少独立图标 (8/8) | `data/v2/arcana_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
-| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 17 个未引用媒体文件（含多版本残留） | `assets/` |
+| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 27 个未引用媒体文件（含多版本残留） | `assets/` |
 | `WARNING` (UI_THEME_BYPASS) | 4 个 UI 脚本绕过 XianxiaUITheme 私写 23 处 StyleBoxFlat.new() | `scripts/ui/xianxia_ui_theme.gd` |
 
 ## 4. 已有核心资产速查表（直接复用，勿重复生成）
@@ -77,12 +77,22 @@
 - `enemy_charger_huodou` (炎煞祸斗, species=6) -> `res://assets/sprites/anim_huodou_run.png`
 - `enemy_bulwark_golem` (青石镇傀, species=2) -> `res://assets/sprites/anim_shanxiao_run.png`
 - `enemy_bulwark_jinchan` (三足金蟾, species=4) -> `res://assets/sprites/anim_jinchan_run.png`
-- `enemy_zhusha_zhiren` (朱砂纸人, species=7) -> ``
-- `enemy_chihuo_danling` (炽火丹灵, species=8) -> ``
-- `enemy_wudu_zhangchan` (五毒蟾蜍, species=9) -> ``
-- `enemy_canjian_jiankui` (残剑剑傀, species=10) -> ``
+- `enemy_zhusha_zhiren` (朱砂纸人, species=7) -> `res://assets/sprites/anim_zhusha_zhiren_run.png`
+- `enemy_chihuo_danling` (炽火丹灵, species=8) -> `res://assets/sprites/anim_chihuo_danling_run.png`
+- `enemy_wudu_zhangchan` (五毒蟾蜍, species=9) -> `res://assets/sprites/anim_wudu_zhangchan_run.png`
+- `enemy_canjian_jiankui` (残剑剑傀, species=10) -> `res://assets/sprites/anim_canjian_jiankui_run.png`
 - `enemy_yinsha_daotong` (阴煞道童, species=11) -> ``
 - `enemy_zhenhun_shidun` (镇魂石墩, species=12) -> ``
+- `enemy_fenyu_sanya` (焚羽三鸦, species=13) -> `res://assets/sprites/enemy_fenyu_sanya.png`
+- `enemy_xueyi_yefu` (血翼夜蝠, species=14) -> `res://assets/sprites/enemy_xueyi_yefu.png`
+- `enemy_qingyan_denglong` (青焰灯笼, species=15) -> `res://assets/sprites/enemy_qingyan_denglong.png`
+- `enemy_duyan_tangsan` (独眼唐伞, species=16) -> `res://assets/sprites/enemy_duyan_tangsan.png`
+- `enemy_bichi_zhongsi` (碧翅螽斯, species=17) -> `res://assets/sprites/enemy_bichi_zhongsi.png`
+- `enemy_linjia_chuanshan` (鳞甲穿山, species=18) -> `res://assets/sprites/enemy_linjia_chuanshan.png`
+- `enemy_chihuan_wugong` (赤环蜈蚣, species=19) -> `res://assets/sprites/enemy_chihuan_wugong.png`
+- `enemy_kulou_dizhu` (骷髅地蛛, species=20) -> `res://assets/sprites/enemy_kulou_dizhu.png`
+- `enemy_lingzhi_gujing` (灵芝菇精, species=21) -> `res://assets/sprites/enemy_lingzhi_gujing.png`
+- `enemy_tongke_xiejiang` (铜壳蟹将, species=22) -> `res://assets/sprites/enemy_tongke_xiejiang.png`
 
 ### 音频与特效白名单
 - 已接入音频：`res://assets/audio/bgm/bgm_boss_p1.ogg`, `res://assets/audio/bgm/bgm_boss_p2.ogg`, `res://assets/audio/bgm/bgm_forest.ogg`, `res://assets/audio/bgm/bgm_ice.ogg`, `res://assets/audio/bgm/bgm_lobby.ogg`, `res://assets/audio/bgm/bgm_miniboss.ogg`, `res://assets/audio/bgm/bgm_volcano.ogg`, `res://assets/audio/bgm/loop_tension_drums.ogg`, `res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/fire_gourd_burn.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`, `res://assets/audio/thunder_arc_snap.wav`, `res://assets/audio/water_ripple_splash.wav`

@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import subprocess
 import sys
 
 import numpy as np
@@ -12,6 +13,8 @@ SPRITES_DIR = os.path.join(PROJECT_ROOT, "assets", "sprites")
 RAW_CONCEPT = r"C:/Users/jiang/Pictures/百宝/Gemini_Generated_Image_jf6lm9jf6lm9jf6l.jpg"
 RAW_VIDEO = r"C:/Users/jiang/Pictures/百宝/gemini_generated_video_a59a9892.mp4"
 RAW_STILLS = r"C:/Users/jiang/Pictures/百宝/Gemini_Generated_Image_pfsptqpfsptqpfsp.jpg"
+RAW_BOSS_BATCH2_CONCEPT = r"C:/Users/jiang/Pictures/百宝/Gemini_Generated_Image_8ciroe8ciroe8cir.jpg"
+RAW_BOSS_BATCH2_VIDEO = r"C:/Users/jiang/Pictures/百宝/gemini_generated_video_618a540e.mp4"
 WORK_DIR = os.path.join(PROJECT_ROOT, ".tmp", "monsters")
 
 CONCEPT_SIZE = (2752, 1536)
@@ -49,6 +52,30 @@ STILL_ROW_BANDS = ((0, 740), (740, CONCEPT_SIZE[1]))
 # 列边界取上下两排投影同时为空的列，避免把火鸦的火苗、穿山甲的尾巴切一半分给邻格
 STILL_COL_SPLITS = (0, 632, 1137, 1660, 2185, CONCEPT_SIZE[0])
 
+# 第二批首领/小Boss/精英怪（5×2 概念图 + 绿幕视频，全部按 boss 224² 8 帧规格导出）
+BOSS_BATCH2_MONSTERS = [
+    {"id": "youming_zihu", "name": "幽冥紫虎", "tier": "boss", "col": 0, "row": 0},
+    {"id": "jiuxiao_leijun", "name": "九霄雷君", "tier": "boss", "col": 1, "row": 0},
+    {"id": "cangming_longjiang", "name": "沧溟龙将", "tier": "boss", "col": 2, "row": 0},
+    {"id": "sibi_gumo", "name": "四臂骨魔", "tier": "boss", "col": 3, "row": 0},
+    {"id": "taohua_meiji", "name": "桃花魅姬", "tier": "boss", "col": 4, "row": 0},
+    {"id": "liubi_xiemo", "name": "六臂蝎魔", "tier": "boss", "col": 0, "row": 1},
+    {"id": "tunxing_juchan", "name": "吞星巨蟾", "tier": "boss", "col": 1, "row": 1},
+    {"id": "jinjia_shenjiang", "name": "金甲神将", "tier": "boss", "col": 2, "row": 1},
+    {"id": "jinyan_jiuwei", "name": "金焰九尾", "tier": "boss", "col": 3, "row": 1},
+    {"id": "qianshou_mofo", "name": "千手魔佛", "tier": "boss", "col": 4, "row": 1},
+]
+BOSS_BATCH2_CONCEPT_ROWS = ((0, 779), (779, 1536))
+BOSS_BATCH2_CONCEPT_COLS = (
+    (0, 600, 1181, 1683, 2253, 2752),
+    (0, 610, 1190, 1685, 2228, 2752),
+)
+BOSS_BATCH2_VIDEO_ROWS = ((0, 359), (359, 720))
+BOSS_BATCH2_VIDEO_COLS = (
+    (0, 279, 549, 783, 1048, 1280),
+    (0, 283, 553, 784, 1036, 1280),
+)
+
 VIDEO_CELL = (256, 360)
 VIDEO_ROW_CROP = ((0, 294), (360, 654))
 
@@ -56,32 +83,40 @@ FRAME_COUNT = 8
 FRAME_TALL = {"minion": 128, "elite": 160, "boss": 224}
 
 
-def key_cutout(rgb: np.ndarray, key: np.ndarray, dist: float = 70.0) -> np.ndarray:
+def key_cutout(
+    rgb: np.ndarray,
+    key: np.ndarray,
+    dist: float = 70.0,
+    hole_dist: float = 22.0,
+    hole_min_area: int = 200,
+) -> np.ndarray:
     h, w, _ = rgb.shape
     diff = np.linalg.norm(rgb - key, axis=2)
     greenish = (rgb[:, :, 1] - np.maximum(rgb[:, :, 0], rgb[:, :, 2])) > 25
     cand = (diff < dist) & greenish
 
-    border = np.zeros((h, w), bool)
-    border[0, :] = border[-1, :] = True
-    border[:, 0] = border[:, -1] = True
-    bg = cand & border
-    while True:
-        grown = binary_dilation(bg, iterations=3) & cand
-        if grown.sum() == bg.sum():
-            break
-        bg = grown
-
-    strict = (diff < 22.0) & greenish & ~bg
-    lbl, n = label(strict)
+    lbl, n = label(cand)
+    bg = np.zeros((h, w), bool)
     if n:
-        counts = np.bincount(lbl.ravel())
-        for cid in range(1, n + 1):
-            if counts[cid] < 200:
-                continue
-            ys, xs = np.where(lbl == cid)
-            if ys.min() > 2 and xs.min() > 2 and ys.max() < h - 3 and xs.max() < w - 3:
-                bg |= lbl == cid
+        border_ids = set(lbl[0, :].tolist()) | set(lbl[-1, :].tolist()) | set(lbl[:, 0].tolist()) | set(lbl[:, -1].tolist())
+        border_ids.discard(0)
+        if border_ids:
+            bg |= np.isin(lbl, list(border_ids))
+
+        strict = (diff < hole_dist) & greenish & ~bg
+        if strict.any():
+            slbl, sn = label(strict)
+            counts = np.bincount(slbl.ravel())
+            hit_cids = set()
+            for cid in range(1, sn + 1):
+                if counts[cid] < hole_min_area:
+                    continue
+                ys, xs = np.where(slbl == cid)
+                if ys.min() > 2 and xs.min() > 2 and ys.max() < h - 3 and xs.max() < w - 3:
+                    hit_cids.update(lbl[ys, xs].tolist())
+            hit_cids.discard(0)
+            if hit_cids:
+                bg |= np.isin(lbl, list(hit_cids))
 
     alpha = np.where(bg, 0.0, 1.0).astype(np.float32)
     ring = binary_dilation(bg, iterations=1) & ~bg
@@ -322,21 +357,199 @@ def _frame_problems(frame: Image.Image, label: str) -> list[str]:
 
 def verify_stills() -> list[str]:
     problems: list[str] = []
+    data_path = os.path.join(PROJECT_ROOT, "data", "v2", "enemies_waves_v2.json")
+    data_txt = open(data_path, encoding="utf-8").read() if os.path.exists(data_path) else ""
+    visual_path = os.path.join(PROJECT_ROOT, "scripts", "enemy_visual.gd")
+    visual_txt = open(visual_path, encoding="utf-8").read() if os.path.exists(visual_path) else ""
     for m in STILL_MONSTERS:
-        path = os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png")
+        still_name = f"enemy_{m['id']}.png"
+        path = os.path.join(SPRITES_DIR, still_name)
         if not os.path.exists(path):
-            problems.append(f"{m['id']}: 缺少 enemy_{m['id']}.png")
+            problems.append(f"{m['id']}: 缺少 {still_name}")
             continue
         still = Image.open(path).convert("RGBA")
         if still.size != (256, 256):
             problems.append(f"{m['id']}: 立绘尺寸 {still.size}，应为 (256, 256)")
             continue
         problems += _frame_problems(still, f"{m['id']}@still")
+        if still_name not in data_txt:
+            problems.append(f"{m['id']}: {still_name} 未登记到 enemies_waves_v2.json")
+        if still_name not in visual_txt:
+            problems.append(f"{m['id']}: enemy_visual.gd 未 preload {still_name}")
+    return problems
+
+
+def _batch2_concept_box(m: dict) -> tuple[int, int, int, int]:
+    row, col = m["row"], m["col"]
+    cols = BOSS_BATCH2_CONCEPT_COLS[row]
+    x0, x1 = cols[col], cols[col + 1]
+    if m["id"] == "liubi_xiemo":
+        x1 += 14
+    y0, y1 = BOSS_BATCH2_CONCEPT_ROWS[row]
+    return x0, y0, x1, y1
+
+
+def _batch2_video_box(m: dict) -> tuple[int, int, int, int]:
+    row, col = m["row"], m["col"]
+    cols = BOSS_BATCH2_VIDEO_COLS[row]
+    x0, x1 = cols[col], cols[col + 1]
+    if m["id"] == "liubi_xiemo":
+        x1 += 7
+    y0, y1 = BOSS_BATCH2_VIDEO_ROWS[row]
+    return x0, y0, x1, y1
+
+
+def _pick_clean_loop_window(
+    frames_rgba: list[Image.Image],
+    box: tuple[int, int, int, int],
+    has_left: bool,
+    has_right: bool,
+) -> list[int]:
+    x0, y0, x1, y1 = box
+    n = len(frames_rgba)
+    edge_hits = np.zeros(n, dtype=np.int32)
+    thumbs = []
+    for t, im in enumerate(frames_rgba):
+        crop = im.crop(box)
+        a = np.array(crop.getchannel("A")) > 8
+        hit = 0
+        if has_left:
+            hit += int(a[:, :2].sum())
+        if has_right:
+            hit += int(a[:, -2:].sum())
+        edge_hits[t] = hit
+        small = np.array(crop.resize((48, 48), Image.Resampling.BILINEAR), dtype=np.float32)
+        thumbs.append(small)
+
+    best_score = None
+    best_picks: list[int] = []
+    for length in (48, 56, 64):
+        for s in range(0, n - length):
+            picks = [s + int(round(i * length / FRAME_COUNT)) for i in range(FRAME_COUNT)]
+            max_edge = int(edge_hits[picks].max())
+            sum_edge = int(edge_hits[picks].sum())
+            step_diffs = [float(np.abs(thumbs[picks[i + 1]] - thumbs[picks[i]]).mean()) for i in range(FRAME_COUNT - 1)]
+            motion = float(np.mean(step_diffs))
+            loop_gap = float(np.abs(thumbs[s + length] - thumbs[s]).mean())
+            edge_bucket = max_edge // 20
+            motion_penalty = max(0.0, 2.5 - motion) * 10.0
+            score = (edge_bucket, max_edge > 45, sum_edge // 40, loop_gap + motion_penalty)
+            if best_score is None or score < best_score:
+                best_score = score
+                best_picks = picks
+    return best_picks
+
+
+def build_boss_batch2_concept() -> dict[str, Image.Image]:
+    rgb = np.array(Image.open(RAW_BOSS_BATCH2_CONCEPT).convert("RGB"), dtype=np.float32)
+    cut = Image.fromarray(key_cutout(rgb, sample_key(rgb), hole_dist=45.0, hole_min_area=18), "RGBA")
+    os.makedirs(WORK_DIR, exist_ok=True)
+    cut.save(os.path.join(WORK_DIR, "boss_batch2_concept_cutout.png"))
+
+    out = {}
+    for m in BOSS_BATCH2_MONSTERS:
+        crop = clean_edge_blobs(trim_alpha(cut.crop(_batch2_concept_box(m))))
+        out[m["id"]] = crop
+        crop.save(os.path.join(WORK_DIR, f"boss_batch2_concept_{m['id']}.png"))
+        square_fit(crop, 256, 0.96).save(os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png"))
+    return out
+
+
+def build_boss_batch2_video() -> dict[str, list[Image.Image]]:
+    raw_dir = os.path.join(WORK_DIR, "boss_batch2_raw")
+    clean_dir = os.path.join(WORK_DIR, "boss_batch2_clean")
+    os.makedirs(raw_dir, exist_ok=True)
+    os.makedirs(clean_dir, exist_ok=True)
+    if len([f for f in os.listdir(raw_dir) if f.endswith(".png")]) < 240:
+        subprocess.run(
+            ["ffmpeg", "-y", "-v", "error", "-i", RAW_BOSS_BATCH2_VIDEO, "-vf", "fps=24", f"{raw_dir}/frame_%04d.png"],
+            check=True,
+        )
+
+    frames_rgba = []
+    for i in range(1, 241):
+        clean_path = os.path.join(clean_dir, f"clean_{i:04d}.png")
+        if os.path.exists(clean_path):
+            frames_rgba.append(Image.open(clean_path).convert("RGBA"))
+            continue
+        rgb = np.array(Image.open(os.path.join(raw_dir, f"frame_{i:04d}.png")).convert("RGB"), dtype=np.float32)
+        im = Image.fromarray(key_cutout(rgb, sample_key(rgb), hole_dist=45.0, hole_min_area=8), "RGBA")
+        im.save(clean_path)
+        frames_rgba.append(im)
+
+    out = {}
+    for m in BOSS_BATCH2_MONSTERS:
+        box = _batch2_video_box(m)
+        picks = _pick_clean_loop_window(frames_rgba, box, m["col"] > 0, m["col"] < CONCEPT_COLS - 1)
+        print(f"[batch2] {m['id']} ({m['name']}) picks={picks}")
+        cells = [clean_edge_blobs(frames_rgba[pi].crop(box), min_area=350) for pi in picks]
+
+        tall = FRAME_TALL[m["tier"]]
+        centers = []
+        bottoms = []
+        max_w = 1
+        max_h = 1
+        for c in cells:
+            ys, xs = np.where(np.array(c.getchannel("A")) > 8)
+            if len(xs) == 0:
+                continue
+            centers.append(float(xs.mean()))
+            bottoms.append(int(ys.max()))
+            max_w = max(max_w, int(xs.max() - xs.min() + 1))
+            max_h = max(max_h, int(ys.max() - ys.min() + 1))
+
+        cx = float(np.median(centers))
+        foot = float(np.median(bottoms))
+        scale = min(tall / 360.0, (tall * 0.92) / max_h, (tall * 0.96) / max_w)
+        aligned = []
+        for crop in cells:
+            w = max(1, int(round(crop.width * scale)))
+            h = max(1, int(round(crop.height * scale)))
+            resized = _resize_rgba(crop, (w, h))
+            canvas = Image.new("RGBA", (tall, tall), (0, 0, 0, 0))
+            x = int(round(tall / 2.0 - cx * scale))
+            y = int(round(tall * 0.94 - foot * scale))
+            canvas.alpha_composite(resized, (x, y))
+            aligned.append(canvas)
+
+        sheet = Image.new("RGBA", (tall * FRAME_COUNT, tall), (0, 0, 0, 0))
+        for i, im in enumerate(aligned):
+            sheet.alpha_composite(im, (i * tall, 0))
+        sheet.save(os.path.join(WORK_DIR, f"anim_{m['id']}_run.png"))
+        sheet.save(os.path.join(SPRITES_DIR, f"anim_{m['id']}_run.png"))
+        out[m["id"]] = aligned
+    return out
+
+
+def verify_boss_batch2() -> list[str]:
+    problems: list[str] = []
+    for m in BOSS_BATCH2_MONSTERS:
+        tall = FRAME_TALL[m["tier"]]
+        still_path = os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png")
+        sheet_path = os.path.join(SPRITES_DIR, f"anim_{m['id']}_run.png")
+        if not os.path.exists(still_path):
+            problems.append(f"{m['id']}: 缺少 enemy_{m['id']}.png")
+        else:
+            still = Image.open(still_path).convert("RGBA")
+            if still.size != (256, 256):
+                problems.append(f"{m['id']}: 立绘尺寸 {still.size}，应为 (256, 256)")
+            else:
+                problems += _frame_problems(still, f"{m['id']}@still")
+        if not os.path.exists(sheet_path):
+            problems.append(f"{m['id']}: 缺少 anim_{m['id']}_run.png")
+            continue
+        sheet = Image.open(sheet_path).convert("RGBA")
+        if sheet.size != (tall * FRAME_COUNT, tall):
+            problems.append(f"{m['id']}: 图集尺寸 {sheet.size}，应为 {(tall * FRAME_COUNT, tall)}")
+            continue
+        for i in range(FRAME_COUNT):
+            frame = sheet.crop((i * tall, 0, (i + 1) * tall, tall))
+            problems += _frame_problems(frame, f"{m['id']}#{i}")
     return problems
 
 
 def verify() -> int:
-    problems: list[str] = verify_stills()
+    problems: list[str] = verify_stills() + verify_boss_batch2()
     data_path = os.path.join(PROJECT_ROOT, "data", "v2", "enemies_waves_v2.json")
     data_txt = open(data_path, encoding="utf-8").read() if os.path.exists(data_path) else ""
     visual_path = os.path.join(PROJECT_ROOT, "scripts", "enemy_visual.gd")
@@ -384,6 +597,28 @@ def build_stills_only() -> int:
     return verify()
 
 
+def build_boss_batch2_only() -> int:
+    concept = build_boss_batch2_concept()
+    build_boss_batch2_video()
+    contact_sheet(
+        [(m["name"], concept[m["id"]]) for m in BOSS_BATCH2_MONSTERS],
+        os.path.join(WORK_DIR, "contact_concept_boss_batch2.png"),
+    )
+    cell = 200
+    sheet_all = Image.new("RGB", (FRAME_COUNT * cell, len(BOSS_BATCH2_MONSTERS) * cell), (28, 28, 28))
+    for row, m in enumerate(BOSS_BATCH2_MONSTERS):
+        sheet = Image.open(os.path.join(WORK_DIR, f"anim_{m['id']}_run.png"))
+        tall = FRAME_TALL[m["tier"]]
+        for i in range(FRAME_COUNT):
+            tile = Image.new("RGBA", (cell, cell), (42, 42, 42, 255))
+            frame = sheet.crop((i * tall, 0, (i + 1) * tall, tall))
+            tile.alpha_composite(frame.resize((cell, cell), Image.Resampling.LANCZOS))
+            sheet_all.paste(tile.convert("RGB"), (i * cell, row * cell))
+    sheet_all.save(os.path.join(WORK_DIR, "contact_video_boss_batch2.png"))
+    print("BOSS_BATCH2 OK", WORK_DIR)
+    return verify()
+
+
 def build() -> int:
     concept = build_concept()
     build_video_frames()
@@ -410,12 +645,19 @@ def main() -> int:
     ap.add_argument("--video", default=RAW_VIDEO)
     ap.add_argument("--stills-concept", default=RAW_STILLS, help="静态小怪概念图（只拆单张立绘）")
     ap.add_argument("--stills", action="store_true", help="只拆 STILL_MONSTERS 的单张立绘")
+    ap.add_argument("--boss-batch2-concept", default=RAW_BOSS_BATCH2_CONCEPT, help="第二批首领/精英概念图")
+    ap.add_argument("--boss-batch2-video", default=RAW_BOSS_BATCH2_VIDEO, help="第二批首领/精英绿幕视频")
+    ap.add_argument("--boss-batch2", action="store_true", help="拆 BOSS_BATCH2_MONSTERS 的立绘与 8 帧图集")
     args = ap.parse_args()
     globals()["RAW_CONCEPT"] = args.concept
     globals()["RAW_VIDEO"] = args.video
     globals()["RAW_STILLS"] = args.stills_concept
+    globals()["RAW_BOSS_BATCH2_CONCEPT"] = args.boss_batch2_concept
+    globals()["RAW_BOSS_BATCH2_VIDEO"] = args.boss_batch2_video
     if args.verify:
         return verify()
+    if args.boss_batch2:
+        return build_boss_batch2_only()
     return build_stills_only() if args.stills else build()
 
 
