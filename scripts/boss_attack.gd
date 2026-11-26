@@ -20,6 +20,8 @@ var speed: float = 290.0
 var color_primary: Color = Color(0.98, 0.24, 0.22, 1.0)
 var color_accent: Color = Color(1.0, 0.82, 0.34, 1.0)
 var persist_after_owner_death: bool = false
+var slow_ratio: float = 0.0
+var slow_dur: float = 0.0
 
 var _elapsed: float = 0.0
 var _detonated: bool = false
@@ -47,6 +49,8 @@ func _ensure_vfx_root() -> Node2D:
 func pool_acquire() -> void:
 	_clear_vfx_children()
 	kind = Kind.CIRCLE_SLAM
+	slow_ratio = 0.0
+	slow_dur = 0.0
 	owner_boss = null
 	damage = 24.0
 	radius = 110.0
@@ -238,6 +242,8 @@ func _physics_process(delta: float) -> void:
 				if global_position.distance_squared_to(p.global_position) <= (radius + 14.0) * (radius + 14.0):
 					if p.has_method("take_damage"):
 						p.take_damage(damage)
+					if slow_ratio > 0.0 and p.has_method("apply_slow"):
+						p.apply_slow(slow_ratio, slow_dur)
 					if get_parent() != null:
 						V2VfxFactory.spawn_hit_spark(get_parent(), global_position, "fire", true, color_primary)
 					_release_self()
@@ -257,6 +263,8 @@ func _detonate_circle() -> void:
 		if is_point_in_slam(p.global_position):
 			if p.has_method("take_damage"):
 				p.take_damage(damage)
+			if slow_ratio > 0.0 and p.has_method("apply_slow"):
+				p.apply_slow(slow_ratio, slow_dur)
 
 func _draw() -> void:
 	match kind:
