@@ -20,8 +20,14 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GODOT = os.environ.get("GODOT", "godot")
 
-# 已知的历史告警：arcana 引用了尚未实现的反应 ID。新出现的告警才会让检查失败。
-KNOWN_AUDIT_ERRORS = ("react_molten_forge", "react_shatter", "react_miasma_arc")
+# 已知的历史告警：已停用的 arcana 引用了旧版反应或已清空的超武合体 ID。新出现的告警才会让检查失败。
+KNOWN_AUDIT_ERRORS = (
+    "react_molten_forge",
+    "react_shatter",
+    "react_miasma_arc",
+    "fusion_flame_sword_array",
+    "fusion_thunder_frost_domain",
+)
 
 CODE_EXTS = (".gd", ".tscn", ".tres", ".gdshader")
 FLOW_PREFIXES = ("scripts/autoload/", "scenes/", "scripts/ui/")

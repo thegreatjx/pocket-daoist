@@ -39,6 +39,8 @@ var damage_reduction: float = 0.0
 var regen_per_second: float = 0.0
 var _regen_accum: float = 0.0
 var invuln_timer: float = 0.0
+var slow_timer: float = 0.0
+var slow_mult: float = 1.0
 
 var sect_might_mult: float = 1.0
 var revivals_left: int = 0
@@ -171,6 +173,11 @@ func _physics_process(delta: float) -> void:
 		dash_cooldown_timer -= delta
 	if invuln_timer > 0.0:
 		invuln_timer -= delta
+	if slow_timer > 0.0:
+		slow_timer -= delta
+		if slow_timer <= 0.0:
+			slow_timer = 0.0
+			slow_mult = 1.0
 
 	var move_input := get_move_input()
 	if move_input.length_squared() > 0.0001:
@@ -194,7 +201,7 @@ func _physics_process(delta: float) -> void:
 		if dash_timer <= 0.0:
 			_end_dash()
 	else:
-		velocity = move_input * speed
+		velocity = move_input * speed * slow_mult
 		if (Input.is_action_pressed("dash") or Input.is_key_pressed(KEY_SPACE)) and dash_cooldown_timer <= 0.0:
 			if move_input.length_squared() > 0.0001:
 				dash_direction = move_input.normalized()
@@ -281,6 +288,12 @@ func gain_exp(amount: float) -> void:
 		emit_signal("leveled_up", level)
 	emit_signal("exp_changed", current_exp, exp_to_next_level, level)
 
+func apply_slow(ratio: float, duration: float) -> void:
+	if is_dead or ratio <= 0.0:
+		return
+	slow_mult = minf(slow_mult, clampf(1.0 - ratio, 0.25, 1.0))
+	slow_timer = maxf(slow_timer, duration)
+
 func take_damage(amount: float) -> void:
 	if debug_invincible and amount < 90000.0:
 		return
@@ -291,8 +304,7 @@ func take_damage(amount: float) -> void:
 		if v2_combat != null:
 			v2_combat._spawn_text_popup(global_position + Vector2(0.0, -28.0), "闪避", Color(0.45, 0.95, 0.85))
 		return
-	var armor_mult := 1.0 if amount >= 90000.0 else (100.0 / (100.0 + 12.0 * maxf(0.0, armor)))
-	var total_dmg_mult := 1.0 if amount >= 90000.0 else maxf(0.25, armor_mult * (1.0 - clampf(damage_reduction, 0.0, 1.0)))
+	var total_dmg_mult := 1.0 if amount >= 90000.0 else maxf(0.25, 1.0 - clampf(damage_reduction, 0.0, 0.75))
 	var actual := amount * total_dmg_mult
 	if actual <= 0.0:
 		return

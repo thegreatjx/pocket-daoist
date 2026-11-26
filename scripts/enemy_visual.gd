@@ -499,6 +499,11 @@ func _draw() -> void:
 			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.05, 0.09, 0.07, 0.86))
 			draw_rect(Rect2(-bar_w * 0.5 + 1.0, -85.0, (bar_w - 2.0) * bar_ratio, 6.0), Color(0.88, 0.28, 0.20, 1.0))
 			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.92, 0.76, 0.34, 0.9), false, 1.0)
+			_draw_qi_shield_bar(0.0, -86.0, bar_w)
+	elif enemy_type == 1:
+		_draw_qi_shield_bar(0.0, -52.0, 52.0)
+	elif enemy_type == 2:
+		_draw_qi_shield_bar(0.0, -78.0, 104.0)
 	var pose := rig.get_pose()
 	var t := rig.anim_time
 	var off: Vector2 = pose["offset"]
@@ -818,6 +823,20 @@ func _elem_color(elem: String) -> Color:
 		"venom": return Color(0.14, 0.84, 0.52)
 		"metal": return Color(0.98, 0.78, 0.24)
 		_: return Color.WHITE
+
+func _draw_qi_shield_bar(center_x: float, hp_bar_top_y: float, bar_w: float) -> void:
+	if _parent_body == null or not ("max_shield" in _parent_body):
+		return
+	var max_s: float = float(_parent_body.get("max_shield"))
+	var cur_s: float = float(_parent_body.get("current_shield"))
+	if max_s <= 0.0 or cur_s <= 0.0:
+		return
+	var ratio: float = clampf(cur_s / max_s, 0.0, 1.0)
+	var sh_h: float = 5.0 if enemy_type == 2 else 4.0
+	var rect_bg := Rect2(center_x - bar_w * 0.5, hp_bar_top_y - sh_h - 2.0, bar_w, sh_h)
+	draw_rect(rect_bg.grow(1.0), Color(0.06, 0.12, 0.14, 0.92), true)
+	draw_rect(rect_bg, Color(0.22, 0.28, 0.30, 0.85), true)
+	draw_rect(Rect2(rect_bg.position, Vector2(bar_w * ratio, sh_h)), Color(0.95, 0.98, 1.0, 0.98), true)
 
 func _draw_shadow(radius: float, y_offset: float) -> void:
 	draw_set_transform(Vector2(0.0, y_offset), 0.0, Vector2(1.0, 0.44))

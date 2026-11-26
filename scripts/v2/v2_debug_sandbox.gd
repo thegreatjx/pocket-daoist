@@ -344,11 +344,11 @@ func _build_reactions_pickups_tab(parent: Control) -> Control:
 	rx_grid.add_theme_constant_override("h_separation", 6)
 	rx_grid.add_theme_constant_override("v_separation", 5)
 	body.add_child(rx_grid)
-	for pk in _loader.reactions_by_key.keys():
-		var rx: Dictionary = _loader.reactions_by_key[pk]
+	for rx in _loader.reactions_list:
+		var rx_id := String(rx.get("id", ""))
 		var pair: Array = rx.get("pair", [])
 		var matched: Array = _find_weapons_for_elements(pair)
-		var btn_txt := "%s（%s）" % [String(rx.get("name", pk)), "+".join(pair)]
+		var btn_txt := "%s（%s）" % [String(rx.get("name", rx_id)), String(rx.get("formula_cn", "+".join(pair)))]
 		var btn := _add_action_btn(rx_grid, btn_txt, "dark_gold", func(): _apply_preset(matched, OrbitWeaponRig.MAX_WEAPON_TIER))
 		btn.disabled = matched.is_empty()
 
@@ -459,13 +459,6 @@ func _refresh_ui() -> void:
 		(row["label"] as Label).text = "%s (%s) · %s" % [String(row["name"]), cap_txt, String(row["desc"])]
 		(row["plus_btn"] as Button).disabled = (cap > 0 and cnt >= cap)
 		(row["minus_btn"] as Button).disabled = cnt <= 0
-	for aid in _arcana_rows.keys():
-		var row: Dictionary = _arcana_rows[aid]
-		var active := v2 != null and v2.has_arcana(String(aid))
-		(row["label"] as Label).text = "%s · %s" % [String(row["name"]), String(row["desc"])]
-		var btn := row["btn"] as Button
-		btn.text = "已启用" if active else "启用"
-		XianxiaUITheme.style_button(btn, "primary" if active else "secondary")
 	if _status_lbl != null and _player != null:
 		var slots_cnt := v2.orbit_rig.slots.size() if (v2 != null and v2.orbit_rig != null) else 0
 		var max_slots := v2.get_unlocked_slots() if v2 != null else 1
@@ -565,26 +558,6 @@ func _on_clear_items() -> void:
 	var v2 := _get_v2()
 	if v2 != null and v2.has_method("clear_items"):
 		v2.clear_items()
-	_refresh_ui()
-
-func _on_toggle_arcana(aid: String) -> void:
-	var v2 := _get_v2()
-	if v2 == null:
-		return
-	if v2.has_arcana(aid):
-		if v2.has_method("remove_arcana"):
-			v2.remove_arcana(aid)
-	else:
-		v2.add_arcana(aid)
-	_refresh_ui()
-
-func _on_clear_arcanas() -> void:
-	var v2 := _get_v2()
-	if v2 == null:
-		return
-	for aid in v2.active_arcanas.duplicate():
-		if v2.has_method("remove_arcana"):
-			v2.remove_arcana(String(aid))
 	_refresh_ui()
 
 func _on_spawn_pickup(pid: String) -> void:

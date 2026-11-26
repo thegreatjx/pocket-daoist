@@ -66,8 +66,8 @@ func setup(pickup_kind: String, amount: int = 0) -> void:
 			add_to_group("world_pickups")
 	queue_redraw()
 
-func attract_to(_player: Node2D = null) -> void:
-	if not kind_auto_pulls(kind):
+func attract_to(_player: Node2D = null, force: bool = false) -> void:
+	if not force and not kind_auto_pulls(kind):
 		return
 	_magnet_attracting = true
 	_pickup_delay = 0.0
@@ -126,7 +126,7 @@ func _physics_process(delta: float) -> void:
 	if players.size() > 0 and is_instance_valid(players[0]):
 		var p = players[0]
 		var dist := global_position.distance_to(p.global_position)
-		if kind_auto_pulls(kind):
+		if kind_auto_pulls(kind) or _magnet_attracting:
 			var pull_r := maxf(64.0, float(p.magnet_radius))
 			var fly_spd := 680.0 if _magnet_attracting else 580.0
 			if _magnet_attracting or dist <= pull_r:

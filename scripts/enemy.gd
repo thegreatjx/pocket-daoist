@@ -73,8 +73,15 @@ var is_visual_culled: bool = false
 var _cull_check_accum: float = 0.0
 var _banish_timer: float = 0.0
 var _banish_vel: Vector2 = Vector2.ZERO
-var _armor_shred: float = 0.0
-var _armor_shred_timer: float = 0.0
+var damage_taken_mult: float = 1.0
+var _vuln_timer: float = 0.0
+var max_shield: float = 0.0
+var current_shield: float = 0.0
+var _shield_break_flash: float = 0.0
+var _detonate_mark_timer: float = 0.0
+var _detonate_mark_radius: float = 95.0
+var _detonate_mark_pct: float = 0.22
+var _detonate_mark_cap: float = 0.0
 var _dot_dps: float = 0.0
 var _dot_timer: float = 0.0
 var _dot_tick_acc: float = 0.0
@@ -111,6 +118,7 @@ var _boss_dashing: bool = false
 var _boss_enraged: bool = false
 var _boss_dash_ghost_cd: float = 0.0
 var _boss_strafe_phase: float = 0.0
+var boss_kit = null
 
 @onready var visual_node: Node2D = get_node_or_null("Visual")
 @onready var col_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
@@ -192,8 +200,15 @@ func _reset_state() -> void:
 	_banish_vel = Vector2.ZERO
 	set_process(false)
 	_set_visual_culled(false)
-	_armor_shred = 0.0
-	_armor_shred_timer = 0.0
+	damage_taken_mult = 1.0
+	_vuln_timer = 0.0
+	max_shield = 0.0
+	current_shield = 0.0
+	_shield_break_flash = 0.0
+	_detonate_mark_timer = 0.0
+	_detonate_mark_radius = 95.0
+	_detonate_mark_pct = 0.22
+	_detonate_mark_cap = 0.0
 	_dot_dps = 0.0
 	_dot_timer = 0.0
 	_dot_tick_acc = 0.0
@@ -263,7 +278,7 @@ func apply_archetype(arch: Dictionary, variant: int = 1) -> void:
 	var em: Variant = arch.get("element_multipliers", null)
 	element_multipliers = (em as Dictionary).duplicate(true) if em is Dictionary else {}
 	knockback_resistance = float(resistances.get("knockback_resist", arch.get("knockback_resist", 0.0)))
-	damage_reduction = float(resistances.get("phys_reduction", 0.0))
+	damage_reduction = 0.0
 	var rad := float(arch.get("radius", 0.0))
 	if rad > 0.0:
 		separation_radius = maxf(14.0, rad)
@@ -362,7 +377,7 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 					speed = 122.0
 					contact_damage = 16.0
 					knockback_resistance = 0.85
-					damage_reduction = 0.25
+					damage_reduction = 0.0
 					exp_gem_count = 6
 					chase_mode = "hop"
 				5:
@@ -384,19 +399,22 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 			separation_force = 120.0
 			_update_shapes(18.0, 22.0)
 		Type.BOSS:
-			max_health = 16000.0
+			max_health = 22000.0
 			speed = 138.0
 			contact_damage = 30.0
 			knockback_resistance = 0.95
-			damage_reduction = 0.45
+			damage_reduction = 0.0
 			exp_gem_count = 14
 			can_despawn = false
 			is_boss = true
 			separation_radius = 55.0
 			separation_force = 200.0
 			_update_shapes(32.0, 36.0)
+			if sp == 4:
+				knockback_resistance = 1.0
 
 	if is_boss:
+		_create_boss_kit(sp)
 		add_to_group("bosses")
 	elif is_in_group("bosses"):
 		remove_from_group("bosses")
@@ -405,6 +423,7 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 	if curse_hp_mult > 1.0:
 		max_health *= curse_hp_mult
 	current_health = max_health
+	sync_qi_shield()
 	if visual_node != null and visual_node.has_method("set_type"):
 		visual_node.set_type(int(t), species)
 	if visual_node != null and visual_node.has_method("set_tier_variant"):
@@ -418,11 +437,23 @@ func _resolve_curse_hp_mult() -> float:
 		return float(p.v2_combat.get_curse_enemy_hp_mult())
 	return 1.0
 
+func sync_qi_shield() -> void:
+	match enemy_type:
+		Type.MINION:
+			max_shield = 0.0
+		Type.ELITE:
+			max_shield = roundf(max_health * (0.32 if is_mini_boss else 0.25))
+		Type.BOSS:
+			max_shield = roundf(max_health * (6500.0 / 22000.0))
+	current_shield = max_shield
+
 func apply_curse_scaling(curse_pct: float) -> void:
 	var mult := V2SpawnDirector.calc_curse_hp_mult(curse_pct)
 	if mult > 1.0:
 		max_health *= mult
 		current_health = max_health
+		max_shield *= mult
+		current_shield = max_shield
 
 func get_boss_anim_state() -> String:
 	if not is_boss:
@@ -543,10 +574,16 @@ func _physics_process(delta: float) -> void:
 		if _slow_timer <= 0.0:
 			_slow_ratio = 0.0
 
-	if _armor_shred_timer > 0.0:
-		_armor_shred_timer -= delta
-		if _armor_shred_timer <= 0.0:
-			_armor_shred = 0.0
+	if _vuln_timer > 0.0:
+		_vuln_timer -= delta
+		if _vuln_timer <= 0.0:
+			damage_taken_mult = 1.0
+
+	if _shield_break_flash > 0.0:
+		_shield_break_flash = maxf(0.0, _shield_break_flash - delta)
+
+	if _detonate_mark_timer > 0.0:
+		_detonate_mark_timer = maxf(0.0, _detonate_mark_timer - delta)
 
 	if _elem_timer > 0.0:
 		_elem_timer -= delta
@@ -864,6 +901,11 @@ func apply_freeze(duration: float) -> void:
 func is_frozen() -> bool:
 	return _freeze_timer > 0.0
 
+func unfreeze() -> void:
+	if _freeze_timer > 0.0:
+		_freeze_timer = 0.0
+		_clear_freeze_visual()
+
 func _show_freeze_marker() -> void:
 	if _freeze_marker != null and is_instance_valid(_freeze_marker) and not _freeze_marker.is_queued_for_deletion():
 		_freeze_marker.visible = true
@@ -892,11 +934,47 @@ func _get_pillars() -> Array:
 		return _cached_bg.get_pillars()
 	return []
 
-func apply_armor_shred(pct: float, dur: float) -> void:
-	if is_dead or pct <= 0.0:
-		return
-	_armor_shred = minf(0.50, maxf(_armor_shred, pct))
-	_armor_shred_timer = maxf(_armor_shred_timer, dur)
+func apply_vulnerability(mult: float, dur: float) -> void:
+	# 全场唯一易伤倍率：取较高值、刷新时长、不叠乘
+	damage_taken_mult = maxf(damage_taken_mult, clampf(mult, 1.0, 1.5))
+	_vuln_timer = maxf(_vuln_timer, dur)
+
+func apply_detonate_mark(dur: float, radius: float, max_hp_pct: float, dmg_cap: float) -> void:
+	_detonate_mark_timer = maxf(_detonate_mark_timer, dur)
+	_detonate_mark_radius = radius
+	_detonate_mark_pct = max_hp_pct
+	_detonate_mark_cap = maxf(_detonate_mark_cap, dmg_cap)
+
+func interrupt_charge_windup() -> void:
+	if _charger_state == 1:
+		_charger_state = 0
+		_charger_timer = 0.0
+		_charger_cd = maxf(_charger_cd, 1.6)
+	if _elite_state == 1:
+		_elite_state = 0
+		_elite_timer = 0.0
+		_elite_skill_cd = maxf(_elite_skill_cd, 2.0)
+
+func apply_shield_chunk_damage(max_shield_pct: float, flat_min: float = 0.0) -> float:
+	if is_dead or current_shield <= 0.0 or max_shield <= 0.0:
+		return 0.0
+	var chunk: float = maxf(flat_min, max_shield * clampf(max_shield_pct, 0.0, 1.0))
+	var dealt: float = minf(current_shield, chunk)
+	current_shield = maxf(0.0, current_shield - dealt)
+	if current_shield <= 0.0:
+		_on_shield_broken()
+	if is_boss:
+		get_tree().call_group("game_manager", "update_boss_hp", current_health, max_health, current_shield, max_shield)
+	return dealt
+
+func _on_shield_broken() -> void:
+	_shield_break_flash = 0.35
+	_stun_timer = maxf(_stun_timer, 0.55)
+	interrupt_charge_windup()
+	apply_vulnerability(1.25, 3.0)
+	if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:
+		target.v2_combat._spawn_text_popup(global_position + Vector2(0.0, -34.0), "破罡！", Color(0.95, 0.98, 1.0))
+		target.v2_combat.play_v2_cue("sfx_react_shatter", "reaction", 1.12)
 
 func apply_dot(dps: float, dur: float, spread_on_death: bool = false, elem: String = "") -> void:
 	if is_dead or dps <= 0.0:
@@ -967,19 +1045,34 @@ func get_element_damage_mult(element: String) -> float:
 func take_damage(amount: float) -> void:
 	take_damage_v2(amount, false, false, "")
 
-func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), is_dot: bool = false) -> void:
+func take_damage_v2(amount: float, is_crit: bool = false, _true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), is_dot: bool = false, shield_mult: float = 1.0) -> void:
 	if is_dead:
 		return
-	var elem_mult := get_element_damage_mult(element)
-	var coeff := maxf(1.0, elem_mult) if true_damage else clampf(1.0 - damage_reduction + _armor_shred, 0.20, 1.50) * elem_mult
-	var freeze_vuln := FREEZE_VULN_MULT if _freeze_timer > 0.0 else 1.0
-	var actual_damage := amount * coeff * freeze_vuln
-	current_health -= actual_damage
+	var eff_dmg := maxf(1.0, amount * damage_taken_mult)
+	var displayed_damage := eff_dmg
+	if current_shield > 0.0:
+		var s_mult := maxf(1.0, shield_mult)
+		var shield_dmg := eff_dmg * s_mult
+		if current_shield > shield_dmg:
+			current_shield -= shield_dmg
+			eff_dmg = 0.0
+			displayed_damage = shield_dmg
+		else:
+			var broken_part := current_shield
+			var overflow_raw := (shield_dmg - current_shield) / s_mult
+			current_shield = 0.0
+			_on_shield_broken()
+			eff_dmg = overflow_raw
+			displayed_damage = broken_part + overflow_raw
+	if eff_dmg > 0.0:
+		current_health -= eff_dmg
 	if not is_visual_culled:
-		_spawn_damage_number(actual_damage, is_crit)
+		_spawn_damage_number(displayed_damage, is_crit)
 
 	if is_boss:
-		get_tree().call_group("game_manager", "update_boss_hp", current_health, max_health)
+		get_tree().call_group("game_manager", "update_boss_hp", current_health, max_health, current_shield, max_shield)
+		if boss_kit != null:
+			boss_kit.on_hurt()
 		if not _boss_enraged and current_health > 0.0 and current_health <= max_health * 0.50:
 			_enter_boss_phase2()
 
@@ -1022,6 +1115,19 @@ func die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	if _detonate_mark_timer > 0.0:
+		var blast_r := _detonate_mark_radius
+		var blast_dmg := minf(max_health * _detonate_mark_pct, maxf(12.0, _detonate_mark_cap))
+		_detonate_mark_timer = 0.0
+		var nearby := CombatGrid.query(global_position, blast_r)
+		for other in nearby:
+			if other == null or other == self or not is_instance_valid(other) or bool(other.get("is_dead")):
+				continue
+			if other.has_method("take_damage_v2"):
+				# 传入空元素 ""杜绝二次反应套娃
+				other.take_damage_v2(blast_dmg, false, false, "", Color(1.0, 0.48, 0.16), false)
+		if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null and target.v2_combat.has_method("spawn_detonate_death_fx"):
+			target.v2_combat.spawn_detonate_death_fx(global_position, blast_r)
 	if elite_blast_delay > 0.0 and elite_blast_radius > 0.0:
 		_spawn_elite_blast()
 	_hitstop_timer = 0.0
@@ -1214,6 +1320,8 @@ func _enter_boss_phase2() -> void:
 		V2VfxFactory.spawn_boss_shockwave(get_parent(), global_position, 195.0, Color(0.98, 0.24, 0.20, 1.0), Color(1.0, 0.86, 0.34, 1.0), 0.55)
 	if target != null and is_instance_valid(target) and target.has_method("shake_camera"):
 		target.shake_camera(9.0)
+	if boss_kit != null:
+		boss_kit.on_phase2()
 	if visual_node != null and visual_node.has_method("set_boss_state"):
 		visual_node.set_boss_state(0.0, true)
 
@@ -1224,15 +1332,18 @@ func _process_boss_ai(delta: float) -> void:
 
 	match _boss_state:
 		BossState.CHASE:
-			_boss_dashing = false
-			_boss_strafe_phase += delta * 2.4
-			var perp := Vector2(-dir.y, dir.x) * sin(_boss_strafe_phase) * 0.28
-			velocity = (dir + perp).normalized() * speed * (1.0 - _slow_ratio)
-			_boss_skill_cd -= delta
-			if visual_node != null and visual_node.has_method("set_boss_state"):
-				visual_node.set_boss_state(0.0, _boss_enraged)
-			if _boss_skill_cd <= 0.0 and dist <= 650.0:
-				_begin_boss_skill(dir)
+			if boss_kit != null:
+				boss_kit.update_chase(delta, dir, dist)
+			else:
+				_boss_dashing = false
+				_boss_strafe_phase += delta * 2.4
+				var perp := Vector2(-dir.y, dir.x) * sin(_boss_strafe_phase) * 0.28
+				velocity = (dir + perp).normalized() * speed * (1.0 - _slow_ratio)
+				_boss_skill_cd -= delta
+				if visual_node != null and visual_node.has_method("set_boss_state"):
+					visual_node.set_boss_state(0.0, _boss_enraged)
+				if _boss_skill_cd <= 0.0 and dist <= 650.0:
+					_begin_boss_skill(dir)
 
 		BossState.WINDUP:
 			_boss_dashing = false
@@ -1257,6 +1368,8 @@ func _process_boss_ai(delta: float) -> void:
 			else:
 				_boss_dashing = false
 				velocity = Vector2.ZERO
+			if boss_kit != null:
+				boss_kit.update_action(delta)
 			if _boss_state_timer <= 0.0:
 				_finish_boss_skill()
 
@@ -1268,89 +1381,91 @@ func _process_boss_ai(delta: float) -> void:
 				visual_node.set_boss_state(0.0, _boss_enraged)
 			if _boss_state_timer <= 0.0:
 				_boss_state = BossState.CHASE
-				_boss_skill_cd = (1.05 if _boss_enraged else 1.65)
+				_boss_skill_cd = float(boss_kit.skill_cooldown()) if boss_kit != null else (1.05 if _boss_enraged else 1.65)
 
 func _begin_boss_skill(dir_to_player: Vector2) -> void:
-	_boss_state = BossState.WINDUP
-	_boss_aim_dir = dir_to_player
-	_boss_skill_index = (_boss_skill_index + 1) % 3
-	Sfx.play_boss_or_fallback("boss_charge", "dash", -4.0, 0.85)
-	if get_parent() != null:
-		V2VfxFactory.spawn_boss_charge_aura(get_parent(), global_position, 64.0, Color(1.0, 0.36, 0.24, 0.85), 0.50)
-
-	if species == 1:
-		match _boss_skill_index:
-			0:
-				_boss_active_skill = "talisman_ring"
-				_boss_state_timer = 0.48
-				_boss_windup_total = 0.48
-				_spawn_boss_circles(5 if _boss_enraged else 3, 82.0, 0.72, 22.0)
-			1:
-				_boss_active_skill = "volley"
-				_boss_state_timer = 0.46
-				_boss_windup_total = 0.46
-			_:
-				_boss_active_skill = "slam"
-				_boss_state_timer = 0.58
-				_boss_windup_total = 0.58
-				_spawn_boss_circles(2 if _boss_enraged else 1, 124.0, 0.68, 25.0)
-	elif species == 2:
-		match _boss_skill_index:
-			0:
-				_boss_active_skill = "slam"
-				_boss_state_timer = 0.60
-				_boss_windup_total = 0.60
-				_spawn_boss_circles(2 if _boss_enraged else 1, 134.0 if _boss_enraged else 115.0, 0.68, 28.0)
-			1:
-				_boss_active_skill = "dash"
-				_boss_state_timer = 0.54
-				_boss_windup_total = 0.54
-				_spawn_boss_dash_corridor(450.0, 74.0, 0.54)
-			_:
-				_boss_active_skill = "volley"
-				_boss_state_timer = 0.48
-				_boss_windup_total = 0.48
-	else:
-		match _boss_skill_index:
-			0:
-				_boss_active_skill = "dash"
-				_boss_state_timer = 0.54
-				_boss_windup_total = 0.54
-				_spawn_boss_dash_corridor(480.0 if _boss_enraged else 420.0, 68.0, 0.54)
-			1:
-				_boss_active_skill = "volley"
-				_boss_state_timer = 0.48
-				_boss_windup_total = 0.48
-			_:
-				_boss_active_skill = "summon_pack"
-				_boss_state_timer = 0.52
-				_boss_windup_total = 0.52
+	if boss_kit == null:
+		return
+	boss_kit.begin(dir_to_player)
 
 func _execute_boss_skill() -> void:
-	_boss_state = BossState.ACTION
-	_boss_dash_ghost_cd = 0.0
-	if visual_node != null and visual_node.has_method("trigger_attack_lunge"):
-		visual_node.trigger_attack_lunge(_boss_aim_dir)
+	if boss_kit == null:
+		return
+	boss_kit.execute()
 
-	match _boss_active_skill:
-		"dash":
-			_boss_state_timer = 0.36
-			Sfx.play_boss_or_fallback("boss_dash", "dash", -2.0, 0.78)
-		"slam":
-			_boss_state_timer = 0.28
-			if visual_node != null and visual_node.has_method("trigger_land_impact"):
-				visual_node.trigger_land_impact(1.6)
-		"talisman_ring":
-			_boss_state_timer = 0.28
-			Sfx.play_boss_or_fallback("boss_roar", "thunder", -4.0, 1.15)
-		"volley":
-			_boss_state_timer = 0.32
-			_fire_boss_volley()
-		"summon_pack":
-			_boss_state_timer = 0.36
-			_summon_wolf_pack()
+func _finish_boss_skill() -> void:
+	if boss_kit == null:
+		return
+	boss_kit.finish()
+
+func _create_boss_kit(sp: int) -> void:
+	match sp:
+		3:
+			boss_kit = BossCauldronKit.new()
+		4:
+			boss_kit = BossCorpseKingKit.new()
+		5:
+			boss_kit = BossFoxDemonKit.new()
+		6:
+			boss_kit = BossSwordMasterKit.new()
 		_:
-			_boss_state_timer = 0.24
+			boss_kit = BossKit.new()
+	boss_kit.setup(self)
+
+func _spawn_boss_circle_at(world_pos: Vector2, rad: float, windup: float, dmg: float, primary: Color = Color(0.98, 0.24, 0.22, 1.0)) -> void:
+	if get_parent() == null:
+		return
+	var atk := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
+	if atk != null:
+		atk.setup_circle_slam(self, world_pos, rad, windup, dmg, primary)
+
+func summon_boss_minions(minion_species: int, count: int) -> void:
+	if get_parent() == null:
+		return
+	var alive := get_tree().get_nodes_in_group("enemies").size()
+	var room := maxi(0, 60 - alive)
+	count = mini(count, room)
+	for i in range(count):
+		var ang := TAU * float(i) / float(maxi(1, count)) + randf_range(-0.2, 0.2)
+		var add_e = ObjectPools.acquire("res://scenes/enemy.tscn", get_parent(), 250)
+		if add_e != null:
+			add_e.global_position = global_position + Vector2(cos(ang), sin(ang)) * 78.0
+			add_e.setup_type(Type.MINION, _spawn_elapsed, minion_species)
+			var sp := get_tree().get_first_node_in_group("spawner")
+			if sp != null and sp.has_method("scale_spawned_minion"):
+				sp.scale_spawned_minion(add_e)
+
+func boss_teleport(pos: Vector2) -> void:
+	var tree := get_tree()
+	if tree != null:
+		var sp := tree.get_first_node_in_group("spawner")
+		if sp != null and sp.has_method("clamp_to_arena"):
+			pos = sp.clamp_to_arena(pos)
+	global_position = pos
+	velocity = Vector2.ZERO
+	_knockback = Vector2.ZERO
+	reset_physics_interpolation()
+
+func spawn_boss_projectile(pos: Vector2, dir: Vector2, spd: float, dmg: float, rad: float, color: Color, slow_ratio: float = 0.0, slow_dur: float = 0.0) -> void:
+	if get_parent() == null:
+		return
+	var atk := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
+	if atk == null:
+		return
+	atk.setup_projectile(self, pos, dir, spd, dmg, rad, color)
+	atk.slow_ratio = slow_ratio
+	atk.slow_dur = slow_dur
+
+func spawn_boss_line_from(pos: Vector2, dir: Vector2, dash_len: float, dash_w: float, windup: float) -> void:
+	if get_parent() == null:
+		return
+	var atk := ObjectPools.acquire_script("boss_attack", BossAttack, get_parent(), 96) as BossAttack
+	if atk == null:
+		return
+	atk.setup_line_dash(self, pos, dir, dash_len, dash_w, windup)
+
+func emit_boss_ghost() -> void:
+	_emit_boss_dash_ghost()
 
 func _summon_wolf_pack() -> void:
 	Sfx.play_boss_or_fallback("boss_roar", "thunder", -2.0, 0.90)
@@ -1369,16 +1484,6 @@ func _summon_wolf_pack() -> void:
 			if sp != null and sp.has_method("scale_spawned_minion"):
 				sp.scale_spawned_minion(add_e)
 			add_e.speed *= 1.25
-
-func _finish_boss_skill() -> void:
-	_boss_dashing = false
-	if _boss_active_skill == "dash":
-		if visual_node != null and visual_node.has_method("trigger_land_impact"):
-			visual_node.trigger_land_impact(1.35)
-		if get_parent() != null:
-			V2VfxFactory.spawn_boss_shockwave(get_parent(), global_position, 92.0, Color(0.98, 0.32, 0.22, 0.9), Color(1.0, 0.85, 0.35, 1.0), 0.34)
-	_boss_state = BossState.RECOVER
-	_boss_state_timer = 0.20 if _boss_enraged else 0.32
 
 func _emit_boss_dash_ghost() -> void:
 	if visual_node == null or get_parent() == null:

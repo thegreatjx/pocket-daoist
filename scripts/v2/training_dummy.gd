@@ -66,8 +66,10 @@ func reset_stats() -> void:
 	_slow_timer = 0.0
 	_freeze_timer = 0.0
 	_clear_freeze_visual()
-	_armor_shred = 0.0
-	_armor_shred_timer = 0.0
+	damage_taken_mult = 1.0
+	_vuln_timer = 0.0
+	current_shield = max_shield
+	_detonate_mark_timer = 0.0
 	_stun_timer = 0.0
 	set_active_element("", 0.0)
 	if visual_node != null:
@@ -96,10 +98,10 @@ func _physics_process(delta: float) -> void:
 		_slow_timer -= delta
 		if _slow_timer <= 0.0:
 			_slow_ratio = 0.0
-	if _armor_shred_timer > 0.0:
-		_armor_shred_timer -= delta
-		if _armor_shred_timer <= 0.0:
-			_armor_shred = 0.0
+	if _vuln_timer > 0.0:
+		_vuln_timer -= delta
+		if _vuln_timer <= 0.0:
+			damage_taken_mult = 1.0
 	if _elem_timer > 0.0:
 		_elem_timer -= delta
 		if _elem_timer <= 0.0:
@@ -127,13 +129,19 @@ func _physics_process(delta: float) -> void:
 func apply_knockback(_impulse: Vector2) -> void:
 	return
 
-func take_damage_v2(amount: float, is_crit: bool = false, true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), _is_dot: bool = false) -> void:
+func take_damage_v2(amount: float, is_crit: bool = false, _true_damage: bool = false, element: String = "", reaction_color: Color = Color(0.0, 0.0, 0.0, 0.0), _is_dot: bool = false, shield_mult: float = 1.0) -> void:
 	if is_dead:
 		return
-	var elem_mult := get_element_damage_mult(element)
-	var coeff := maxf(1.0, elem_mult) if true_damage else clampf(1.0 - damage_reduction + _armor_shred, 0.20, 1.50) * elem_mult
-	var freeze_vuln := FREEZE_VULN_MULT if _freeze_timer > 0.0 else 1.0
-	var actual_damage := amount * coeff * freeze_vuln
+	var actual_damage := maxf(1.0, amount * damage_taken_mult)
+	if current_shield > 0.0:
+		var s_mult := maxf(1.0, shield_mult)
+		var shield_dmg := actual_damage * s_mult
+		if current_shield > shield_dmg:
+			current_shield -= shield_dmg
+			actual_damage = 0.0
+		else:
+			actual_damage = (shield_dmg - current_shield) / s_mult
+			current_shield = 0.0
 	current_health -= actual_damage
 	total_damage += actual_damage
 	hit_count += 1

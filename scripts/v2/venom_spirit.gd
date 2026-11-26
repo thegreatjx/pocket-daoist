@@ -267,9 +267,9 @@ func _impact(enemy: Node2D) -> void:
 	elif enemy.has_method("apply_dot"):
 		enemy.apply_dot(dot_dps, dot_dur, false, "venom")
 	if enemy.has_method("set_active_element"):
-		enemy.set_active_element("wood", 3.0)
+		enemy.set_active_element("venom", 3.5)
 	if controller != null and is_instance_valid(controller) and controller.has_method("deal_v2_damage"):
-		controller.deal_v2_damage(enemy, damage, "wood", {
+		controller.deal_v2_damage(enemy, damage, "venom", {
 			"knockback_dir": _dir,
 			"knockback": 30.0,
 		})

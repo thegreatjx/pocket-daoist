@@ -45,10 +45,9 @@
       "cost": 20,
       "max_stacks": 3,
       "mods": {
-        "max_hp": 14,
-        "armor": 1
+        "max_hp": 22
       },
-      "desc": "最大生命 +14，护甲 +1（上限 3 件）"
+      "desc": "最大气血 +22（上限 3 件）"
     },
     {
       "id": "item_wind_talisman",
@@ -102,9 +101,9 @@
       "mods": {
         "dot_damage_pct": 0.14,
         "damage_pct": 0.06,
-        "armor": -1
+        "max_hp": -8
       },
-      "desc": "持续灼烧/木毒 +14%，伤害 +6%，护甲 -1（上限 2 件）"
+      "desc": "持续灼烧/剧毒 +14%，伤害 +6%，最大气血 -8（上限 2 件）"
     },
     {
       "id": "item_frost_core",
@@ -196,9 +195,9 @@
       "mods": {
         "luck": 0.30,
         "crit_chance": 0.05,
-        "armor": -2
+        "max_hp": -12
       },
-      "desc": "机缘 +30%，暴击率 +5%，护甲 -2（上限 2 件）"
+      "desc": "机缘 +30%，暴击率 +5%，最大气血 -12（上限 2 件）"
     },
     {
       "id": "item_obsidian_mirror",

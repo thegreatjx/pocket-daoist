@@ -14,7 +14,7 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 	global_position = center
 	var r := maxf(36.0, aoe_r)
 	match rx_id:
-		"react_thunder_fire":
+		"react_detonate", "react_thunder_fire":
 			duration = 0.56
 			z_index = 5
 			var crater := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SCORCH_02, V2VfxFactory.SHADER_BURN_DISSOLVE, {
@@ -47,7 +47,7 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 				"color_start": Color(0.85, 0.82, 1.0, 0.95), "color_end": Color(0.51, 0.55, 0.97, 0.0),
 			}))
 
-		"react_melt":
+		"react_steam", "react_melt":
 			duration = 0.58
 			z_index = 5
 			var swirl := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_TWIRL_02, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
@@ -103,7 +103,7 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 				"color_start": Color(1.0, 0.58, 0.14, 0.85), "color_end": Color(0.64, 0.90, 0.15, 0.0),
 			}))
 
-		"react_superconduct":
+		"react_shock", "react_superconduct":
 			duration = 0.58
 			z_index = 5
 			var ring := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_MAGIC_03, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
@@ -274,7 +274,7 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 				"color_start": Color(0.32, 0.96, 0.68, 0.95), "color_end": Color(0.06, 0.68, 0.45, 0.0),
 			}))
 
-		"react_molten_forge":
+		"react_molten", "react_molten_forge":
 			duration = 0.55
 			z_index = 5
 			var molten := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SCORCH_02, V2VfxFactory.SHADER_BURN_DISSOLVE, {
@@ -398,7 +398,7 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 				add_child(arc)
 				_anim_lines.append({"node": arc})
 
-		"react_flash_freeze":
+		"react_freeze", "react_flash_freeze":
 			duration = 0.68
 			z_index = 4
 			var fr_seal := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_MAGIC_04, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {

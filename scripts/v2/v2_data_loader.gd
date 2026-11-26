@@ -11,6 +11,8 @@ var max_weapon_slots: int = 4
 var max_weapon_level: int = 8
 var realm_slot_unlocks: Array = []
 var reactions_by_key: Dictionary = {}
+var reactions_list: Array[Dictionary] = []
+var shatter_reaction: Dictionary = {}
 var reaction_config: Dictionary = {}
 var items_by_id: Dictionary = {}
 var shop_economy: Dictionary = {}
@@ -49,10 +51,27 @@ func load_all(base_dir: String = "res://data/v2") -> bool:
 	realm_slot_unlocks = w_data.get("realm_slot_unlocks", [])
 
 	reactions_by_key.clear()
+	reactions_list.clear()
+	shatter_reaction.clear()
 	reaction_config = r_data
-	for r in r_data.get("reactions", []):
-		var pair: Array = r["pair"]
-		reactions_by_key[make_pair_key(String(pair[0]), String(pair[1]))] = r
+	for r_raw in r_data.get("reactions", []):
+		if not (r_raw is Dictionary):
+			continue
+		var r: Dictionary = r_raw
+		reactions_list.append(r)
+		var trig_list: Array = r.get("triggers", [])
+		if trig_list.is_empty():
+			var fallback_pair: Array = r.get("pair", [])
+			if fallback_pair.size() >= 2:
+				trig_list = [fallback_pair]
+		for pair_item in trig_list:
+			if pair_item is Array and (pair_item as Array).size() >= 2:
+				var pa: String = String((pair_item as Array)[0])
+				var pb: String = String((pair_item as Array)[1])
+				reactions_by_key[make_pair_key(pa, pb)] = r
+	var sh_raw: Variant = r_data.get("shatter_reaction", {})
+	if sh_raw is Dictionary:
+		shatter_reaction = sh_raw
 
 	items_by_id.clear()
 	shop_economy = i_data.get("shop_economy", {})

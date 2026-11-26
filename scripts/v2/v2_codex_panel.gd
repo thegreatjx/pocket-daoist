@@ -3,7 +3,7 @@ extends Control
 
 signal closed
 
-const TAB_NAMES := ["五行反应 (7)", "法宝图鉴 (8)", "境界与秘宝 (4+16)"]
+const TAB_NAMES := ["五大灵变 (5)", "法宝图鉴 (8)", "境界与秘宝 (4+16)"]
 
 var active_tab: int = 0
 var codex_data: Dictionary = {}
@@ -140,13 +140,13 @@ func _refresh_view() -> void:
 	var sm: Dictionary = codex_data.get("summary", {})
 	var elems: Array = sm.get("owned_elements", [])
 	var elem_txt := "暂无元素" if elems.is_empty() else "、".join(elems)
-	_summary_lbl.text = "境界 Lv.%d  |  法宝槽 %d/%d  |  已持元素：%s  |  可触发五行反应：%d/%d" % [
+	_summary_lbl.text = "境界 Lv.%d  |  法宝槽 %d/%d  |  已持元素：%s  |  可触发五大灵变：%d/%d" % [
 		int(sm.get("player_level", 1)),
 		int(sm.get("unlocked_slots", 1)),
 		int(sm.get("max_slots", 4)),
 		elem_txt,
 		int(sm.get("active_reaction_count", 0)),
-		int(sm.get("total_reactions", 7)),
+		int(sm.get("total_reactions", 5)),
 	]
 
 	for i in range(_tab_btns.size()):
@@ -182,7 +182,7 @@ func _make_card_panel(bg: Color, border: Color, bw: int = 1) -> PanelContainer:
 
 func _render_reactions_tab(sm: Dictionary) -> void:
 	var icd_lbl := Label.new()
-	icd_lbl.text = "反应冷却机制：同怪内置冷却 %.1fs（首领 %.1fs），命中挂元素并消耗后手元素触发反应。" % [float(sm.get("icd_normal", 1.8)), float(sm.get("icd_boss", 1.2))]
+	icd_lbl.text = "单怪反应冷却 %.1fs（精英/首领 %.1fs），单怪同时至多附着 1 种元素，反应不可暴击。" % [float(sm.get("icd_normal", 2.0)), float(sm.get("icd_boss", 2.5))]
 	icd_lbl.add_theme_font_size_override("font_size", 13)
 	icd_lbl.add_theme_color_override("font_color", Color(0.28, 0.40, 0.36))
 	_content_vb.add_child(icd_lbl)
@@ -207,7 +207,8 @@ func _render_reactions_tab(sm: Dictionary) -> void:
 
 		var status := "✦ 已激活" if active else (("缺【%s】可激活" % missing) if missing != "" else "未集齐")
 		var head := Label.new()
-		head.text = "【%s】 %s + %s  (%s)" % [String(rx.get("name", "")), String(rx.get("elem_a_cn", "")), String(rx.get("elem_b_cn", "")), status]
+		var formula_txt := String(rx.get("formula_cn", "%s + %s" % [String(rx.get("elem_a_cn", "")), String(rx.get("elem_b_cn", ""))]))
+		head.text = "【%s】 %s  (%s)" % [String(rx.get("name", "")), formula_txt, status]
 		head.add_theme_font_size_override("font_size", 15)
 		head.add_theme_color_override("font_color", Color(0.06, 0.36, 0.20) if active else (Color(0.66, 0.34, 0.08) if missing != "" else Color(0.24, 0.32, 0.29)))
 		vb.add_child(head)
@@ -317,28 +318,45 @@ static func build_codex_data(loader: V2DataLoader, v2: V2CombatController = null
 	var rx_active: Array[Dictionary] = []
 	var rx_partial: Array[Dictionary] = []
 	var rx_other: Array[Dictionary] = []
-	for rx in loader.reactions_by_key.values():
-		var pair: Array = rx.get("pair", [])
-		if pair.size() < 2:
+	for rx in loader.reactions_list:
+		var trig_list: Array = rx.get("triggers", [])
+		if trig_list.is_empty():
+			var fb: Array = rx.get("pair", [])
+			if fb.size() >= 2:
+				trig_list = [fb]
+		if trig_list.is_empty():
 			continue
-		var ea := String(pair[0])
-		var eb := String(pair[1])
-		var has_a := owned_elems.has(ea)
-		var has_b := owned_elems.has(eb)
-		var active := has_a and has_b
+		var ea := String((trig_list[0] as Array)[0])
+		var eb := String((trig_list[0] as Array)[1])
+		var active := false
 		var missing := ""
-		if has_a and not has_b:
-			missing = String(V2DetailDrawer.ELEM_CN.get(eb, eb))
-		elif has_b and not has_a:
-			missing = String(V2DetailDrawer.ELEM_CN.get(ea, ea))
+		for pair_raw in trig_list:
+			if not (pair_raw is Array) or (pair_raw as Array).size() < 2:
+				continue
+			var pa := String((pair_raw as Array)[0])
+			var pb := String((pair_raw as Array)[1])
+			var has_a := owned_elems.has(pa)
+			var has_b := owned_elems.has(pb)
+			if has_a and has_b:
+				active = true
+				ea = pa
+				eb = pb
+				missing = ""
+				break
+			if missing.is_empty():
+				if has_a and not has_b:
+					missing = String(V2DetailDrawer.ELEM_CN.get(pb, pb))
+				elif has_b and not has_a:
+					missing = String(V2DetailDrawer.ELEM_CN.get(pa, pa))
 		var entry := {
 			"id": String(rx.get("id", "")),
 			"name": String(rx.get("name", "")),
+			"formula_cn": String(rx.get("formula_cn", "%s + %s" % [String(V2DetailDrawer.ELEM_CN.get(ea, ea)), String(V2DetailDrawer.ELEM_CN.get(eb, eb))])),
 			"elem_a": ea,
 			"elem_b": eb,
 			"elem_a_cn": String(V2DetailDrawer.ELEM_CN.get(ea, ea)),
 			"elem_b_cn": String(V2DetailDrawer.ELEM_CN.get(eb, eb)),
-			"damage_mult": float(rx.get("damage_mult", 0.5)),
+			"damage_mult": float(rx.get("damage_mult", 0.2)),
 			"effect_text": V2DetailDrawer.format_reaction_effect(rx),
 			"active_now": active,
 			"partial_missing": missing,
@@ -420,7 +438,7 @@ static func build_codex_data(loader: V2DataLoader, v2: V2CombatController = null
 			"owned_elements": owned_elem_names,
 			"active_reaction_count": rx_active.size(),
 			"total_reactions": reactions.size(),
-			"icd_normal": float(loader.reaction_config.get("per_enemy_icd_sec", 1.8)),
-			"icd_boss": float(loader.reaction_config.get("boss_icd_sec", 1.2)),
+			"icd_normal": float(loader.reaction_config.get("per_enemy_icd_sec", 2.0)),
+			"icd_boss": float(loader.reaction_config.get("boss_icd_sec", 2.5)),
 		},
 	}

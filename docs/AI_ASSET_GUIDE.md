@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 13:42:52）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 14:41:31）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -34,12 +34,12 @@
 ## 3. 当前明确空缺与断链（AI 待办清单）
 | 级别 | 问题 | 涉及文件/目标 |
 | :--- | :--- | :--- |
+| `ERROR` (BROKEN_DATA_FK) | 道韵 劫火归烬 引用了不存在的法宝 fusion_flame_sword_array | `data/v2/arcana_v2.json` |
 | `ERROR` (BROKEN_DATA_FK) | 道韵 劫火归烬 (arcana_calamity_ember) 引用失效反应 react_molten_forge | `data/v2/arcana_v2.json` |
-| `ERROR` (BROKEN_DATA_FK) | 道韵 寒狱碎界 (arcana_glacial_shatter) 引用失效反应 react_shatter | `data/v2/arcana_v2.json` |
+| `ERROR` (BROKEN_DATA_FK) | 道韵 寒狱碎界 引用了不存在的法宝 fusion_thunder_frost_domain | `data/v2/arcana_v2.json` |
 | `ERROR` (BROKEN_DATA_FK) | 道韵 雷毒交鸣 (arcana_thunder_venom) 引用失效反应 react_miasma_arc | `data/v2/arcana_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 商店宝物缺少独立图标 (16/16) | `data/v2/items_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 天道道韵缺少独立图标 (8/8) | `data/v2/arcana_v2.json` |
-| `GAP` (MISSING_ART_SLOT) | 合体超武复用基础法宝图标 (3/3) | `data/v2/weapons_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
 | `WARNING` (STORY_STAGE_MISMATCH) | 剧情章节数 (6) 与 V2 关卡数 (1) 不一致 | `scripts/story.gd` |
 | `WARNING` (ORPHAN_ASSET) | 活跃目录存在 6 个未引用媒体文件（含多版本残留） | `assets/` |
@@ -57,13 +57,10 @@
 - `wpn_fire_gourd` (离火葫芦, fire) -> `res://assets/v2/weapons/wpn_fire_gourd.png`
 - `wpn_thunder_talisman` (天雷符, thunder) -> `res://assets/v2/weapons/wpn_thunder_talisman.png`
 - `wpn_ice_mirror` (玄冰八卦镜, ice) -> `res://assets/v2/weapons/wpn_ice_mirror.png`
-- `wpn_venom_banner` (万毒幡, wood) -> `res://assets/v2/weapons/wpn_venom_banner.png`
+- `wpn_venom_banner` (万毒幡, venom) -> `res://assets/v2/weapons/wpn_venom_banner.png`
 - `wpn_gold_bell` (玄金古钟, metal) -> `res://assets/v2/weapons/wpn_gold_bell.png`
 - `wpn_jade_vase` (甘露玉净瓶, water) -> `res://assets/v2/weapons/wpn_jade_vase.png`
-- `wpn_spirit_vine` (青藤灵鞭, wood) -> `res://assets/v2/weapons/wpn_spirit_vine.png`
-- `fusion_flame_sword_array` (诛仙烈焰剑阵, 合体) -> 当前复用 `res://assets/v2/weapons/wpn_jade_sword.png`
-- `fusion_thunder_frost_domain` (九霄雷冰天域, 合体) -> 当前复用 `res://assets/v2/weapons/wpn_thunder_talisman.png`
-- `fusion_venom_zen_bell` (镇岳枯荣梵钟, 合体) -> 当前复用 `res://assets/v2/weapons/wpn_gold_bell.png`
+- `wpn_spirit_vine` (青藤灵鞭, none) -> `res://assets/v2/weapons/wpn_spirit_vine.png`
 
 ### 推图关卡与地砖（1 关）
 - 第 1 关 `青冥古林` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/map_ch1/tile_grass_512.png` | 已配地标

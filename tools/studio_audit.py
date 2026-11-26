@@ -561,6 +561,9 @@ def validate_project(
     fusion_ids = {f["id"] for f in weapons_json.get("fusion_recipes", [])}
     all_weapon_ids = weapon_ids | fusion_ids
     reaction_ids = {r["id"] for r in data["reactions_v2"].get("reactions", [])}
+    sh_rx = data["reactions_v2"].get("shatter_reaction", {})
+    if isinstance(sh_rx, dict) and sh_rx.get("id"):
+        reaction_ids.add(sh_rx["id"])
     arch_ids = {a["id"] for a in data["enemies_waves_v2"].get("archetypes", [])}
     char_ids = {c["id"] for c in data["characters_v2"].get("characters", [])}
     arcana_ids = {a["id"] for a in data["arcana_v2"].get("arcanas", [])}

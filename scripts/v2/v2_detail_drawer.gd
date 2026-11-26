@@ -12,6 +12,7 @@ const ELEM_CN := {
 	"ice": "冰",
 	"venom": "毒",
 	"water": "水",
+	"none": "器道",
 }
 
 const ELEM_HEX := {
@@ -22,6 +23,7 @@ const ELEM_HEX := {
 	"ice": "#0284C7",
 	"venom": "#059669",
 	"water": "#0891B2",
+	"none": "#64748B",
 }
 
 const STAT_FIELD_SPECS := [
@@ -38,7 +40,7 @@ const STAT_FIELD_SPECS := [
 	["zone_duration", "火域持续", "s", false, false],
 	["dot_dur", "毒伤持续", "s", false, false],
 	["slow_pct", "减速", "%", false, true],
-	["leech_hp", "汲取回血", "", false, false],
+	["root_dur", "定身", "s", false, false],
 	["knockback", "击退", "", false, false],
 	["clear_enemy_bullets", "清弹幕", "bool", false, false],
 ]
@@ -59,7 +61,6 @@ const MOD_SPECS := {
 	"chain_bonus": ["雷系弹射", "int", false],
 	"pierce_flat": ["穿透", "int", false],
 	"max_hp": ["最大气血", "int", false],
-	"armor": ["护甲", "int", false],
 	"dodge_pct": ["闪避率", "pct", false],
 	"move_speed_pct": ["移速", "pct", false],
 	"pickup_radius_pct": ["拾取范围", "pct", false],
@@ -84,6 +85,7 @@ const ELEM_COLOR := {
 	"ice": Color(0.10, 0.54, 0.78),
 	"venom": Color(0.12, 0.60, 0.40),
 	"water": Color(0.05, 0.62, 0.74),
+	"none": Color(0.36, 0.48, 0.46),
 }
 
 const COL_HEADER_BG := Color(0.07, 0.19, 0.17, 1.0)
@@ -780,9 +782,9 @@ func _render_stat_left(detail: Dictionary) -> void:
 	var spd_v := int(sm.get("spd_pct", 0))
 	var crit_v := int(sm.get("crit_pct", 12))
 	var mst_v := int(sm.get("mastery_pct", 0))
-	var arm_v := int(sm.get("armor", 0))
 	var ddg_v := int(sm.get("dodge_pct", 0))
 	var lck_v := int(sm.get("luck_pct", 100))
+	var cur_v := int(sm.get("curse_pct", 0))
 	var bond_cnt: int = (detail.get("owned_bonds", []) as Array).size()
 
 	var stat_items := [
@@ -790,9 +792,9 @@ func _render_stat_left(detail: Dictionary) -> void:
 		["攻速", "%s%d%%" % ["+" if spd_v >= 0 else "", spd_v], spd_v > 0],
 		["暴击率", "%d%%" % crit_v, crit_v > 12],
 		["元素精通", "%s%d%%" % ["+" if mst_v >= 0 else "", mst_v], mst_v > 0],
-		["护甲", str(arm_v), arm_v > 0],
 		["闪避率", "%d%%" % ddg_v, ddg_v > 0],
 		["机缘", "%d%%" % lck_v, lck_v > 100],
+		["劫难", "%d%%" % cur_v, false],
 		["已持法宝", "%d 件" % bond_cnt, bond_cnt >= 2],
 	]
 	for si in stat_items:
@@ -964,34 +966,36 @@ func _build_bond_row(bi: Dictionary) -> PanelContainer:
 
 static func format_reaction_effect(rx: Dictionary) -> String:
 	var parts: Array[String] = []
-	var shred := float(rx.get("armor_shred_pct", 0.0))
-	if shred > 0.0:
-		parts.append("破甲%d%%(%.1fs)" % [roundi(shred * 100.0), float(rx.get("debuff_dur", 3.5))])
-	var root_d := float(rx.get("root_dur", 0.0))
-	if root_d > 0.0:
-		parts.append("定身%.1fs" % root_d)
-	if String(rx.get("spread_element", "")) == "venom":
-		parts.append("扩散毒附着")
 	var chains := int(rx.get("chain_count", 0))
 	if chains > 0:
-		parts.append("连锁%d目标" % chains)
-	var exec_pct := float(rx.get("execute_hp_pct", 0.0))
-	if exec_pct > 0.0:
-		parts.append("%d%%低血斩杀" % roundi(exec_pct * 100.0))
-	if bool(rx.get("guaranteed_crit", false)):
-		parts.append("固定1.2×破防重击")
-	if bool(rx.get("true_damage", false)):
-		parts.append("无视防御真伤")
+		parts.append("弹射%d怪" % chains)
+	var stun_d := float(rx.get("stun_dur", 0.0))
+	if stun_d > 0.0:
+		parts.append("微麻痹%.2fs" % stun_d)
+	var freeze_d := float(rx.get("freeze_dur", 0.0))
+	if freeze_d > 0.0:
+		parts.append("冰封%.1fs" % freeze_d)
+	var sh_pct := float(rx.get("shield_max_pct", 0.0))
+	if sh_pct > 0.0:
+		parts.append("削%d%%白盾" % roundi(sh_pct * 100.0))
+	if bool(rx.get("clear_enemy_bullets", false)):
+		parts.append("清敌方弹幕")
+	if bool(rx.get("interrupt_charge", false)):
+		parts.append("打断蓄力")
 	var kb := float(rx.get("knockback", 0.0))
 	if kb > 0.0:
 		parts.append("击退%d" % roundi(kb))
-	var det_pct := float(rx.get("detonate_dot_pct", 0.0))
-	if det_pct > 0.0:
-		parts.append("引爆%d%%残毒" % roundi(det_pct * 100.0))
-	if float(rx.get("burn_dps_mult", 0.0)) > 0.0:
-		parts.append("持续灼烧")
-	var mult := float(rx.get("damage_mult", 0.5))
-	parts.append("倍率 %.2f×" % mult)
+	var vuln_m := float(rx.get("vuln_mult", 1.0))
+	if vuln_m > 1.0:
+		parts.append("易伤+%d%%(%.1fs)" % [roundi((vuln_m - 1.0) * 100.0), float(rx.get("vuln_dur", 4.0))])
+	var sh_mult := float(rx.get("shield_damage_mult", 1.0))
+	if sh_mult > 1.0:
+		parts.append("破盾%.1f×" % sh_mult)
+	var mark_d := float(rx.get("mark_dur", 0.0))
+	if mark_d > 0.0:
+		parts.append("死亡爆%d%%血量" % roundi(float(rx.get("death_max_hp_pct", 0.22)) * 100.0))
+	var mult := float(rx.get("damage_mult", 0.2))
+	parts.append("附伤 %.2f×" % mult)
 	return " · ".join(parts)
 
 static func _format_stat_value(val: Variant, unit: String, is_pct: bool) -> String:
@@ -1079,40 +1083,58 @@ static func build_weapon_detail(v2: V2CombatController, weapon_id: String, previ
 	var owned_elems := v2.get_owned_elements()
 	var active_rx_list: Array[Dictionary] = []
 	var inactive_rx_list: Array[Dictionary] = []
-	for rx in v2.loader.reactions_by_key.values():
-		var pair: Array = rx.get("pair", [])
-		if pair.size() < 2:
-			continue
-		var a := String(pair[0])
-		var b := String(pair[1])
-		var other := ""
-		if a == elem:
-			other = b
-		elif b == elem:
-			other = a
-		if other.is_empty():
-			continue
-		var can_now := owned_elems.has(other)
-		var entry := {
-			"id": String(rx.get("id", "")),
-			"name": String(rx.get("name", "")),
-			"other_element": other,
-			"other_elem_name": String(ELEM_CN.get(other, other)),
-			"damage_mult": float(rx.get("damage_mult", 0.5)),
-			"effect_text": format_reaction_effect(rx),
-			"color_hex": String(rx.get("vfx_color", "#FFFFFF")),
-			"can_activate_now": can_now,
-		}
-		if can_now:
-			active_rx_list.append(entry)
-		else:
-			inactive_rx_list.append(entry)
+	if elem != "none" and not elem.is_empty():
+		for rx in v2.loader.reactions_list:
+			var trig_list: Array = rx.get("triggers", [])
+			if trig_list.is_empty():
+				var fb: Array = rx.get("pair", [])
+				if fb.size() >= 2:
+					trig_list = [fb]
+			var partners: Array[String] = []
+			var can_now := false
+			for pair_raw in trig_list:
+				if not (pair_raw is Array) or (pair_raw as Array).size() < 2:
+					continue
+				var pa := String((pair_raw as Array)[0])
+				var pb := String((pair_raw as Array)[1])
+				var other := ""
+				if pa == elem:
+					other = pb
+				elif pb == elem:
+					other = pa
+				if other.is_empty():
+					continue
+				if not partners.has(other):
+					partners.append(other)
+				if owned_elems.has(other):
+					can_now = true
+			if partners.is_empty():
+				continue
+			var first_other := partners[0]
+			var other_names: Array[String] = []
+			for po in partners:
+				other_names.append(String(ELEM_CN.get(po, po)))
+			var entry := {
+				"id": String(rx.get("id", "")),
+				"name": String(rx.get("name", "")),
+				"other_element": first_other,
+				"other_elem_name": " / ".join(other_names),
+				"damage_mult": float(rx.get("damage_mult", 0.2)),
+				"effect_text": format_reaction_effect(rx),
+				"color_hex": String(rx.get("vfx_color", "#FFFFFF")),
+				"can_activate_now": can_now,
+			}
+			if can_now:
+				active_rx_list.append(entry)
+			else:
+				inactive_rx_list.append(entry)
 	var reactions: Array[Dictionary] = []
 	reactions.append_array(active_rx_list)
 	reactions.append_array(inactive_rx_list)
 
 	var projected_elems := owned_elems.duplicate()
-	projected_elems[elem] = true
+	if elem != "none" and not elem.is_empty():
+		projected_elems[elem] = true
 	var active_count := _count_reactions_in_elements(v2.loader, owned_elems)
 	var projected_count := _count_reactions_in_elements(v2.loader, projected_elems)
 	var new_rx_names: Array[String] = []
@@ -1146,10 +1168,17 @@ static func _count_reactions_in_elements(loader: V2DataLoader, elems: Dictionary
 	if loader == null:
 		return 0
 	var cnt := 0
-	for rx in loader.reactions_by_key.values():
-		var pair: Array = rx.get("pair", [])
-		if pair.size() >= 2 and elems.has(String(pair[0])) and elems.has(String(pair[1])):
-			cnt += 1
+	for rx in loader.reactions_list:
+		var trig_list: Array = rx.get("triggers", [])
+		if trig_list.is_empty():
+			var fb: Array = rx.get("pair", [])
+			if fb.size() >= 2:
+				trig_list = [fb]
+		for pair_raw in trig_list:
+			if pair_raw is Array and (pair_raw as Array).size() >= 2:
+				if elems.has(String((pair_raw as Array)[0])) and elems.has(String((pair_raw as Array)[1])):
+					cnt += 1
+					break
 	return cnt
 
 static func _collect_owned_synergy_context(v2: V2CombatController) -> Dictionary:
@@ -1167,40 +1196,32 @@ static func _collect_owned_synergy_context(v2: V2CombatController) -> Dictionary
 	var owned_elems := v2.get_owned_elements()
 	for ek in owned_elems.keys():
 		owned_elements.append(String(ek))
-	for rx in v2.loader.reactions_by_key.values():
-		var pair: Array = rx.get("pair", [])
-		if pair.size() >= 2 and owned_elems.has(String(pair[0])) and owned_elems.has(String(pair[1])):
-			var ea := String(pair[0])
-			var eb := String(pair[1])
-			active_reactions.append({
-				"id": String(rx.get("id", "")),
-				"name": String(rx.get("name", "")),
-				"elem_a": ea,
-				"elem_b": eb,
-				"elem_a_cn": String(ELEM_CN.get(ea, ea)),
-				"elem_b_cn": String(ELEM_CN.get(eb, eb)),
-				"effect_text": format_reaction_effect(rx),
-			})
+	for rx in v2.loader.reactions_list:
+		var trig_list: Array = rx.get("triggers", [])
+		if trig_list.is_empty():
+			var fb: Array = rx.get("pair", [])
+			if fb.size() >= 2:
+				trig_list = [fb]
+		for pair_raw in trig_list:
+			if pair_raw is Array and (pair_raw as Array).size() >= 2:
+				var ea := String((pair_raw as Array)[0])
+				var eb := String((pair_raw as Array)[1])
+				if owned_elems.has(ea) and owned_elems.has(eb):
+					active_reactions.append({
+						"id": String(rx.get("id", "")),
+						"name": String(rx.get("name", "")),
+						"elem_a": ea,
+						"elem_b": eb,
+						"elem_a_cn": String(ELEM_CN.get(ea, ea)),
+						"elem_b_cn": String(ELEM_CN.get(eb, eb)),
+						"effect_text": format_reaction_effect(rx),
+					})
+					break
 	if v2.orbit_rig != null:
 		for slot in v2.orbit_rig.slots:
 			var wid := String(slot.get("id", ""))
 			var lv := int(slot.get("tier", 1))
-			if bool(slot.get("is_fusion", false)):
-				for r in v2.loader.fusion_recipes:
-					if String(r.get("id", "")) == wid:
-						var fname := String(r.get("name", wid))
-						owned_bonds.append("★ 【%s】（仙阶超武已成）" % fname)
-						owned_bond_items.append({
-							"is_fusion": true,
-							"id": wid,
-							"name": fname,
-							"level": 6,
-							"element": "",
-							"partner_name": "",
-							"fusion_name": fname,
-						})
-						break
-			elif v2.loader.weapons_by_id.has(wid):
+			if v2.loader.weapons_by_id.has(wid):
 				var wdata: Dictionary = v2.loader.weapons_by_id[wid]
 				var wname := String(wdata.get("name", wid))
 				var welem := String(wdata.get("element", "metal"))

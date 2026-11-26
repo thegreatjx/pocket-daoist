@@ -92,9 +92,9 @@ func on_elite_killed() -> void:
 	if player != null and "v2_combat" in player and player.v2_combat != null:
 		player.v2_combat.notify_elite_killed()
 
-func update_boss_hp(curr: float, max_h: float) -> void:
+func update_boss_hp(curr: float, max_h: float, curr_sh: float = 0.0, max_sh: float = 0.0) -> void:
 	if ui != null and ui.has_method("update_boss_hp"):
-		ui.update_boss_hp(curr, max_h)
+		ui.update_boss_hp(curr, max_h, curr_sh, max_sh)
 
 func on_boss_killed() -> void:
 	if stage_director:

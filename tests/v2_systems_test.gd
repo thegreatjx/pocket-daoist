@@ -67,11 +67,11 @@ func _test_data_loader() -> V2DataLoader:
 	var loaded: bool = loader.load_all()
 	check("data_load_all", loaded, "load_all() returned false")
 	check("data_weapons_count", loader.weapons_by_id.size() >= 6, "got %d" % loader.weapons_by_id.size())
-	check("data_fusions_count", loader.fusion_recipes.size() == 3, "got %d" % loader.fusion_recipes.size())
+	check("data_fusions_count", loader.fusion_recipes.is_empty(), "got %d" % loader.fusion_recipes.size())
 	check("data_max_weapon_slots", loader.max_weapon_slots == 4, "got %d" % loader.max_weapon_slots)
 	check("data_max_weapon_level", loader.max_weapon_level == 8, "got %d" % loader.max_weapon_level)
 	check("data_realm_slot_unlocks", loader.realm_slot_unlocks.size() == 4, "got %d" % loader.realm_slot_unlocks.size())
-	check("data_reactions_count", loader.reactions_by_key.size() == 7, "got %d" % loader.reactions_by_key.size())
+	check("data_reactions_count", loader.reactions_list.size() == 5 and not loader.shatter_reaction.is_empty(), "list=%d shatter=%s" % [loader.reactions_list.size(), str(loader.shatter_reaction.get("id", ""))])
 	check("data_items_count", loader.items_by_id.size() == 16, "got %d" % loader.items_by_id.size())
 	var tradeoff_items := 0
 	for iid in loader.items_by_id.keys():
@@ -85,19 +85,12 @@ func _test_data_loader() -> V2DataLoader:
 		var icon_path: String = String(w.get("icon", ""))
 		check("data_weapon_icon_" + String(wid), ResourceLoader.exists(icon_path), icon_path)
 
-	for recipe in loader.fusion_recipes:
-		var fid: String = String(recipe["id"])
-		var icon_p: String = String(recipe.get("icon", ""))
-		var sec_p: String = String(recipe.get("secondary_icon", ""))
-		check("data_fusion_icon_" + fid, ResourceLoader.exists(icon_p), icon_p)
-		check("data_fusion_sec_icon_" + fid, ResourceLoader.exists(sec_p), sec_p)
-
-	var reaction_pairs: Array[String] = ["fire+water", "fire+ice", "fire+wood", "ice+water", "thunder+water", "metal+thunder", "water+wood"]
+	var reaction_pairs: Array[String] = ["fire+water", "fire+ice", "ice+water", "thunder+water", "metal+thunder", "fire+metal", "fire+thunder", "fire+venom"]
 	var missing_pairs: Array[String] = []
 	for k in reaction_pairs:
 		if not loader.reactions_by_key.has(k):
 			missing_pairs.append(k)
-	check("data_all_7_reaction_pairs", missing_pairs.is_empty() and loader.reactions_by_key.size() == reaction_pairs.size(), str(missing_pairs))
+	check("data_all_8_reaction_triggers", missing_pairs.is_empty() and loader.reactions_by_key.size() == reaction_pairs.size(), str(missing_pairs))
 	check("data_pair_key_symmetry", V2DataLoader.make_pair_key("thunder", "fire") == "fire+thunder", V2DataLoader.make_pair_key("thunder", "fire"))
 	return loader
 
@@ -118,11 +111,7 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 				tiers_ok = false
 	check("orbit_all_weapons_eight_tiers", tiers_ok, "tiers/level_summary/max_tier_perk mismatch")
 
-	var recipes_ok := true
-	for recipe in loader.fusion_recipes:
-		if int(recipe.get("required_tier", 0)) != 8 or String(recipe.get("desc", "")) == "":
-			recipes_ok = false
-	check("orbit_fusion_requires_lv8", recipes_ok, str(loader.fusion_recipes))
+	check("orbit_fusion_disabled", loader.fusion_recipes.is_empty(), str(loader.fusion_recipes))
 
 	var rig1 := OrbitWeaponRig.new()
 	add_child(rig1)
@@ -245,30 +234,41 @@ func _test_orbit_weapon_rig(loader: V2DataLoader) -> void:
 
 func _test_reaction_engine(loader: V2DataLoader) -> void:
 	var engine := ReactionEngine.new(loader)
+	var r_none: Dictionary = engine.apply_element_hit(100, "none", 1.0, 20.0)
+	var r_rx_self: Dictionary = engine.apply_element_hit(100, "fire", 1.0, 20.0, 0.0, {}, false, false, true)
+	check("reaction_skips_none_and_secondary", r_none.is_empty() and r_rx_self.is_empty() and engine.get_aura_elements(100, 1.1).is_empty(), str(engine.get_aura_elements(100, 1.1)))
+
 	var r0: Dictionary = engine.apply_element_hit(101, "fire", 1.0, 20.0)
 	check("reaction_first_aura_empty", r0.is_empty(), str(r0))
 
 	var r1: Dictionary = engine.apply_element_hit(101, "water", 1.1, 20.0)
-	check("reaction_vaporize_id", String(r1.get("reaction_id", "")) == "react_vaporize", str(r1))
-	check("reaction_vaporize_dmg", is_equal_approx(float(r1.get("bonus_damage", 0.0)), 21.0), str(r1.get("bonus_damage", 0.0)))
+	check("reaction_steam_id", String(r1.get("reaction_id", "")) == "react_steam", str(r1))
+	check("reaction_steam_dmg", is_equal_approx(float(r1.get("bonus_damage", 0.0)), 3.0), str(r1.get("bonus_damage", 0.0)))
 
 	var r2: Dictionary = engine.apply_element_hit(101, "fire", 1.2, 20.0)
 	var r3: Dictionary = engine.apply_element_hit(101, "water", 1.3, 20.0)
-	var r3b: Dictionary = engine.apply_element_hit(101, "water", 2.5, 20.0)
+	var r3b: Dictionary = engine.apply_element_hit(101, "water", 2.95, 20.0)
 	check("reaction_icd_blocks_repeat", r2.is_empty() and r3.is_empty() and r3b.is_empty(), "r2=%s r3=%s r3b=%s" % [str(r2), str(r3), str(r3b)])
 
-	var r4: Dictionary = engine.apply_element_hit(101, "water", 2.95, 20.0)
-	check("reaction_recovers_after_icd", String(r4.get("reaction_id", "")) == "react_vaporize", str(r4))
+	var r4: Dictionary = engine.apply_element_hit(101, "water", 3.20, 20.0)
+	check("reaction_recovers_after_icd", String(r4.get("reaction_id", "")) == "react_steam", str(r4))
+
+	engine.apply_element_hit(103, "metal", 1.0, 20.0)
+	engine.apply_element_hit(103, "water", 1.1, 20.0)
+	check("reaction_single_aura_keeps_first_on_non_pair", engine.has_aura(103, "metal", 1.2) and not engine.has_aura(103, "water", 1.2), str(engine.get_aura_elements(103, 1.2)))
+
+	var sh_rx: Dictionary = engine.apply_element_hit(104, "metal", 1.1, 20.0, 0.0, {}, false, true, false)
+	check("reaction_shatter_bypasses_freeze_icd", String(sh_rx.get("reaction_id", "")) == "react_shatter" and bool(sh_rx.get("unfreeze", false)) and is_equal_approx(float(sh_rx.get("shield_flat_min", 0.0)), 90.0), str(sh_rx))
 
 	var boss_engine := ReactionEngine.new(loader)
 	boss_engine.apply_element_hit(102, "fire", 1.0, 20.0, 0.0, {}, true)
 	var b1: Dictionary = boss_engine.apply_element_hit(102, "water", 1.1, 20.0, 0.0, {}, true)
 	var b2: Dictionary = boss_engine.apply_element_hit(102, "fire", 2.4, 20.0, 0.0, {}, true)
-	var b3: Dictionary = boss_engine.apply_element_hit(102, "water", 3.35, 20.0, 0.0, {}, true)
-	var expected_boss_dmg := 20.0 * 1.05 * float(loader.reaction_config.get("boss_damage_scale", 0.55))
+	var b3: Dictionary = boss_engine.apply_element_hit(102, "water", 3.65, 20.0, 0.0, {}, true)
+	var expected_boss_dmg := 20.0 * 0.15 * float(loader.reaction_config.get("boss_damage_scale", 0.60))
 	check(
 		"reaction_boss_icd",
-		not b1.is_empty() and is_equal_approx(float(b1.get("bonus_damage", 0.0)), expected_boss_dmg) and b2.is_empty() and String(b3.get("reaction_id", "")) == "react_vaporize",
+		not b1.is_empty() and is_equal_approx(float(b1.get("bonus_damage", 0.0)), expected_boss_dmg) and b2.is_empty() and String(b3.get("reaction_id", "")) == "react_steam",
 		"b1=%s b2=%s b3=%s" % [str(b1), str(b2), str(b3)]
 	)
 
@@ -276,13 +276,13 @@ func _test_reaction_engine(loader: V2DataLoader) -> void:
 	var eid: int = 200
 	for key in loader.reactions_by_key.keys():
 		var rx: Dictionary = loader.reactions_by_key[key]
-		var pair: Array = rx["pair"]
-		var first_hit: Dictionary = engine.apply_element_hit(eid, String(pair[0]), 10.0, 10.0)
-		var second_hit: Dictionary = engine.apply_element_hit(eid, String(pair[1]), 10.05, 10.0)
+		var elems := String(key).split("+")
+		var first_hit: Dictionary = engine.apply_element_hit(eid, elems[0], 10.0, 10.0)
+		var second_hit: Dictionary = engine.apply_element_hit(eid, elems[1], 10.05, 10.0)
 		check(
-			"reaction_all_" + String(rx["id"]),
+			"reaction_trigger_" + String(key),
 			first_hit.is_empty() and String(second_hit.get("reaction_id", "")) == String(rx["id"]),
-			"first=%s second=%s" % [str(first_hit), str(second_hit)]
+			"key=%s first=%s second=%s" % [key, str(first_hit), str(second_hit)]
 		)
 		eid += 1
 
@@ -295,10 +295,12 @@ func _test_reaction_engine(loader: V2DataLoader) -> void:
 		"chain_bonus": 1
 	})
 	mod_engine.apply_element_hit(301, "fire", 1.0, 20.0)
-	var mod_rx: Dictionary = mod_engine.apply_element_hit(301, "wood", 6.0, 20.0)
-	check("reaction_fire_dur_bonus_and_wood_burn", String(mod_rx.get("reaction_id", "")) == "react_wood_burn", str(mod_rx))
-	check("reaction_mod_damage", is_equal_approx(float(mod_rx.get("bonus_damage", 0.0)), 20.0 * 0.18 * 1.35), str(mod_rx.get("bonus_damage", 0.0)))
-	check("reaction_mod_radius", is_equal_approx(float(mod_rx.get("aoe_radius", 0.0)), 100.0 * 1.20), str(mod_rx.get("aoe_radius", 0.0)))
+	var mod_rx: Dictionary = mod_engine.apply_element_hit(301, "venom", 5.8, 20.0)
+	check("reaction_fire_dur_bonus_and_detonate", String(mod_rx.get("reaction_id", "")) == "react_detonate", str(mod_rx))
+	check("reaction_mod_damage", is_equal_approx(float(mod_rx.get("bonus_damage", 0.0)), 20.0 * 0.15 * 1.35), str(mod_rx.get("bonus_damage", 0.0)))
+	mod_engine.apply_element_hit(302, "fire", 1.0, 20.0)
+	var steam_mod: Dictionary = mod_engine.apply_element_hit(302, "water", 1.1, 20.0)
+	check("reaction_mod_radius", is_equal_approx(float(steam_mod.get("aoe_radius", 0.0)), 110.0 * 1.20), str(steam_mod.get("aoe_radius", 0.0)))
 
 	var vfx_true: int = 0
 	var vfx_false: int = 0
@@ -310,7 +312,7 @@ func _test_reaction_engine(loader: V2DataLoader) -> void:
 			vfx_true += 1
 		else:
 			vfx_false += 1
-	check("reaction_vfx_cap_throttles", vfx_true == 10 and vfx_false == 5, "true=%d false=%d" % [vfx_true, vfx_false])
+	check("reaction_vfx_cap_throttles", vfx_true == 12 and vfx_false == 3, "true=%d false=%d" % [vfx_true, vfx_false])
 
 func _test_enemy_steering(loader: V2DataLoader) -> void:
 	var director := EnemySteeringDirector.new()
@@ -618,10 +620,10 @@ func _test_t1_guards(loader: V2DataLoader) -> void:
 	rx_engine.configure_modifiers({"reaction_damage_pct": 10.0})
 	rx_engine.apply_element_hit(901, "fire", 1.0, 20.0)
 	var rx: Dictionary = rx_engine.apply_element_hit(901, "water", 1.1, 20.0)
-	var rx_cap := 20.0 * 1.05 * (1.0 + ReactionEngine.MASTERY_CAP)
+	var rx_cap := 20.0 * 0.15 * (1.0 + float(loader.reaction_config.get("mastery_cap", 1.0)))
 	check(
 		"t1_reaction_damage_capped",
-		String(rx.get("reaction_id", "")) == "react_vaporize" and float(rx.get("bonus_damage", 0.0)) <= rx_cap + 0.001,
+		String(rx.get("reaction_id", "")) == "react_steam" and float(rx.get("bonus_damage", 0.0)) <= rx_cap + 0.001,
 		"rx=%s cap=%.2f" % [str(rx), rx_cap]
 	)
 
@@ -778,8 +780,8 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 			active_ids_1.append(String(r.get("id", "")))
 	var syn1: Dictionary = gourd_det.get("synergy_summary", {})
 	check(
-		"t2c_gourd_no_active_with_metal_only",
-		active_ids_1.is_empty() and int(syn1.get("projected_reaction_count", 0)) == 0,
+		"t2c_gourd_matches_metal_molten",
+		active_ids_1 == ["react_molten"] and int(syn1.get("projected_reaction_count", 0)) == 1,
 		"active=%s syn=%s" % [str(active_ids_1), str(syn1)]
 	)
 
@@ -791,8 +793,8 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 		if bool(r.get("can_activate_now", false)):
 			active_ids_2.append(String(r.get("id", "")))
 	check(
-		"t2c_gourd_matches_ice",
-		active_ids_2 == ["react_melt"],
+		"t2c_gourd_matches_ice_and_metal",
+		active_ids_2.has("react_steam") and active_ids_2.has("react_molten") and active_ids_2.size() == 2,
 		"active2=%s" % str(active_ids_2)
 	)
 	cc.add_weapon("wpn_venom_banner", 1)
@@ -802,8 +804,8 @@ func _test_t2c_detail_drawer_and_pacing(loader: V2DataLoader) -> void:
 		if bool(r.get("can_activate_now", false)):
 			active_ids_3.append(String(r.get("id", "")))
 	check(
-		"t2c_gourd_matches_ice_and_wood",
-		active_ids_3.has("react_melt") and active_ids_3.has("react_wood_burn") and active_ids_3.size() == 2,
+		"t2c_gourd_matches_molten_steam_detonate",
+		active_ids_3.has("react_steam") and active_ids_3.has("react_molten") and active_ids_3.has("react_detonate") and active_ids_3.size() == 3,
 		"active3=%s" % str(active_ids_3)
 	)
 
@@ -854,7 +856,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	var sm0: Dictionary = d0.get("summary", {})
 	check(
 		"t2d_codex_counts",
-		(d0.get("reactions", []) as Array).size() == 7 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).is_empty() and (d0.get("realms", []) as Array).size() == 4 and (d0.get("items", []) as Array).size() == 16,
+		(d0.get("reactions", []) as Array).size() == 5 and (d0.get("weapons", []) as Array).size() >= 8 and (d0.get("fusions", []) as Array).is_empty() and (d0.get("realms", []) as Array).size() == 4 and (d0.get("items", []) as Array).size() == 16,
 		str(sm0)
 	)
 	check("t2d_codex_initial_0_reactions", int(sm0.get("active_reaction_count", -1)) == 0, str(sm0))
@@ -865,8 +867,8 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	var d1 := V2CodexPanel.build_codex_data(loader, cc)
 	var rx1: Array = d1.get("reactions", [])
 	check(
-		"t2d_codex_1_reaction_highlighted_first",
-		int((d1.get("summary", {}) as Dictionary).get("active_reaction_count", 0)) == 1 and String(rx1[0].get("id", "")) == "react_vaporize" and bool(rx1[0].get("active_now", false)),
+		"t2d_codex_2_reactions_highlighted_first",
+		int((d1.get("summary", {}) as Dictionary).get("active_reaction_count", 0)) == 2 and bool(rx1[0].get("active_now", false)),
 		str(rx1[0] if not rx1.is_empty() else {})
 	)
 
@@ -901,7 +903,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	var gourd_rx: Array = gourd_det.get("reactions", [])
 	check(
 		"t2d_e2e_drawer_lists_fire_reactions",
-		gourd_rx.size() == 3 and String(gourd_rx[0].get("id", "")) == "react_vaporize" and not bool(gourd_rx[0].get("can_activate_now", false)),
+		gourd_rx.size() == 3 and String(gourd_rx[0].get("id", "")) == "react_molten" and bool(gourd_rx[0].get("can_activate_now", false)),
 		str(gourd_rx)
 	)
 
@@ -1027,23 +1029,25 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 	huodou.take_damage_v2(100.0, false, false, "ice")
 	var hd_after_ice := huodou.current_health
 	check(
-		"t3_element_resist_and_weakness",
-		is_equal_approx(1000.0 - hd_after_fire, 60.0) and is_equal_approx(hd_after_fire - hd_after_ice, 135.0),
-		"fire_dmg=%.1f ice_dmg=%.1f" % [1000.0 - hd_after_fire, hd_after_fire - hd_after_ice]
+		"t3_minimal_defense_uniform_damage",
+		is_equal_approx(1000.0 - hd_after_fire, 100.0) and is_equal_approx(hd_after_fire - hd_after_ice, 100.0) and is_equal_approx(huodou.damage_reduction, 0.0),
+		"fire_dmg=%.1f ice_dmg=%.1f dr=%.2f" % [1000.0 - hd_after_fire, hd_after_fire - hd_after_ice, huodou.damage_reduction]
 	)
 	check("t3_tier_variant_visual_sync", huodou.tier_variant == 3 and huodou.visual_node != null and int(huodou.visual_node.get("tier_variant")) == 3, "tier=%d" % huodou.tier_variant)
 
 	var golem := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(golem)
-	golem.setup_type(Enemy.Type.MINION, 0.0, 2)
-	golem.apply_archetype(loader.enemy_archetypes["enemy_bulwark_golem"], 2)
-	golem.max_health = 1000.0
-	golem.current_health = 1000.0
-	golem.take_damage_v2(100.0, false, false, "metal")
-	var gl_phys := 1000.0 - golem.current_health
-	golem.take_damage_v2(100.0, false, true, "ice")
-	var gl_true_ice := (1000.0 - gl_phys) - golem.current_health
-	check("t3_golem_phys_dr_and_true_ice_weakness", is_equal_approx(gl_phys, 75.0) and is_equal_approx(gl_true_ice, 120.0), "phys=%.1f true_ice=%.1f" % [gl_phys, gl_true_ice])
+	golem.setup_type(Enemy.Type.ELITE, 0.0, 4)
+	var sh_total := golem.max_shield
+	golem.apply_vulnerability(1.25, 4.0)
+	golem.take_damage_v2(100.0, false, false, "metal", Color.WHITE, false, 1.4)
+	var vuln_sh_dmg := sh_total - golem.current_shield
+	golem.take_damage_v2(10000.0, false, false, "metal")
+	check(
+		"t3_white_qi_shield_and_break",
+		sh_total > 0.0 and is_equal_approx(vuln_sh_dmg, 175.0) and is_equal_approx(golem.current_shield, 0.0) and golem._stun_timer >= 0.50 and is_equal_approx(golem.damage_taken_mult, 1.25),
+		"sh=%.1f vuln_sh=%.1f cur_sh=%.1f stun=%.2f vuln=%.2f" % [sh_total, vuln_sh_dmg, golem.current_shield, golem._stun_timer, golem.damage_taken_mult]
+	)
 
 	var boar := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(boar)
@@ -1308,14 +1312,14 @@ func _test_t4_feel_and_feedback(loader: V2DataLoader) -> void:
 	var t_ice: Dictionary = (w_ice["tiers"] as Array)[3]
 	cc._on_weapon_fired(0, w_ice, t_ice, p.global_position, p.global_position + Vector2(200.0, 0.0))
 	var q_after_ice := cc._pending_salvos.size()
-	var w_arr: Dictionary = loader.fusion_recipes[0]
-	cc._on_weapon_fired(0, w_arr, w_arr, p.global_position, p.global_position + Vector2(200.0, 0.0))
+	var t_ice_max: Dictionary = (w_ice["tiers"] as Array)[7]
+	cc._on_weapon_fired(0, w_ice, t_ice_max, p.global_position, p.global_position + Vector2(200.0, 0.0))
 	var q_after_arr := cc._pending_salvos.size()
 	for _step in range(12):
 		cc._step_pending_salvos(0.036)
 	check(
 		"t4_salvo_stagger_queues_and_flushes",
-		q_after_ice == 3 and q_after_arr == 8 and cc._pending_salvos.is_empty(),
+		q_after_ice == 3 and q_after_arr == 9 and cc._pending_salvos.is_empty(),
 		"ice=%d arr=%d rem=%d" % [q_after_ice, q_after_arr, cc._pending_salvos.size()]
 	)
 
@@ -1778,7 +1782,7 @@ func _test_batch9_pickup_and_freeze() -> void:
 		"timer=%.2f" % minion._freeze_timer
 	)
 	minion.take_damage_v2(100.0, false, true)
-	_check("b9_frozen_vuln_plus_15pct", is_equal_approx(1000.0 - minion.current_health, 115.0), "dmg=%.1f" % (1000.0 - minion.current_health))
+	_check("b9_frozen_minimal_defense_no_hidden_vuln", is_equal_approx(1000.0 - minion.current_health, 100.0), "dmg=%.1f" % (1000.0 - minion.current_health))
 
 	var elite := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
 	add_child(elite)
@@ -1833,21 +1837,23 @@ func _test_batch10a_bell_and_banner(loader: V2DataLoader) -> void:
 	var bell: Dictionary = loader.weapons_by_id["wpn_gold_bell"]
 	var bell_t1: Dictionary = (bell["tiers"] as Array)[0]
 	var bell_res: Dictionary = bell.get("resonance_profile", {})
+	var vine: Dictionary = loader.weapons_by_id["wpn_spirit_vine"]
+	var vine_t1: Dictionary = (vine["tiers"] as Array)[0]
 	_check(
 		"b10a_bell_data_micro_control",
 		is_equal_approx(float(bell_t1.get("slow_pct", 0.0)), 0.25) and is_equal_approx(float(bell_t1.get("slow_dur", 0.0)), 1.2) and float(bell_t1.get("knockback", 0.0)) > 0.0,
 		str(bell_t1)
 	)
 	_check(
-		"b10a_bell_data_resonance_profile",
-		not bell_res.is_empty() and (bell_res.get("shatter", {}) as Dictionary).has("aoe_radius") and int((bell_res.get("thunder_echo", {}) as Dictionary).get("chain_count", 0)) == 2 and int((bell_res.get("shock_spread", {}) as Dictionary).get("max_targets", 0)) >= 3,
-		str(bell_res)
+		"b10a_bell_resonance_removed_and_vine_none",
+		bell_res.is_empty() and String(vine.get("element", "")) == "none" and not vine_t1.has("leech_hp") and is_equal_approx(float(vine_t1.get("root_dur", 0.0)), 0.75) and bool(vine_t1.get("pull_exp_gems", false)),
+		"bell_res=%s vine=%s" % [str(bell_res), str(vine_t1)]
 	)
 	var banner: Dictionary = loader.weapons_by_id["wpn_venom_banner"]
 	var banner_t3: Dictionary = (banner["tiers"] as Array)[2]
 	_check(
 		"b10a_banner_data_homing_spirits",
-		String(banner.get("attack_pattern", "")) == "homing_soul_seal_spirits" and not banner_t3.has("aoe_radius") and int(banner_t3.get("projectile_count", 0)) == 2 and int(banner_t3.get("spread_targets", 0)) == 3,
+		String(banner.get("element", "")) == "venom" and String(banner.get("attack_pattern", "")) == "homing_soul_seal_spirits" and not banner_t3.has("aoe_radius") and int(banner_t3.get("projectile_count", 0)) == 2 and int(banner_t3.get("spread_targets", 0)) == 3,
 		str(banner_t3)
 	)
 
@@ -1876,62 +1882,31 @@ func _test_batch10a_bell_and_banner(loader: V2DataLoader) -> void:
 	)
 
 	var e_ice := _batch10a_enemy(p.global_position + Vector2(20.0, 130.0), 6000.0, p)
-	var e_splash := _batch10a_enemy(p.global_position + Vector2(92.0, 152.0), 6000.0, p)
+	e_ice.max_shield = 500.0
+	e_ice.current_shield = 500.0
 	e_ice.apply_freeze(3.0)
 	CombatGrid.rebuild(get_tree().get_nodes_in_group("enemies"))
-	var ice_hp_before := e_ice.current_health
-	var splash_hp_before := e_splash.current_health
-	var shatter_before := int(cc.bell_resonance_counts.get("shatter", 0))
 	cc._on_weapon_fired(0, bell, bell_t1, p.global_position, e_ice.global_position)
 	_check(
-		"b10a_bell_shatter_resonance",
-		int(cc.bell_resonance_counts.get("shatter", 0)) == shatter_before + 1 and e_ice.current_health < ice_hp_before and e_splash.current_health < splash_hp_before,
-		"counts=%s ice=%.1f->%.1f splash=%.1f->%.1f" % [str(cc.bell_resonance_counts), ice_hp_before, e_ice.current_health, splash_hp_before, e_splash.current_health]
-	)
-	cc.reaction_engine.clear_enemy(e_splash.get_instance_id())
-	e_ice.apply_freeze(3.0)
-	var shatter_icd_before := int(cc.bell_resonance_counts.get("shatter", 0))
-	cc._on_weapon_fired(0, bell, bell_t1, p.global_position, e_ice.global_position)
-	_check(
-		"b10a_bell_resonance_icd",
-		int(cc.bell_resonance_counts.get("shatter", 0)) == shatter_icd_before,
-		"counts=%s" % str(cc.bell_resonance_counts)
+		"b10a_metal_bell_triggers_react_shatter",
+		not e_ice.is_frozen() and e_ice.current_shield <= 410.0 and cc.reaction_count >= 1,
+		"frozen=%s shield=%.1f rx=%d" % [str(e_ice.is_frozen()), e_ice.current_shield, cc.reaction_count]
 	)
 
-	var e_thunder := _batch10a_enemy(p.global_position + Vector2(-130.0, 0.0), 6000.0, p)
-	var e_chain_a := _batch10a_enemy(p.global_position + Vector2(-190.0, 70.0), 6000.0, p)
-	var e_chain_b := _batch10a_enemy(p.global_position + Vector2(-235.0, 140.0), 6000.0, p)
-	var now_sec := float(Time.get_ticks_msec()) * 0.001
-	cc.reaction_engine.apply_element_hit(e_thunder.get_instance_id(), "thunder", now_sec, 10.0)
+	var e_det_a := _batch10a_enemy(p.global_position + Vector2(-140.0, 0.0), 100.0, p)
+	var e_det_b := _batch10a_enemy(p.global_position + Vector2(-175.0, 0.0), 200.0, p)
+	cc.deal_v2_damage(e_det_a, 10.0, "fire", {})
+	cc.deal_v2_damage(e_det_a, 10.0, "venom", {})
 	CombatGrid.rebuild(get_tree().get_nodes_in_group("enemies"))
-	cc._on_weapon_fired(0, bell, bell_t1, p.global_position, e_thunder.global_position)
+	var det_b_hp := e_det_b.current_health
+	e_det_a.die()
 	_check(
-		"b10a_bell_thunder_resonance",
-		int(cc.bell_resonance_counts.get("thunder_echo", 0)) == 1 and e_thunder._stun_timer > 0.0,
-		"counts=%s stun=%.2f" % [str(cc.bell_resonance_counts), e_thunder._stun_timer]
-	)
-	e_thunder.global_position = p.global_position + Vector2(1200.0, 600.0)
-	e_chain_a.global_position = p.global_position + Vector2(1250.0, 650.0)
-	e_chain_b.global_position = p.global_position + Vector2(1300.0, 700.0)
-
-	var e_burn := _batch10a_enemy(p.global_position + Vector2(0.0, -130.0), 6000.0, p)
-	var e_burn_near := _batch10a_enemy(p.global_position + Vector2(75.0, -165.0), 6000.0, p)
-	e_burn.apply_dot(14.0, 4.0, false, "fire")
-	CombatGrid.rebuild(get_tree().get_nodes_in_group("enemies"))
-	var burn_near_hp := e_burn_near.current_health
-	cc._on_weapon_fired(0, bell, bell_t1, p.global_position, e_burn.global_position)
-	_check(
-		"b10a_bell_shock_spread_resonance",
-		int(cc.bell_resonance_counts.get("shock_spread", 0)) == 1 and e_burn_near.is_burning() and e_burn_near.current_health < burn_near_hp,
-		"counts=%s near_burn=%s hp=%.1f->%.1f" % [str(cc.bell_resonance_counts), str(e_burn_near.is_burning()), burn_near_hp, e_burn_near.current_health]
-	)
-	_check(
-		"b10a_bell_total_resonances",
-		cc.bell_resonance_total == 3,
-		"total=%d counts=%s" % [cc.bell_resonance_total, str(cc.bell_resonance_counts)]
+		"b10a_detonate_death_blast_no_chain",
+		e_det_b.current_health < det_b_hp and e_det_b._detonate_mark_timer <= 0.0,
+		"b_hp=%.1f->%.1f mark=%.2f" % [det_b_hp, e_det_b.current_health, e_det_b._detonate_mark_timer]
 	)
 
-	for e in [e_main, e_ice, e_splash, e_thunder, e_chain_a, e_chain_b, e_burn, e_burn_near]:
+	for e in [e_main, e_ice, e_det_a, e_det_b]:
 		if is_instance_valid(e):
 			e.free()
 

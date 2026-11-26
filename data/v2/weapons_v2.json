@@ -331,7 +331,7 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 5,
+          "damage": 6,
           "cooldown": 1.24,
           "range": 320,
           "projectile_count": 3,
@@ -341,7 +341,7 @@
         },
         {
           "tier": 2,
-          "damage": 7,
+          "damage": 8,
           "cooldown": 1.18,
           "range": 330,
           "projectile_count": 3,
@@ -351,7 +351,7 @@
         },
         {
           "tier": 3,
-          "damage": 9,
+          "damage": 10,
           "cooldown": 1.13,
           "range": 342,
           "projectile_count": 4,
@@ -361,7 +361,7 @@
         },
         {
           "tier": 4,
-          "damage": 11,
+          "damage": 12,
           "cooldown": 1.08,
           "range": 356,
           "projectile_count": 4,
@@ -371,7 +371,7 @@
         },
         {
           "tier": 5,
-          "damage": 13,
+          "damage": 14,
           "cooldown": 1.03,
           "range": 370,
           "projectile_count": 5,
@@ -381,7 +381,7 @@
         },
         {
           "tier": 6,
-          "damage": 15,
+          "damage": 17,
           "cooldown": 0.98,
           "range": 384,
           "projectile_count": 6,
@@ -391,7 +391,7 @@
         },
         {
           "tier": 7,
-          "damage": 17,
+          "damage": 19,
           "cooldown": 0.94,
           "range": 400,
           "projectile_count": 6,
@@ -401,7 +401,7 @@
         },
         {
           "tier": 8,
-          "damage": 20,
+          "damage": 22,
           "cooldown": 0.89,
           "range": 415,
           "projectile_count": 7,
@@ -421,7 +421,7 @@
     {
       "id": "wpn_venom_banner",
       "name": "万毒幡",
-      "element": "wood",
+      "element": "venom",
       "icon": "res://assets/v2/weapons/wpn_venom_banner.png",
       "attack_pattern": "homing_soul_seal_spirits",
       "desc": "摇幡放出数道追踪绿紫毒灵，自动索敌并种下噬魂毒印；带印妖物身亡时毒印向周围至多 3 名敌人炸开传染。",
@@ -430,12 +430,12 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 6,
+          "damage": 7,
           "cooldown": 1.55,
           "range": 350,
           "projectile_count": 1,
           "spirit_speed": 330,
-          "dot_dps": 10,
+          "dot_dps": 11,
           "dot_dur": 4.2,
           "spread_radius": 110,
           "spread_targets": 3,
@@ -443,12 +443,12 @@
         },
         {
           "tier": 2,
-          "damage": 7,
+          "damage": 8,
           "cooldown": 1.50,
           "range": 362,
           "projectile_count": 1,
           "spirit_speed": 350,
-          "dot_dps": 13,
+          "dot_dps": 14,
           "dot_dur": 4.4,
           "spread_radius": 112,
           "spread_targets": 3,
@@ -456,12 +456,12 @@
         },
         {
           "tier": 3,
-          "damage": 9,
+          "damage": 10,
           "cooldown": 1.44,
           "range": 374,
           "projectile_count": 2,
           "spirit_speed": 365,
-          "dot_dps": 16,
+          "dot_dps": 18,
           "dot_dur": 4.6,
           "spread_radius": 115,
           "spread_targets": 3,
@@ -469,12 +469,12 @@
         },
         {
           "tier": 4,
-          "damage": 11,
+          "damage": 12,
           "cooldown": 1.38,
           "range": 386,
           "projectile_count": 2,
           "spirit_speed": 385,
-          "dot_dps": 20,
+          "dot_dps": 22,
           "dot_dur": 4.8,
           "spread_radius": 118,
           "spread_targets": 3,
@@ -482,25 +482,25 @@
         },
         {
           "tier": 5,
-          "damage": 13,
+          "damage": 14,
           "cooldown": 1.32,
           "range": 398,
           "projectile_count": 2,
           "spirit_speed": 405,
-          "dot_dps": 24,
+          "dot_dps": 26,
           "dot_dur": 5.0,
           "spread_radius": 122,
           "spread_targets": 3,
-          "level_summary": "毒灵穿行更快，持续剧毒逼近 25/s"
+          "level_summary": "毒灵穿行更快，持续剧毒逼近 26/s"
         },
         {
           "tier": 6,
-          "damage": 15,
+          "damage": 17,
           "cooldown": 1.26,
           "range": 410,
           "projectile_count": 3,
           "spirit_speed": 425,
-          "dot_dps": 29,
+          "dot_dps": 32,
           "dot_dur": 5.2,
           "spread_radius": 126,
           "spread_targets": 3,
@@ -508,12 +508,12 @@
         },
         {
           "tier": 7,
-          "damage": 17,
+          "damage": 19,
           "cooldown": 1.20,
           "range": 420,
           "projectile_count": 3,
           "spirit_speed": 450,
-          "dot_dps": 34,
+          "dot_dps": 37,
           "dot_dur": 5.5,
           "spread_radius": 130,
           "spread_targets": 3,
@@ -521,12 +521,12 @@
         },
         {
           "tier": 8,
-          "damage": 20,
+          "damage": 22,
           "cooldown": 1.14,
           "range": 430,
           "projectile_count": 4,
           "spirit_speed": 480,
-          "dot_dps": 40,
+          "dot_dps": 44,
           "dot_dur": 5.8,
           "spread_radius": 135,
           "spread_targets": 3,
@@ -548,32 +548,10 @@
       "element": "metal",
       "icon": "res://assets/v2/weapons/wpn_gold_bell.png",
       "attack_pattern": "radial_knockback_wave",
-      "desc": "古钟震出多层金色水墨音波与符文脉冲，命中小幅外推并迟滞妖物；音波触及冰、雷、火毒印记时引动洪钟共鸣：金声碎冰、钟鸣引雷、震荡扬波。",
+      "desc": "古钟震出多层金色音波，击退并迟滞贴脸妖物；四阶起震碎敌方弹幕，可与雷/火/冰封触发引雷、熔金、破冰。",
       "base_cost": 21,
       "sfx_cue": "sfx_bell_gong",
-      "resonance_profile": {
-        "icd_sec": 1.6,
-        "shatter": {
-          "aoe_radius": 95,
-          "damage_mult": 0.85,
-          "splash_mult": 0.55,
-          "true_damage": true,
-          "vfx_color": "#9AE6FF"
-        },
-        "thunder_echo": {
-          "chain_count": 2,
-          "chain_range": 155,
-          "damage_mult": 0.55,
-          "stun_dur": 0.35,
-          "vfx_color": "#FDE047"
-        },
-        "shock_spread": {
-          "aoe_radius": 118,
-          "damage_mult": 0.45,
-          "max_targets": 4,
-          "vfx_color": "#6EE7B7"
-        }
-      },
+      "resonance_profile": {},
       "tiers": [
         {
           "tier": 1,
@@ -774,7 +752,7 @@
     {
       "id": "wpn_spirit_vine",
       "name": "青藤灵鞭",
-      "element": "wood",
+      "element": "none",
       "icon": "res://assets/v2/weapons/wpn_spirit_vine.png",
       "attack_pattern": "vine_lash_leech",
       "base_cost": 20,
@@ -782,108 +760,116 @@
       "tiers": [
         {
           "tier": 1,
-          "damage": 6,
+          "damage": 7,
           "cooldown": 1.44,
           "range": 340,
           "aoe_radius": 74,
-          "dot_dps": 9,
+          "dot_dps": 11,
           "dot_dur": 4.4,
           "slow_pct": 0.28,
           "slow_dur": 2.2,
-          "leech_hp": 1.0,
-          "level_summary": "木系藤蔓缠绕减速，挂寄生并吸血"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "无属性器道 · 横扫原地缠绕定身，并顺手卷回经验珠与回血桃"
         },
         {
           "tier": 2,
-          "damage": 8,
+          "damage": 9,
           "cooldown": 1.38,
           "range": 350,
           "aoe_radius": 80,
-          "dot_dps": 13,
+          "dot_dps": 15,
           "dot_dur": 4.6,
           "slow_pct": 0.30,
           "slow_dur": 2.4,
-          "leech_hp": 1.2,
-          "level_summary": "寄生持续伤害与汲取回血微增"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "器道直伤与寄生持续伤害提升，卷吸更稳"
         },
         {
           "tier": 3,
-          "damage": 10,
+          "damage": 12,
           "cooldown": 1.32,
           "range": 362,
           "aoe_radius": 88,
-          "dot_dps": 17,
+          "dot_dps": 20,
           "dot_dur": 4.8,
           "slow_pct": 0.33,
           "slow_dur": 2.6,
-          "leech_hp": 1.4,
-          "level_summary": "灵藤范围扩大，缠绕减速增强"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "灵藤范围扩大，缠绕定身控群增强"
         },
         {
           "tier": 4,
-          "damage": 12,
+          "damage": 14,
           "cooldown": 1.26,
           "range": 374,
           "aoe_radius": 96,
-          "dot_dps": 22,
+          "dot_dps": 26,
           "dot_dur": 5.0,
           "slow_pct": 0.36,
           "slow_dur": 2.8,
-          "leech_hp": 1.6,
-          "level_summary": "寄生秒伤突破 20，吸血更稳"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "寄生秒伤突破 25，定身聚宝更顺手"
         },
         {
           "tier": 5,
-          "damage": 15,
+          "damage": 18,
           "cooldown": 1.20,
           "range": 386,
           "aoe_radius": 104,
-          "dot_dps": 27,
+          "dot_dps": 32,
           "dot_dur": 5.3,
           "slow_pct": 0.39,
           "slow_dur": 3.0,
-          "leech_hp": 1.9,
-          "level_summary": "灵藤覆百像素，持续吸血续航"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "灵藤覆百像素，横扫清杂并卷回经验"
         },
         {
           "tier": 6,
-          "damage": 18,
+          "damage": 21,
           "cooldown": 1.14,
           "range": 400,
           "aoe_radius": 112,
-          "dot_dps": 32,
+          "dot_dps": 38,
           "dot_dur": 5.5,
           "slow_pct": 0.41,
           "slow_dur": 3.2,
-          "leech_hp": 2.2,
-          "level_summary": "噬灵蔓剧烈蔓延，克制厚血怪"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "噬灵蔓剧烈蔓延，无视元素冷却压制厚血怪"
         },
         {
           "tier": 7,
-          "damage": 21,
+          "damage": 25,
           "cooldown": 1.08,
           "range": 414,
           "aoe_radius": 120,
-          "dot_dps": 38,
+          "dot_dps": 45,
           "dot_dur": 5.8,
           "slow_pct": 0.43,
           "slow_dur": 3.4,
-          "leech_hp": 2.5,
-          "level_summary": "高频灵藤抽击，强效缠绕吸血"
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
+          "level_summary": "高频灵藤抽击，强效定身卷吸灵珠"
         },
         {
           "tier": 8,
-          "damage": 24,
+          "damage": 28,
           "cooldown": 1.02,
           "range": 430,
           "aoe_radius": 130,
-          "dot_dps": 44,
+          "dot_dps": 52,
           "dot_dur": 6.0,
           "slow_pct": 0.46,
           "slow_dur": 3.6,
-          "leech_hp": 2.8,
+          "root_dur": 0.75,
+          "pull_exp_gems": true,
           "max_tier_perk": "ancient_vine_bloom",
-          "level_summary": "【质变】翠金噬灵古藤：定身缠绕 + 灵苞回血爆发"
+          "level_summary": "【质变】翠金噬灵古藤：无属性高伤定身 + 卷回经验与回血桃"
         }
       ],
       "vfx_profile": {
@@ -894,85 +880,5 @@
       }
     }
   ],
-  "fusion_recipes": [
-    {
-      "id": "fusion_flame_sword_array",
-      "name": "诛仙烈焰剑阵",
-      "icon": "res://assets/v2/weapons/wpn_jade_sword.png",
-      "secondary_icon": "res://assets/v2/weapons/wpn_fire_gourd.png",
-      "ingredients": [
-        "wpn_jade_sword",
-        "wpn_fire_gourd"
-      ],
-      "required_tier": 8,
-      "desc": "青霜飞剑与离火葫芦双满级合体，剑阵环射并留下烈焰剑域。",
-      "elements": [
-        "metal",
-        "fire"
-      ],
-      "attack_pattern": "orbit_burst_array",
-      "damage": 92,
-      "cooldown": 0.62,
-      "projectile_count": 6,
-      "aoe_radius": 110,
-      "sfx_cue": "sfx_fusion_sword_array",
-      "vfx_profile": {
-        "array_alpha": 0.28,
-        "trail_color": "#F97316",
-        "ink_outline": true
-      }
-    },
-    {
-      "id": "fusion_thunder_frost_domain",
-      "name": "九霄雷冰天域",
-      "icon": "res://assets/v2/weapons/wpn_thunder_talisman.png",
-      "secondary_icon": "res://assets/v2/weapons/wpn_ice_mirror.png",
-      "ingredients": [
-        "wpn_thunder_talisman",
-        "wpn_ice_mirror"
-      ],
-      "required_tier": 8,
-      "desc": "天雷符与玄冰八卦镜双满级合体，冰雷天域自动引雷冻结。",
-      "elements": [
-        "thunder",
-        "ice"
-      ],
-      "attack_pattern": "frost_wheel_auto_lightning",
-      "damage": 78,
-      "cooldown": 0.72,
-      "chain_count": 8,
-      "aoe_radius": 140,
-      "sfx_cue": "sfx_fusion_thunder_ice",
-      "vfx_profile": {
-        "domain_alpha": 0.3,
-        "bolt_color": "#60A5FA"
-      }
-    },
-    {
-      "id": "fusion_venom_zen_bell",
-      "name": "镇岳枯荣梵钟",
-      "icon": "res://assets/v2/weapons/wpn_gold_bell.png",
-      "secondary_icon": "res://assets/v2/weapons/wpn_venom_banner.png",
-      "ingredients": [
-        "wpn_gold_bell",
-        "wpn_venom_banner"
-      ],
-      "required_tier": 8,
-      "desc": "玄金古钟与万毒幡双满级合体，梵钟震波引爆周身木毒持续伤害。",
-      "elements": [
-        "metal",
-        "wood"
-      ],
-      "attack_pattern": "radial_dot_detonate",
-      "damage": 84,
-      "cooldown": 1.25,
-      "aoe_radius": 240,
-      "detonate_remaining_dot_pct": 0.45,
-      "sfx_cue": "sfx_fusion_zen_bell",
-      "vfx_profile": {
-        "wave_alpha": 0.35,
-        "wave_color": "#34D399"
-      }
-    }
-  ]
+  "fusion_recipes": []
 }

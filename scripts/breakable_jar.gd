@@ -76,7 +76,6 @@ func _shatter() -> void:
 	is_broken = true
 	Sfx.play_varied("jar_break", -6.0)
 	var player_lv := 1
-	var frost_mult := 1.0
 	var away_dir := Vector2.ZERO
 	if is_inside_tree() and get_tree() != null:
 		var players := get_tree().get_nodes_in_group("player")
@@ -84,13 +83,10 @@ func _shatter() -> void:
 			var pl = players[0]
 			away_dir = global_position - (pl as Node2D).global_position
 			player_lv = int(pl.get("level")) if pl.get("level") != null else 1
-			if "v2_combat" in pl and pl.v2_combat != null and pl.v2_combat.has_method("has_arcana"):
-				if pl.v2_combat.has_arcana("arcana_glacial_shatter"):
-					frost_mult = 2.0
 		var gm = get_tree().get_first_node_in_group("game_manager")
 		if gm != null and gm.has_method("on_jar_broken"):
 			gm.on_jar_broken()
-	var kind := roll_drop_kind(player_lv, frost_mult)
+	var kind := roll_drop_kind(player_lv, 1.0)
 	if get_parent() != null:
 		V2VfxFactory.spawn_hit_spark(get_parent(), global_position, "water", true)
 	var scene := load(PICKUP_SCENE) as PackedScene

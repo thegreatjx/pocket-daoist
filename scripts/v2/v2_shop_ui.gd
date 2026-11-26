@@ -412,9 +412,9 @@ func _refresh_view() -> void:
 	_title_lbl.text = "天机阁 · 第 %d 波行商" % _wave
 	_gold_lbl.text = "灵石：%d" % _v2.run_gold
 	var sm := _v2.get_stats_summary()
-	_stats_lbl.text = "战力概览：伤害 +%d%%  |  攻速 +%d%%  |  暴击 %d%%  |  元素精通 +%d%%  |  护甲 %d  |  闪避 %d%%  |  机缘 %d%%" % [
+	_stats_lbl.text = "战力概览：伤害 +%d%%  |  攻速 +%d%%  |  暴击 %d%%  |  元素精通 +%d%%  |  闪避 %d%%  |  机缘 %d%%" % [
 		int(sm["dmg_pct"]), int(sm["spd_pct"]), int(sm["crit_pct"]),
-		int(sm["mastery_pct"]), int(sm["armor"]), int(sm["dodge_pct"]), int(sm.get("luck_pct", 100)),
+		int(sm["mastery_pct"]), int(sm["dodge_pct"]), int(sm.get("luck_pct", 100)),
 	]
 	var rc := _reroll_cost()
 	_reroll_btn.text = "重随货架 (%d 灵石)" % rc
@@ -693,12 +693,7 @@ func _build_owned_slot(slot_idx: int, slot: Dictionary, can_sell: bool) -> Contr
 	var wid := String(slot["id"])
 	var tier := int(slot["tier"])
 	var w_name := wid
-	if is_f:
-		for r in _v2.loader.fusion_recipes:
-			if String(r["id"]) == wid:
-				w_name = String(r["name"])
-				break
-	elif _v2.loader.weapons_by_id.has(wid):
+	if _v2.loader.weapons_by_id.has(wid):
 		w_name = String(_v2.loader.weapons_by_id[wid]["name"])
 
 	var lbl_btn := Button.new()

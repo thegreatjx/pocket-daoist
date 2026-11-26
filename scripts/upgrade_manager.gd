@@ -9,6 +9,7 @@ const V2_ELEM_NAMES := {
 	"wood": "木系法宝",
 	"venom": "毒系法宝",
 	"water": "水系法宝",
+	"none": "器道奇宝",
 }
 
 const V2_TIER_NAMES := ["", "Lv.1", "Lv.2", "Lv.3", "Lv.4", "Lv.5", "Lv.6", "Lv.7", "Lv.8"]
@@ -18,7 +19,7 @@ const V2_REALM_BREAKTHROUGHS := [
 	{"id": "v2_stat:spd", "tag": "【身法灵韵】", "title": "御风迅捷", "desc": "所有法宝攻速 +7%，移速 +4%（限叠 4 次）。", "icon": "res://assets/icons/relic_wind.png", "hint": "✦ 加快法宝出手与跑图", "stackable": true, "max_stacks": 4},
 	{"id": "v2_stat:mastery", "tag": "【五行参悟】", "title": "五行通玄", "desc": "元素反应伤害 +12%，反应范围 +6%（限叠 4 次）。", "icon": "res://assets/icons/icon_taichi_array.png", "hint": "✦ 元素流派核心加成", "stackable": true, "max_stacks": 4},
 	{"id": "v2_stat:crit", "tag": "【剑意凌厉】", "title": "破妄灵瞳", "desc": "暴击率 +5%，暴击伤害 +12%（限叠 4 次）。", "icon": "res://assets/icons/relic_luck.png", "hint": "✦ 单点高伤法宝首选", "stackable": true, "max_stacks": 4},
-	{"id": "v2_stat:hp_armor", "tag": "【护体金身】", "title": "玄玉护脉", "desc": "最大气血 +16 并回复 16 点，护甲 +1（限叠 4 次）。", "icon": "res://assets/icons/relic_armor.png", "hint": "✦ 提高生存容错", "stackable": true, "max_stacks": 4},
+	{"id": "v2_stat:hp_armor", "tag": "【护体金身】", "title": "玄玉护脉", "desc": "最大气血 +24 并立刻回复 24 点（限叠 4 次）。", "icon": "res://assets/icons/relic_armor.png", "hint": "✦ 提高生存容错", "stackable": true, "max_stacks": 4},
 	{"id": "v2_stat:gold_heal", "tag": "【灵露润脉】", "title": "甘露回春", "desc": "立刻回复 32 点气血，并提高 8 点最大气血。", "icon": "res://assets/sprites/pickup_peach.png", "hint": "✦ 续航保命补给", "stackable": false, "max_stacks": 0},
 	{"id": "v2_stat:luck", "tag": "【天机气运】", "title": "天机福缘", "desc": "机缘 +15%，提高 4 选 1 与高阶宝物率（限叠 3 次）。", "icon": "res://assets/icons/relic_luck.png", "hint": "✦ 提高高阶卡出现率", "stackable": true, "max_stacks": 3},
 	{"id": "v2_stat:area", "tag": "【乾坤法域】", "title": "法域扩张", "desc": "所有法宝攻击与法阵范围 +10%（限叠 3 次）。", "icon": "res://assets/icons/icon_taichi_array.png", "hint": "✦ 扩大火域/声波/藤蔓范围", "stackable": true, "max_stacks": 3},
@@ -328,11 +329,18 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 		var desc := "%s\n伤害 %d · 冷却 %.2fs" % [summary, int(ts.get("damage", 15)), float(ts.get("cooldown", 1.0))]
 		var w_weight := maxi(1, roundi(v2.get_weapon_offer_weight(sid) * 10.0))
 
-		var syn_hint := "✦ 可触发不同五行元素反应"
-		if cur_lv > 0:
+		var syn_hint := ""
+		if elem == "none":
+			syn_hint = "✦ 器道奇宝 · 不占灵变冷却，本体高伤 + 卷经验定身"
+		elif cur_lv > 0:
 			syn_hint = "✦ 法宝原地淬炼，不占新槽位"
-		elif not owned_elems.has(elem):
-			syn_hint = "✦ 新属性【%s】可与现有法宝触发五行反应！" % String(V2_ELEM_NAMES.get(elem, elem))
+		else:
+			var syns: Array[Dictionary] = v2.get_weapon_reaction_synergies(sid)
+			if not syns.is_empty():
+				var s0: Dictionary = syns[0]
+				syn_hint = "✦ 可与【%s】触发：%s（%s）" % [s0["partner_name"], s0["rx_name"], s0["role_tag"]]
+			else:
+				syn_hint = "✦ 独立属性法宝 · 稳健补强当前流派"
 
 		var card := {
 			"id": "v2_wpn:%s:%d" % [sid, next_lv],
@@ -458,12 +466,6 @@ func _build_weapon_limit_break_cards(v2: V2CombatController) -> Array[Dictionary
 			var wd: Dictionary = v2.loader.weapons_by_id[wid]
 			w_name = String(wd.get("name", w_name))
 			w_icon = String(wd.get("icon", w_icon))
-		else:
-			for rec in v2.loader.fusion_recipes:
-				if rec is Dictionary and String((rec as Dictionary).get("id", "")) == wid:
-					w_name = String((rec as Dictionary).get("name", w_name))
-					w_icon = String((rec as Dictionary).get("icon", w_icon))
-					break
 		for d in defs:
 			var skey := String(d["stat"])
 			var cur_st := v2.get_weapon_limit_break_stacks(wid, skey)
@@ -553,10 +555,9 @@ func apply_v2_upgrade(choice_id: String, player: Node) -> void:
 			v2.add_realm_bonus("crit_chance", 0.05)
 			v2.add_realm_bonus("crit_mult_bonus", 0.12)
 		"v2_stat:hp_armor":
-			v2.add_realm_bonus("max_hp", 16.0)
-			v2.add_realm_bonus("armor", 1.0)
+			v2.add_realm_bonus("max_hp", 24.0)
 			if player.has_method("heal"):
-				player.heal(16.0)
+				player.heal(24.0)
 		"v2_stat:gold_heal":
 			v2.add_realm_bonus("max_hp", 8.0)
 			if player.has_method("heal"):

@@ -377,12 +377,15 @@ func _spawn_boss(chapter: Dictionary) -> Node2D:
 	var boss_hp := float(chapter.get("boss_hp", 4600.0)) * lv_scale * endless_scale
 	boss.max_health = boss_hp
 	boss.current_health = boss_hp
+	if boss.has_method("sync_qi_shield"):
+		boss.sync_qi_shield()
 	boss.exp_gem_value = 180.0
 	boss.modulate = Color.WHITE
 	_boss_instance = boss
 
 	get_tree().call_group("ui", "set_boss_name", boss_name)
-	get_tree().call_group("ui", "activate_boss_bar", boss.max_health)
+	var b_sh := float(boss.get("max_shield")) if "max_shield" in boss else 0.0
+	get_tree().call_group("ui", "activate_boss_bar", boss.max_health, b_sh)
 	return boss
 
 func _count_active_elites() -> int:
@@ -445,11 +448,7 @@ func _spawn_breakable_jar() -> void:
 	var dist := randf_range(340.0, 560.0)
 	var pos := _clamp_to_arena(player.global_position + Vector2(cos(ang), sin(ang)) * dist)
 	var player_lv := int(player.get("level")) if player.get("level") != null else 1
-	var frost_mult := 1.0
-	if "v2_combat" in player and player.v2_combat != null and player.v2_combat.has_method("has_arcana"):
-		if player.v2_combat.has_arcana("arcana_glacial_shatter"):
-			frost_mult = 2.0
-	var kind := BreakableJar.roll_drop_kind(player_lv, frost_mult)
+	var kind := BreakableJar.roll_drop_kind(player_lv, 1.0)
 	var pickup = scene.instantiate()
 	pickup.global_position = pos
 	get_parent().add_child(pickup)
@@ -680,6 +679,8 @@ func _instantiate_enemy_at(
 			enemy.max_health = bhp
 			enemy.current_health = bhp
 			enemy.is_mini_boss = bool(eff_arch.get("is_mini_boss", false))
+			if enemy.has_method("sync_qi_shield"):
+				enemy.sync_qi_shield()
 			enemy.exp_gem_value = 45.0
 			enemy.exp_gem_count = 4
 			enemy.gold_value = 35
@@ -697,8 +698,6 @@ func _instantiate_enemy_at(
 				v2_hp *= float(ev.get("hp_mult", 3.2))
 				enemy.speed = raw_spd * float(ev.get("speed_mult", 1.12)) * _stage_enemy_speed_mult * _wave_speed_scale
 				enemy.knockback_resistance = maxf(float(ev.get("kb_resist", 0.75)), enemy.knockback_resistance)
-				if ev.has("phys_reduction"):
-					enemy.damage_reduction = maxf(enemy.damage_reduction, float(ev.get("phys_reduction", 0.0)))
 				if ev.has("slow_resist"):
 					enemy.resistances["slow_resist"] = maxf(float(enemy.resistances.get("slow_resist", 0.0)), float(ev.get("slow_resist", 0.0)))
 				enemy.exp_gem_count = int(ev.get("exp_gem_count", 4))
@@ -710,6 +709,8 @@ func _instantiate_enemy_at(
 				enemy.gold_value = int(eff_arch.get("gold_value", 1))
 			enemy.max_health = v2_hp
 			enemy.current_health = v2_hp
+			if enemy.has_method("sync_qi_shield"):
+				enemy.sync_qi_shield()
 			var dmg_mult := float(_get_elite_variant(sp_id).get("dmg_mult", 1.45)) if enemy.enemy_type == Enemy.Type.ELITE else 1.0
 			enemy.contact_damage = float(eff_arch.get("base_dmg", 8.0)) * _wave_dmg_scale * dmg_mult
 			if enemy.enemy_type == Enemy.Type.ELITE:
@@ -736,6 +737,9 @@ func _apply_elite_affix(enemy: Node) -> void:
 	enemy.elite_blast_delay = float(affix.get("blast_delay", 0.0))
 	enemy.elite_blast_radius = float(affix.get("blast_radius", 0.0))
 	enemy.elite_blast_damage = float(affix.get("blast_damage", 0.0))
+
+func clamp_to_arena(pos: Vector2) -> Vector2:
+	return _clamp_to_arena(pos)
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:
 	var arena := _get_arena_rect().grow(-56.0)

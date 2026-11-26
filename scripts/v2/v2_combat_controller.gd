@@ -56,7 +56,6 @@ var item_mods: Dictionary = {}
 var realm_bonuses: Dictionary = {}
 var stat_pick_counts: Dictionary = {}
 var unlocked_weapon_slots: int = 1
-var active_arcanas: Array[String] = []
 var weapon_limit_breaks: Dictionary = {}
 var revival_stacks: int = 0
 var _void_magnet_timer: float = 0.0
@@ -78,9 +77,6 @@ var _pending_salvos: Array[Dictionary] = []
 var _gold_frac: float = 0.0
 var _drop_wave: int = 1
 var _wave_dropped_gold: int = 0
-var _bell_resonance_icd: Dictionary = {}
-var bell_resonance_counts: Dictionary = {}
-var bell_resonance_total: int = 0
 var soul_seal_spread_count: int = 0
 
 func setup_for_player(p: Player) -> void:
@@ -250,9 +246,6 @@ func _physics_process(delta: float) -> void:
 		_prune_timer = 0.0
 		var now_sec := float(Time.get_ticks_msec()) * 0.001
 		reaction_engine.prune_stale(now_sec)
-		for eid in _bell_resonance_icd.keys():
-			if float(_bell_resonance_icd[eid]) <= now_sec:
-				_bell_resonance_icd.erase(eid)
 		if _shot_hit_counts.size() > 64:
 			_shot_hit_counts.clear()
 
@@ -325,15 +318,9 @@ func get_owned_elements() -> Dictionary:
 		return out
 	for slot in orbit_rig.slots:
 		var wid := String(slot["id"])
-		if bool(slot.get("is_fusion", false)):
-			for r in loader.fusion_recipes:
-				if String(r.get("id", "")) == wid:
-					for elem in r.get("elements", []):
-						out[String(elem)] = true
-					break
-		elif loader.weapons_by_id.has(wid):
+		if loader.weapons_by_id.has(wid):
 			var el := String(loader.weapons_by_id[wid].get("element", ""))
-			if not el.is_empty():
+			if not el.is_empty() and el != "none":
 				out[el] = true
 	return out
 
@@ -348,14 +335,9 @@ func get_weapon_offer_weight(weapon_id: String) -> float:
 	var cur_lv := orbit_rig.get_weapon_tier(weapon_id)
 	if cur_lv > 0 and cur_lv < OrbitWeaponRig.MAX_WEAPON_TIER:
 		w *= (1.0 + 2.2 / clampf(luck, 1.0, 2.5))
-	var finfo := find_companion_fusion_info(weapon_id)
-	if bool(finfo.get("ready_now", false)):
-		w *= 2.40
-	elif not finfo.is_empty() and cur_lv == 0:
-		w *= 1.25
 	if cur_lv == 0:
 		var elem := String(loader.weapons_by_id[weapon_id].get("element", ""))
-		if not elem.is_empty() and not get_owned_elements().has(elem):
+		if not elem.is_empty() and elem != "none" and not get_owned_elements().has(elem):
 			w *= 1.35
 	return maxf(1.0, w)
 
@@ -414,7 +396,6 @@ func recompute_player_stats() -> void:
 			player.current_health = minf(player.max_health, player.current_health)
 		player.emit_signal("health_changed", player.current_health, player.max_health)
 
-	player.armor = maxf(0.0, float(item_mods.get("armor", 0.0)))
 	player.dodge_chance = clampf(float(item_mods.get("dodge_pct", 0.0)), 0.0, 0.55)
 	player.speed = player.base_speed * player.stage_speed_mult * maxf(0.5, 1.0 + float(item_mods.get("move_speed_pct", 0.0)))
 	player.magnet_radius = player.base_magnet_radius * maxf(0.5, 1.0 + float(item_mods.get("pickup_radius_pct", 0.0)))
@@ -671,7 +652,7 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 	var pattern := String(w_def.get("attack_pattern", "pierce_boomerang"))
 	var fired_wid := String(w_def.get("id", ""))
 	var lb_mods := get_weapon_limit_break_mods(fired_wid)
-	var base_dmg := float(stats.get("damage", 15.0)) * (1.0 + float(lb_mods.get("damage_pct", 0.0))) * get_arcana_weapon_damage_mult(fired_wid)
+	var base_dmg := float(stats.get("damage", 15.0)) * (1.0 + float(lb_mods.get("damage_pct", 0.0)))
 	var profile: Dictionary = w_def.get("vfx_profile", {})
 	var parent_world := player.get_parent()
 	var area_m := get_area_mult()
@@ -832,24 +813,33 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 			var dot_dur := float(stats.get("dot_dur", 4.5))
 			var sl_pct := float(stats.get("slow_pct", 0.28))
 			var sl_dur := float(stats.get("slow_dur", 2.2))
-			var leech_hp := float(stats.get("leech_hp", 1.2))
-			var hit_any := false
+			var root_dur := float(stats.get("root_dur", 0.75))
 			for e in CombatGrid.query(target_pos, r):
 				if e == null or not is_instance_valid(e) or e.is_dead:
 					continue
 				if target_pos.distance_squared_to(e.global_position) <= r * r:
-					hit_any = true
 					if e.has_method("apply_slow"):
 						e.apply_slow(sl_pct, sl_dur)
-					if perk == "ancient_vine_bloom" and e.has_method("apply_stun"):
-						e.apply_stun(0.30 if bool(e.get("is_boss")) else 0.65)
+					if e.has_method("apply_stun"):
+						e.apply_stun(0.30 if bool(e.get("is_boss")) else root_dur)
 					if e.has_method("apply_dot"):
 						e.apply_dot(dot_dps, dot_dur, perk == "ancient_vine_bloom", elem)
 					deal_v2_damage(e, base_dmg, elem, {})
-			if hit_any and leech_hp > 0.0 and player != null and is_instance_valid(player):
-				var heal_amt := leech_hp * (1.35 if perk == "ancient_vine_bloom" else 1.0)
-				if player.current_health < player.max_health:
-					player.heal(heal_amt)
+			if bool(stats.get("pull_exp_gems", true)) and player != null and is_instance_valid(player) and is_inside_tree() and get_tree() != null:
+				var pull_r := r * 1.45
+				var pull_r2 := pull_r * pull_r
+				for g in get_tree().get_nodes_in_group("exp_gems"):
+					if g is Node2D and is_instance_valid(g) and target_pos.distance_squared_to((g as Node2D).global_position) <= pull_r2:
+						if g.has_method("attract_to"):
+							g.attract_to(player)
+				for st in get_tree().get_nodes_in_group("spirit_stones"):
+					if st is Node2D and is_instance_valid(st) and target_pos.distance_squared_to((st as Node2D).global_position) <= pull_r2:
+						if st.has_method("attract_to"):
+							st.attract_to(player, true)
+				for wp in get_tree().get_nodes_in_group("world_pickups"):
+					if wp is Node2D and is_instance_valid(wp) and target_pos.distance_squared_to((wp as Node2D).global_position) <= pull_r2:
+						if wp.has_method("attract_to"):
+							wp.attract_to(player, true)
 
 		"radial_knockback_wave":
 			var r := float(stats.get("aoe_radius", 135.0)) * area_m
@@ -862,26 +852,20 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 			var kb := float(stats.get("knockback", 220.0))
 			var sl_pct := float(stats.get("slow_pct", 0.25))
 			var sl_dur := float(stats.get("slow_dur", 1.2))
-			var resonance: Dictionary = w_def.get("resonance_profile", {})
 			for e in CombatGrid.query(player.global_position, r):
 				if e == null or not is_instance_valid(e) or e.is_dead:
 					continue
 				if player.global_position.distance_squared_to(e.global_position) > r * r:
 					continue
-				var resonance_kind := _bell_resonance_kind(e, resonance)
 				var away: Vector2 = (e as Node2D).global_position - player.global_position
 				if away.length_squared() < 0.001:
 					away = Vector2.from_angle(randf() * TAU)
 				if e.has_method("apply_slow") and sl_pct > 0.0:
 					e.apply_slow(sl_pct, sl_dur)
-				if perk == "echo_armor_shred" and e.has_method("apply_armor_shred"):
-					e.apply_armor_shred(0.20, 3.0)
 				deal_v2_damage(e, base_dmg, elem, {
 					"knockback_dir": away.normalized(),
 					"knockback": kb,
 				})
-				if not resonance_kind.is_empty():
-					_trigger_bell_resonance(e, resonance_kind, base_dmg, resonance)
 
 		"orbit_burst_array":
 			var col := Color.from_string(String(profile.get("trail_color", "#F97316")), Color(0.98, 0.45, 0.09))
@@ -963,167 +947,6 @@ func spawn_chain_from_targets(targets: Array, dmg: float, elem: String, chains: 
 		return
 	_fire_chain_lightning(first.global_position, first, dmg, elem, chains, ch_range, col, false, true)
 
-func _bell_resonance_kind(enemy: Node, profile: Dictionary) -> String:
-	if profile.is_empty():
-		return ""
-	var eid := enemy.get_instance_id()
-	var now_sec := float(Time.get_ticks_msec()) * 0.001
-	if now_sec < float(_bell_resonance_icd.get(eid, 0.0)):
-		return ""
-	if enemy.has_method("is_frozen") and bool(enemy.call("is_frozen")):
-		return "shatter"
-	if reaction_engine != null:
-		if reaction_engine.has_aura(eid, "ice", now_sec) or reaction_engine.has_aura(eid, "water", now_sec):
-			return "shatter"
-		if reaction_engine.has_aura(eid, "thunder", now_sec):
-			return "thunder_echo"
-	if enemy.has_method("is_burning") and bool(enemy.call("is_burning")):
-		return "shock_spread"
-	if enemy.has_method("is_poisoned") and bool(enemy.call("is_poisoned")):
-		return "shock_spread"
-	if reaction_engine != null:
-		if reaction_engine.has_aura(eid, "fire", now_sec) or reaction_engine.has_aura(eid, "wood", now_sec) or reaction_engine.has_aura(eid, "venom", now_sec):
-			return "shock_spread"
-	return ""
-
-func _trigger_bell_resonance(primary_enemy: Node, kind: String, base_dmg: float, profile: Dictionary) -> void:
-	if primary_enemy == null or not is_instance_valid(primary_enemy):
-		return
-	var center: Vector2 = (primary_enemy as Node2D).global_position
-	var now_sec := float(Time.get_ticks_msec()) * 0.001
-	_bell_resonance_icd[primary_enemy.get_instance_id()] = now_sec + maxf(0.4, float(profile.get("icd_sec", 1.6)))
-	bell_resonance_total += 1
-	bell_resonance_counts[kind] = int(bell_resonance_counts.get(kind, 0)) + 1
-	var label := "洪钟共鸣"
-	var col := Color(1.0, 0.88, 0.42)
-	var cfg: Dictionary = {}
-	match kind:
-		"shatter":
-			label = "金声碎冰"
-			cfg = profile.get("shatter", {})
-			col = Color.from_string(String(cfg.get("vfx_color", "#9AE6FF")), Color(0.60, 0.90, 1.0))
-			_bell_shatter_resonance(primary_enemy, center, base_dmg, cfg, col)
-		"thunder_echo":
-			label = "钟鸣引雷"
-			cfg = profile.get("thunder_echo", {})
-			col = Color.from_string(String(cfg.get("vfx_color", "#FDE047")), Color(1.0, 0.88, 0.42))
-			_bell_thunder_resonance(primary_enemy, center, base_dmg, cfg, col)
-		"shock_spread":
-			label = "震荡扬波"
-			cfg = profile.get("shock_spread", {})
-			col = Color.from_string(String(cfg.get("vfx_color", "#6EE7B7")), Color(0.43, 0.90, 0.72))
-			_bell_shock_spread(primary_enemy, center, base_dmg, cfg, col)
-		_:
-			return
-	_spawn_text_popup(center + Vector2(0.0, -42.0), label, col)
-	if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 3.0:
-		player.shake_camera(1.4)
-
-func _bell_shatter_resonance(primary_enemy: Node, center: Vector2, base_dmg: float, cfg: Dictionary, col: Color) -> void:
-	var aoe := maxf(30.0, float(cfg.get("aoe_radius", 95.0)) * get_area_mult())
-	var dmg := base_dmg * float(cfg.get("damage_mult", 0.85))
-	var splash := dmg * float(cfg.get("splash_mult", 0.55))
-	var is_true := bool(cfg.get("true_damage", true))
-	if primary_enemy != null and is_instance_valid(primary_enemy) and not bool(primary_enemy.get("is_dead")) and primary_enemy.has_method("take_damage_v2"):
-		primary_enemy.take_damage_v2(dmg, false, is_true, "ice", col)
-	for e in CombatGrid.query(center, aoe):
-		if e == null or not is_instance_valid(e) or bool(e.get("is_dead")) or e == primary_enemy:
-			continue
-		if center.distance_squared_to((e as Node2D).global_position) > aoe * aoe:
-			continue
-		if e.has_method("apply_slow"):
-			e.apply_slow(0.30, 1.5)
-		var away: Vector2 = (e as Node2D).global_position - center
-		if away.length_squared() < 0.001:
-			away = Vector2.UP
-		deal_v2_damage(e, splash, "ice", {"knockback_dir": away.normalized(), "knockback": 55.0})
-	_spawn_bell_resonance_visual("shatter", center, aoe, col, {})
-	play_v2_cue("sfx_react_shatter", "reaction")
-
-func _bell_thunder_resonance(primary_enemy: Node, center: Vector2, base_dmg: float, cfg: Dictionary, col: Color) -> void:
-	var chains := maxi(1, int(cfg.get("chain_count", 2)))
-	var ch_range := maxf(60.0, float(cfg.get("chain_range", 155.0)) * get_area_mult())
-	var dmg := base_dmg * float(cfg.get("damage_mult", 0.55))
-	var stun_dur := float(cfg.get("stun_dur", 0.35))
-	var first: Node2D = null
-	if primary_enemy != null and is_instance_valid(primary_enemy) and not bool(primary_enemy.get("is_dead")):
-		first = primary_enemy as Node2D
-	if first == null:
-		first = _find_closest_enemy_to(center, ch_range)
-	if first != null:
-		if first.has_method("apply_stun"):
-			first.apply_stun(stun_dur)
-		var visited := {first.get_instance_id(): true}
-		var cursor: Node2D = first
-		for _i in range(chains):
-			var nxt := _find_next_chain_target(cursor.global_position, ch_range, visited)
-			if nxt == null:
-				break
-			visited[nxt.get_instance_id()] = true
-			if nxt.has_method("apply_stun"):
-				nxt.apply_stun(stun_dur)
-			cursor = nxt
-		_fire_chain_lightning(center, first, dmg, "thunder", chains, ch_range, col, true, true)
-	_spawn_bell_resonance_visual("thunder_echo", center, ch_range * 0.72, col, {})
-	play_v2_cue("sfx_react_zap", "reaction")
-
-func _bell_shock_spread(primary_enemy: Node, center: Vector2, base_dmg: float, cfg: Dictionary, col: Color) -> void:
-	var aoe := maxf(40.0, float(cfg.get("aoe_radius", 118.0)) * get_area_mult())
-	var max_targets := clampi(int(cfg.get("max_targets", 4)), 1, 4)
-	var dot_info: Dictionary = {}
-	if primary_enemy != null and is_instance_valid(primary_enemy) and primary_enemy.has_method("get_dot_info"):
-		dot_info = primary_enemy.call("get_dot_info")
-	var dot_dps := maxf(float(dot_info.get("dps", 0.0)), base_dmg * 0.35)
-	var dot_dur := maxf(float(dot_info.get("remaining", 0.0)), 3.0)
-	var elem := String(dot_info.get("elem", ""))
-	var poison := true
-	if elem.is_empty() and reaction_engine != null and primary_enemy != null and is_instance_valid(primary_enemy):
-		var eid := primary_enemy.get_instance_id()
-		var now_sec := float(Time.get_ticks_msec()) * 0.001
-		if reaction_engine.has_aura(eid, "fire", now_sec):
-			elem = "fire"
-		elif reaction_engine.has_aura(eid, "wood", now_sec):
-			elem = "wood"
-		else:
-			elem = "venom"
-	elif elem.is_empty():
-		elem = "venom"
-	if elem == "fire":
-		poison = false
-	var dmg := base_dmg * float(cfg.get("damage_mult", 0.45))
-	var candidates: Array = []
-	for e in CombatGrid.query(center, aoe):
-		if e == null or not is_instance_valid(e) or bool(e.get("is_dead")) or e == primary_enemy:
-			continue
-		if center.distance_squared_to((e as Node2D).global_position) <= aoe * aoe:
-			candidates.append(e)
-	candidates.sort_custom(func(a: Node, b: Node) -> bool:
-		return center.distance_squared_to((a as Node2D).global_position) < center.distance_squared_to((b as Node2D).global_position)
-	)
-	var spread := 0
-	for e in candidates:
-		if spread >= max_targets:
-			break
-		if e.has_method("apply_dot"):
-			e.apply_dot(dot_dps * 0.80, dot_dur * 0.80, false, elem)
-		deal_v2_damage(e, dmg, elem, {"allow_reaction": false})
-		spread += 1
-	_spawn_bell_resonance_visual("shock_spread", center, aoe, col, {"poison": poison})
-	play_v2_cue("sfx_react_pop", "reaction")
-
-func _spawn_bell_resonance_visual(kind: String, center: Vector2, radius: float, col: Color, extra: Dictionary) -> void:
-	if player == null or not is_instance_valid(player) or player.get_parent() == null:
-		return
-	var world := player.get_parent()
-	if not V2VfxFactory.can_spawn_transient(world):
-		return
-	var merged: Dictionary = extra.duplicate()
-	merged["kind"] = kind
-	merged["accent_color"] = "#FDE047"
-	var fx := V2ReactionFx.new()
-	world.add_child(fx)
-	fx.setup_weapon_burst("bell_resonance", center, Vector2.UP, radius, col, merged)
-
 func spread_soul_seal_venom(center: Vector2, dps: float, radius: float = 110.0, max_targets: int = 3) -> int:
 	soul_seal_spread_count += 1
 	var r := maxf(45.0, radius * get_area_mult())
@@ -1154,7 +977,7 @@ func spread_soul_seal_venom(center: Vector2, dps: float, radius: float = 110.0, 
 			e.apply_soul_seal(seal_dps, 4.0, radius, 3)
 		elif e.has_method("apply_dot"):
 			e.apply_dot(seal_dps, 4.0, false, "venom")
-		deal_v2_damage(e, seal_dps, "wood", {"allow_reaction": false})
+		deal_v2_damage(e, seal_dps, "venom", {"allow_reaction": false})
 		spread += 1
 	return spread
 
@@ -1221,114 +1044,183 @@ func deal_v2_damage(enemy: Node, base_dmg: float, element: String, opts: Diction
 			_lifesteal_budget -= heal_val
 			player.heal(heal_val)
 
-	if not bool(opts.get("allow_reaction", true)) or element.is_empty() or reaction_engine == null:
+	if not bool(opts.get("allow_reaction", true)) or element.is_empty() or element == "none" or reaction_engine == null:
 		return
 
 	var now_sec := float(Time.get_ticks_msec()) * 0.001
 	var eid := enemy.get_instance_id()
-	var rx := reaction_engine.apply_element_hit(eid, element, now_sec, scaled_base, get_mastery_bonus(), {}, bool(enemy.get("is_boss")))
+	var is_target_frozen: bool = bool(enemy.is_frozen()) if enemy.has_method("is_frozen") else false
+	var is_boss_or_mb := bool(enemy.get("is_boss")) or bool(enemy.get("is_mini_boss"))
+	var rx := reaction_engine.apply_element_hit(eid, element, now_sec, scaled_base, get_mastery_bonus(), {}, is_boss_or_mb, is_target_frozen, false)
 	if rx.is_empty():
 		if not bool(enemy.get("is_dead")) and enemy.has_method("set_active_element"):
-			enemy.set_active_element(element, 3.5 + (float(item_mods.get("fire_aura_dur_bonus", 0.0)) if element == "fire" else 0.0))
+			var aur := reaction_engine.get_aura_elements(eid, now_sec)
+			var disp_elem := String(aur[0]) if not aur.is_empty() else element
+			enemy.set_active_element(disp_elem, 3.5 + (float(item_mods.get("fire_aura_dur_bonus", 0.0)) if disp_elem == "fire" else 0.0))
 		return
 
 	if not bool(enemy.get("is_dead")) and enemy.has_method("set_active_element"):
 		enemy.set_active_element("", 0.0)
-	_execute_reaction(enemy, rx, scaled_base)
+	var hit_pos := (enemy as Node2D).global_position if enemy is Node2D else player.global_position
+	_execute_reaction_effect(rx, enemy as Node2D, hit_pos, scaled_base)
 
-func _execute_reaction(primary_enemy: Node, rx: Dictionary, trigger_scaled_base: float) -> void:
+func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, trigger_dmg: float) -> void:
 	reaction_count += 1
-	var rx_id := String(rx.get("reaction_id", ""))
-	var rx_name := String(rx.get("name", ""))
-	var bonus_dmg := float(rx.get("bonus_damage", 0.0))
-	var aoe_r := float(rx.get("aoe_radius", 0.0))
-	var chains := int(rx.get("chain_count", 0))
-	var rx_col := Color.from_string(String(rx.get("vfx_color", "#FFFFFF")), Color.WHITE)
+	var rx_id: String = String(rx.get("reaction_id", ""))
+	var short_name: String = String(rx.get("short_name", rx.get("name", "")))
+	var bonus_dmg: float = float(rx.get("bonus_damage", 0.0))
+	var aoe_r: float = float(rx.get("aoe_radius", 0.0))
 	var spec: Dictionary = rx.get("spec", {})
-	var emit_vfx := bool(rx.get("emit_vfx", true))
-	var center: Vector2 = (primary_enemy as Node2D).global_position
+	var rx_col := Color.from_string(String(rx.get("vfx_color", "#FFFFFF")), Color.WHITE)
+	var is_target_boss: bool = target != null and is_instance_valid(target) and bool(target.get("is_boss"))
+	var is_target_elite: bool = target != null and is_instance_valid(target) and ((int(target.get("enemy_type")) == Enemy.Type.ELITE) or bool(target.get("is_mini_boss")))
 
-	var is_guaranteed_crit := bool(spec.get("guaranteed_crit", false))
-	var is_true := bool(spec.get("true_damage", false))
-	if is_guaranteed_crit:
-		bonus_dmg *= 1.20
-
-	play_v2_cue(String(rx.get("sfx_cue", "sfx_react_boom")), "reaction")
-	var executed_target := false
-	if rx_id == "react_corrode_execute" and is_instance_valid(primary_enemy) and not bool(primary_enemy.get("is_dead")):
-		if bool(primary_enemy.get("is_boss")):
-			var missing := maxf(0.0, float(primary_enemy.get("max_health")) - float(primary_enemy.get("current_health")))
-			bonus_dmg += minf(600.0, missing * 0.06)
-			is_true = true
-		elif float(primary_enemy.get("current_health")) / maxf(1.0, float(primary_enemy.get("max_health"))) <= float(spec.get("execute_hp_pct", 0.18)):
-			bonus_dmg = maxf(bonus_dmg, float(primary_enemy.get("current_health")) + 999.0)
-			is_true = true
-			executed_target = true
-
-	if emit_vfx and _reaction_pop_budget > 0:
+	play_v2_cue(String(rx.get("sfx_cue", "sfx_react_boom")), "reaction", randf_range(0.96, 1.06))
+	if _reaction_pop_budget > 0:
 		_reaction_pop_budget -= 1
-		_spawn_text_popup(center + Vector2(0.0, -34.0), "%s %d" % [rx_name, roundi(bonus_dmg)], rx_col)
-		_spawn_reaction_visual(rx_id, center, aoe_r if aoe_r > 0.0 else 65.0, rx_col, {"executed": executed_target})
-		if has_node("/root/HitFeel") and (bonus_dmg >= 15.0 or chains > 0 or aoe_r >= 80.0):
+		_spawn_text_popup(hit_pos + Vector2(0.0, -24.0), short_name, rx_col)
+	if bool(rx.get("emit_vfx", false)):
+		_spawn_reaction_visual(rx_id, hit_pos, maxf(48.0, aoe_r), rx_col)
+		if has_node("/root/HitFeel") and (bonus_dmg >= 15.0 or int(rx.get("chain_count", 0)) > 0 or aoe_r >= 80.0):
 			get_node("/root/HitFeel").call("on_reaction", true)
 		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 3.5:
 			player.shake_camera(1.8)
 
-	if rx_id == "react_miasma_arc" and is_instance_valid(primary_enemy) and primary_enemy.has_method("detonate_remaining_dot"):
-		bonus_dmg += float(primary_enemy.detonate_remaining_dot(float(spec.get("detonate_dot_pct", 0.35))))
+	match rx_id:
+		"react_shock":
+			var chain_n: int = maxi(1, int(rx.get("chain_count", 3)))
+			var chain_r: float = float(spec.get("chain_range", 155.0)) * get_area_mult()
+			var stun_d: float = float(spec.get("stun_dur", 0.35))
+			var hit_targets := _pick_chain_targets(target, chain_n, chain_r)
+			var pts := PackedVector2Array([hit_pos])
+			for e in hit_targets:
+				if e == null or not is_instance_valid(e) or bool(e.get("is_dead")):
+					continue
+				if (e as Node2D).global_position.distance_squared_to(pts[pts.size() - 1]) > 1.0:
+					pts.append((e as Node2D).global_position)
+				if e.has_method("take_damage_v2"):
+					e.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
+				if not bool(e.get("is_boss")) and e.has_method("apply_stun"):
+					e.apply_stun(stun_d * (0.5 if int(e.get("enemy_type")) == Enemy.Type.ELITE else 1.0))
+			if pts.size() >= 2 and player != null and player.get_parent() != null and V2VfxFactory.can_spawn_transient(player.get_parent()):
+				var bolt := V2AttackFx.new()
+				player.get_parent().add_child(bolt)
+				bolt.setup_chain_bolt(pts, rx_col, true, false)
 
-	var targets: Array = []
-	if aoe_r > 0.0:
-		for e in CombatGrid.query(center, aoe_r):
-			if e != null and is_instance_valid(e) and not bool(e.get("is_dead")):
-				if center.distance_squared_to((e as Node2D).global_position) <= aoe_r * aoe_r:
-					targets.append(e)
-	elif is_instance_valid(primary_enemy) and not bool(primary_enemy.get("is_dead")):
-		targets.append(primary_enemy)
+		"react_freeze":
+			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
+				if target.has_method("take_damage_v2"):
+					target.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
+				if is_target_boss:
+					if target.has_method("apply_slow"):
+						target.apply_slow(float(spec.get("boss_slow_pct", 0.30)), float(spec.get("boss_slow_dur", 1.5)))
+				else:
+					var f_dur := float(spec.get("elite_freeze_dur", 0.5)) if is_target_elite else float(spec.get("freeze_dur", 1.2))
+					if target.has_method("apply_freeze"):
+						target.apply_freeze(f_dur)
 
-	var shred := float(spec.get("armor_shred_pct", 0.0))
-	var debuff_dur := float(spec.get("debuff_dur", 3.5))
-	var root_dur := float(spec.get("root_dur", 0.0))
-	var kb_val := float(spec.get("knockback", 0.0))
-	var burn_mult := float(spec.get("burn_dps_mult", 0.0))
-	var spread_elem := String(spec.get("spread_element", ""))
-	var heal_player_val := float(spec.get("heal_player", 0.0))
-	if heal_player_val > 0.0 and player != null and is_instance_valid(player) and player.current_health < player.max_health:
-		player.heal(heal_player_val)
+		"react_shatter":
+			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
+				if target.has_method("unfreeze"):
+					target.unfreeze()
+				if target.has_method("apply_shield_chunk_damage"):
+					target.apply_shield_chunk_damage(float(rx.get("shield_max_pct", 0.18)), float(rx.get("shield_flat_min", 90.0)))
+			var eff_aoe := maxf(60.0, aoe_r)
+			for e in CombatGrid.query(hit_pos, eff_aoe):
+				if e != null and is_instance_valid(e) and not bool(e.get("is_dead")) and hit_pos.distance_squared_to((e as Node2D).global_position) <= eff_aoe * eff_aoe:
+					if e.has_method("take_damage_v2"):
+						e.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
 
-	var boss_cc_scale := float(rx.get("boss_cc_scale", 0.35))
-	for e in targets:
-		if not is_instance_valid(e) or bool(e.get("is_dead")):
+		"react_steam":
+			var kb: float = float(spec.get("knockback", 310.0))
+			if bool(spec.get("clear_enemy_bullets", true)):
+				_clear_enemy_bullets(hit_pos, aoe_r)
+			for e in CombatGrid.query(hit_pos, aoe_r):
+				if e == null or not is_instance_valid(e) or bool(e.get("is_dead")):
+					continue
+				if hit_pos.distance_squared_to((e as Node2D).global_position) > aoe_r * aoe_r:
+					continue
+				if e.has_method("take_damage_v2"):
+					e.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
+				if bool(spec.get("interrupt_charge", true)) and e.has_method("interrupt_charge_windup"):
+					e.interrupt_charge_windup()
+				if e.has_method("apply_knockback"):
+					var away := ((e as Node2D).global_position - hit_pos).normalized()
+					if away.length_squared() < 0.001 and player != null and is_instance_valid(player):
+						away = ((e as Node2D).global_position - player.global_position).normalized()
+					e.apply_knockback(away * kb)
+
+		"react_molten":
+			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
+				if target.has_method("apply_vulnerability"):
+					target.apply_vulnerability(float(spec.get("vuln_mult", 1.25)), float(spec.get("vuln_dur", 4.0)))
+				if target.has_method("take_damage_v2"):
+					target.take_damage_v2(bonus_dmg, false, false, "", rx_col, false, float(spec.get("shield_damage_mult", 1.40)))
+
+		"react_detonate":
+			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
+				if target.has_method("take_damage_v2"):
+					target.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
+				if target.has_method("apply_detonate_mark"):
+					var cap := trigger_dmg * float(spec.get("death_dmg_cap_mult", 2.5))
+					target.apply_detonate_mark(
+						float(spec.get("mark_dur", 4.0)),
+						float(spec.get("death_aoe_radius", 95.0)),
+						float(spec.get("death_max_hp_pct", 0.22)),
+						cap
+					)
+
+func _pick_chain_targets(primary: Node2D, max_count: int, max_range: float) -> Array:
+	var out: Array = []
+	var visited := {}
+	var cursor: Node2D = null
+	if primary != null and is_instance_valid(primary) and not bool(primary.get("is_dead")):
+		out.append(primary)
+		visited[primary.get_instance_id()] = true
+		cursor = primary
+	if cursor == null:
+		return out
+	while out.size() < max_count:
+		var nxt := _find_next_chain_target(cursor.global_position, max_range, visited)
+		if nxt == null:
+			break
+		visited[nxt.get_instance_id()] = true
+		out.append(nxt)
+		cursor = nxt
+	return out
+
+func spawn_detonate_death_fx(pos: Vector2, radius: float) -> void:
+	play_v2_cue("sfx_react_boom", "reaction", randf_range(0.92, 1.08))
+	_spawn_reaction_visual("react_detonate", pos, radius, Color.from_string("#F97316", Color.ORANGE))
+
+func get_weapon_reaction_synergies(weapon_id: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if loader == null or orbit_rig == null or not loader.weapons_by_id.has(weapon_id):
+		return out
+	var w_elem := String(loader.weapons_by_id[weapon_id].get("element", ""))
+	if w_elem.is_empty() or w_elem == "none":
+		return out
+	var seen_rx := {}
+	for slot in orbit_rig.slots:
+		var ow_id := String(slot.get("id", ""))
+		if ow_id == weapon_id or not loader.weapons_by_id.has(ow_id):
 			continue
-		if shred > 0.0 and e.has_method("apply_armor_shred"):
-			e.apply_armor_shred(shred, debuff_dur)
-		if root_dur > 0.0 and e.has_method("apply_stun"):
-			e.apply_stun(root_dur * boss_cc_scale if bool(e.get("is_boss")) else root_dur)
-		if burn_mult > 0.0 and e.has_method("apply_dot"):
-			e.apply_dot(trigger_scaled_base * burn_mult * get_dot_mult(), debuff_dur, false, "fire")
-		if not spread_elem.is_empty() and e != primary_enemy:
-			_apply_non_reactive_aura(e, spread_elem)
-		if e.has_method("take_damage_v2"):
-			e.take_damage_v2(bonus_dmg, is_guaranteed_crit, is_true, "", rx_col)
-		if kb_val > 0.0 and not bool(e.get("is_dead")) and e.has_method("apply_knockback"):
-			e.apply_knockback(((e as Node2D).global_position - center).normalized() * kb_val)
-
-	if chains > 0 and is_instance_valid(primary_enemy):
-		var ch_range := float(spec.get("chain_range", 145.0)) * get_area_mult()
-		_fire_chain_lightning(center, primary_enemy as Node2D, bonus_dmg, "", chains, ch_range, rx_col, false, true)
-
-func _apply_non_reactive_aura(enemy: Node, elem: String) -> void:
-	if enemy == null or not is_instance_valid(enemy) or bool(enemy.get("is_dead")):
-		return
-	var eid := enemy.get_instance_id()
-	var existing: Dictionary = reaction_engine._enemy_auras.get(eid, {})
-	if existing.is_empty():
-		var now_sec := float(Time.get_ticks_msec()) * 0.001
-		reaction_engine._enemy_auras[eid] = {elem: now_sec + 3.5}
-		if enemy.has_method("set_active_element"):
-			enemy.set_active_element(elem, 3.5)
-		if (elem == "venom" or elem == "wood") and enemy.has_method("apply_dot"):
-			enemy.apply_dot(9.0 * get_dot_mult(), 3.5, false, elem)
+		var ow_def: Dictionary = loader.weapons_by_id[ow_id]
+		var o_elem := String(ow_def.get("element", ""))
+		if o_elem.is_empty() or o_elem == "none" or o_elem == w_elem:
+			continue
+		var key := V2DataLoader.make_pair_key(w_elem, o_elem)
+		if loader.reactions_by_key.has(key):
+			var rx: Dictionary = loader.reactions_by_key[key]
+			var rx_id := String(rx.get("id", ""))
+			if not seen_rx.has(rx_id):
+				seen_rx[rx_id] = true
+				out.append({
+					"partner_name": String(ow_def.get("name", ow_id)),
+					"rx_name": String(rx.get("name", "")),
+					"role_tag": String(rx.get("role_tag", "")),
+				})
+	return out
 
 func spread_corpse_venom(center: Vector2, dps: float) -> void:
 	var r := 125.0 * get_area_mult()
@@ -1344,7 +1236,13 @@ func spread_corpse_venom(center: Vector2, dps: float) -> void:
 		if center.distance_squared_to((e as Node2D).global_position) <= r * r:
 			if e.has_method("apply_dot"):
 				e.apply_dot(maxf(8.0, dps * 0.8), 3.5, false, "venom")
-			_apply_non_reactive_aura(e, "venom")
+			if reaction_engine != null:
+				var eid_v: int = (e as Node).get_instance_id()
+				var now_v := float(Time.get_ticks_msec()) * 0.001
+				if reaction_engine.get_aura_elements(eid_v, now_v).is_empty():
+					reaction_engine._enemy_auras[eid_v] = {"elem": "venom", "expires": now_v + 3.5}
+					if e.has_method("set_active_element"):
+						e.set_active_element("venom", 3.5)
 
 func _fire_chain_lightning(
 	origin: Vector2,
@@ -1542,23 +1440,15 @@ func get_hud_weapons() -> Array[Dictionary]:
 		return out
 	for slot in orbit_rig.slots:
 		var wid := String(slot["id"])
-		var is_f := bool(slot["is_fusion"])
 		var tier := int(slot["tier"])
-		var w_def := {}
-		if is_f:
-			for r in loader.fusion_recipes:
-				if String(r["id"]) == wid:
-					w_def = r
-					break
-		else:
-			w_def = loader.weapons_by_id.get(wid, {})
+		var w_def: Dictionary = loader.weapons_by_id.get(wid, {})
 		out.append({
 			"id": wid,
 			"name": String(w_def.get("name", wid)),
 			"icon": String(w_def.get("icon", "")),
 			"tier": tier,
-			"is_fusion": is_f,
-			"element": String(w_def.get("element", "fusion")),
+			"is_fusion": false,
+			"element": String(w_def.get("element", "none")),
 		})
 	return out
 
@@ -1584,52 +1474,14 @@ func get_hud_items() -> Array[Dictionary]:
 		})
 	return out
 
-func has_arcana(_arcana_id: String) -> bool:
-	return false
-
-func add_arcana(_arcana_id: String) -> bool:
-	return false
-
-func remove_arcana(arcana_id: String) -> bool:
-	if not active_arcanas.has(arcana_id):
-		return false
-	active_arcanas.erase(arcana_id)
-	recompute_player_stats()
-	v2_loadout_changed.emit()
-	return true
-
-func get_arcana_choices(_count: int = 3) -> Array[Dictionary]:
-	return []
-
 func get_starter_weapon_id() -> String:
 	if player != null and is_instance_valid(player):
 		return CharacterData.get_v2_start_weapon(str(player.character_id))
 	return "wpn_jade_sword"
 
-func is_arcana_applicable_to_weapon(arcana_id: String, weapon_id: String) -> bool:
-	if loader == null or not loader.arcanas_by_id.has(arcana_id):
-		return false
-	var arc: Dictionary = loader.arcanas_by_id[arcana_id]
-	var scope := String(arc.get("whitelist_scope", "weapons"))
-	if scope == "starter_and_fusion":
-		var starter := get_starter_weapon_id()
-		if weapon_id == starter:
-			return true
-		for rec in loader.fusion_recipes:
-			if String(rec.get("id", "")) == weapon_id:
-				var reqs: Array = rec.get("requires", rec.get("inputs", []))
-				if reqs.has(starter):
-					return true
-		return false
-	var wl: Array = arc.get("whitelist_weapons", [])
-	return wl.has(weapon_id)
-
 func get_empty_slot_count() -> int:
 	var used := orbit_rig.slots.size() if orbit_rig != null else 0
 	return maxi(0, get_unlocked_slots() - used)
-
-func get_arcana_weapon_damage_mult(_weapon_id: String) -> float:
-	return 1.0
 
 func on_player_revived() -> void:
 	return
@@ -1678,7 +1530,6 @@ func get_stats_summary() -> Dictionary:
 		"spd_pct": roundi((get_attack_speed_mult() - 1.0) * 100.0),
 		"crit_pct": roundi(get_crit_chance() * 100.0),
 		"mastery_pct": roundi((get_mastery_bonus() + float(item_mods.get("reaction_damage_pct", 0.0))) * 100.0),
-		"armor": int(round(player.armor)) if player != null else 0,
 		"dodge_pct": roundi(player.dodge_chance * 100.0) if player != null else 0,
 		"luck_pct": roundi(get_luck() * 100.0),
 		"curse_pct": roundi(get_curse_pct() * 100.0),

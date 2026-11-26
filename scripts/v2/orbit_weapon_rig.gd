@@ -510,16 +510,9 @@ func _update_facing() -> void:
 				_facing = -1.0 if fx < 0.0 else 1.0
 
 func _get_def(slot: Dictionary) -> Dictionary:
-	if bool(slot["is_fusion"]):
-		for r in loader.fusion_recipes:
-			if String(r["id"]) == String(slot["id"]):
-				return r
-		return {}
 	return loader.weapons_by_id.get(String(slot["id"]), {})
 
 func _get_stats(slot: Dictionary, w_def: Dictionary) -> Dictionary:
-	if bool(slot["is_fusion"]):
-		return w_def
 	var tiers: Array = w_def.get("tiers", [])
 	var idx: int = clampi(int(slot["tier"]) - 1, 0, tiers.size() - 1)
 	return tiers[idx] if not tiers.is_empty() else {}

@@ -19,6 +19,8 @@ var _banner_tween: Tween = null
 
 var _boss_bar_container: PanelContainer = null
 var _boss_name_label: Label = null
+var _boss_shield_wrap: Control = null
+var _boss_shield_bar: ProgressBar = null
 var _boss_hp_bar: ProgressBar = null
 var _boss_hp_trail: ProgressBar = null
 var _boss_hp_label: Label = null
@@ -580,7 +582,7 @@ func _setup_boss_bar() -> void:
 	_boss_bar_container.offset_left = -240.0
 	_boss_bar_container.offset_right = 240.0
 	_boss_bar_container.offset_top = 70.0
-	_boss_bar_container.offset_bottom = 138.0
+	_boss_bar_container.offset_bottom = 148.0
 	_boss_bar_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var boss_st := XianxiaUITheme.make_hud_plate(Color(0.09, 0.14, 0.13, 0.92), Color(0.92, 0.44, 0.22, 0.96), 8, 13)
 	boss_st.content_margin_left = 18
@@ -601,6 +603,31 @@ func _setup_boss_bar() -> void:
 	_boss_name_label.add_theme_color_override("font_color", XianxiaUITheme.COL_GOLD_BRIGHT)
 	XianxiaUITheme.apply_text_outline(_boss_name_label, 4)
 	vb.add_child(_boss_name_label)
+
+	_boss_shield_wrap = Control.new()
+	_boss_shield_wrap.custom_minimum_size = Vector2(440, 8)
+	_boss_shield_wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_boss_shield_wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_shield_wrap.visible = false
+	vb.add_child(_boss_shield_wrap)
+
+	var sh_frame := Panel.new()
+	sh_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sh_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sh_frame.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(Color(0.08, 0.12, 0.14, 0.94), Color(0.84, 0.92, 0.98, 0.85), 1, 3))
+	_boss_shield_wrap.add_child(sh_frame)
+
+	_boss_shield_bar = ProgressBar.new()
+	_boss_shield_bar.name = "BossShieldBar"
+	_boss_shield_bar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_boss_shield_bar.offset_left = 1.0
+	_boss_shield_bar.offset_top = 1.0
+	_boss_shield_bar.offset_right = -1.0
+	_boss_shield_bar.offset_bottom = -1.0
+	_boss_shield_bar.show_percentage = false
+	_boss_shield_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	XianxiaUITheme.style_overlay_bar(_boss_shield_bar, Color(0.95, 0.98, 1.0, 0.98), 2)
+	_boss_shield_wrap.add_child(_boss_shield_bar)
 
 	var bar_wrap := Control.new()
 	bar_wrap.custom_minimum_size = Vector2(440, 20)
@@ -648,12 +675,17 @@ func _setup_boss_bar() -> void:
 	bar_wrap.add_child(_boss_hp_label)
 	hud.add_child(_boss_bar_container)
 
-func activate_boss_bar(max_hp: float) -> void:
+func activate_boss_bar(max_hp: float, max_sh: float = 0.0) -> void:
 	if _boss_bar_container == null:
 		return
 	var safe_max := maxf(1.0, max_hp)
 	_boss_bar_container.visible = true
 	_boss_bar_container.modulate.a = 0.0
+	if _boss_shield_wrap != null and _boss_shield_bar != null:
+		_boss_shield_wrap.visible = max_sh > 0.0
+		if max_sh > 0.0:
+			_boss_shield_bar.max_value = max_sh
+			_boss_shield_bar.value = max_sh
 	if _boss_hp_bar != null:
 		_boss_hp_bar.max_value = safe_max
 		_boss_hp_bar.value = safe_max
@@ -665,9 +697,16 @@ func activate_boss_bar(max_hp: float) -> void:
 	var t = create_tween()
 	t.tween_property(_boss_bar_container, "modulate:a", 1.0, 0.45)
 
-func update_boss_hp(curr: float, max_h: float) -> void:
+func update_boss_hp(curr: float, max_h: float, curr_sh: float = 0.0, max_sh: float = 0.0) -> void:
 	if _boss_bar_container == null or not _boss_bar_container.visible:
 		return
+	if _boss_shield_wrap != null and _boss_shield_bar != null:
+		if max_sh > 0.0 and curr_sh > 0.0:
+			_boss_shield_wrap.visible = true
+			_boss_shield_bar.max_value = max_sh
+			_boss_shield_bar.value = clampf(curr_sh, 0.0, max_sh)
+		elif max_sh > 0.0 or curr_sh <= 0.0:
+			_boss_shield_wrap.visible = false
 	var safe_max := maxf(1.0, max_h)
 	var clamped_curr := clampf(curr, 0.0, safe_max)
 	if _boss_hp_bar != null:
