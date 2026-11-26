@@ -42,14 +42,14 @@ func _ready() -> void:
 		title_label.add_theme_color_override("font_color", XianxiaUITheme.COL_INK)
 
 	if panel != null:
-		panel.offset_top = -256.0
-		panel.offset_bottom = 256.0
+		panel.offset_top = -272.0
+		panel.offset_bottom = 272.0
 	if title_label != null:
-		title_label.offset_top = 14.0
-		title_label.offset_bottom = 58.0
+		title_label.offset_top = 22.0
+		title_label.offset_bottom = 66.0
 	if container != null:
-		container.offset_top = -172.0
-		container.offset_bottom = 172.0
+		container.offset_top = -176.0
+		container.offset_bottom = 176.0
 	_build_action_bar()
 	_detail_drawer = V2DetailDrawer.new()
 	_detail_drawer.name = "V2DetailDrawer"
@@ -63,8 +63,8 @@ func _build_action_bar() -> void:
 	_action_bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	_action_bar.add_theme_constant_override("separation", 18)
 	_action_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_action_bar.offset_top = -52.0
-	_action_bar.offset_bottom = -14.0
+	_action_bar.offset_top = -56.0
+	_action_bar.offset_bottom = -20.0
 
 	_reroll_btn = _make_action_btn("重随 [R]")
 	_reroll_btn.pressed.connect(_on_reroll_pressed)
@@ -106,11 +106,11 @@ func show_choices(choices: Array, remaining_after: int = 0, rerolls: int = 0, ba
 
 	var is_four := choices.size() >= 4
 	if panel != null:
-		panel.offset_left = -560.0 if is_four else -460.0
-		panel.offset_right = 560.0 if is_four else 460.0
+		panel.offset_left = -576.0 if is_four else -476.0
+		panel.offset_right = 576.0 if is_four else 476.0
 	if container != null:
-		container.offset_left = -530.0 if is_four else -430.0
-		container.offset_right = 530.0 if is_four else 430.0
+		container.offset_left = -542.0 if is_four else -442.0
+		container.offset_right = 542.0 if is_four else 442.0
 		container.add_theme_constant_override("separation", 14 if is_four else 20)
 
 	if is_limit:
@@ -172,10 +172,10 @@ func show_choices(choices: Array, remaining_after: int = 0, rerolls: int = 0, ba
 		margin.clip_contents = true
 		margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		margin.mouse_filter = Control.MOUSE_FILTER_PASS
-		margin.add_theme_constant_override("margin_left", 14)
-		margin.add_theme_constant_override("margin_right", 14)
-		margin.add_theme_constant_override("margin_top", 12)
-		margin.add_theme_constant_override("margin_bottom", 12)
+		margin.add_theme_constant_override("margin_left", 16)
+		margin.add_theme_constant_override("margin_right", 16)
+		margin.add_theme_constant_override("margin_top", 15)
+		margin.add_theme_constant_override("margin_bottom", 15)
 		btn.add_child(margin)
 
 		var vbox = VBoxContainer.new()
@@ -284,11 +284,17 @@ func show_choices(choices: Array, remaining_after: int = 0, rerolls: int = 0, ba
 			if max_lv < 0:
 				lvl_lbl.text = "即时补给 · 每次可用"
 				lvl_lbl.add_theme_color_override("font_color", Color(0.14, 0.46, 0.36))
-			elif cur_lv <= 0:
-				lvl_lbl.text = "可无限叠加 · 第 1 层"
+			elif max_lv == 0:
+				lvl_lbl.text = "可无限叠加 · 第 %d 层" % next_lv
 				lvl_lbl.add_theme_color_override("font_color", Color(0.14, 0.46, 0.36))
+			elif cur_lv <= 0:
+				lvl_lbl.text = "限叠 %d 次 · 第 1/%d 层" % [max_lv, max_lv]
+				lvl_lbl.add_theme_color_override("font_color", Color(0.14, 0.46, 0.36))
+			elif next_lv >= max_lv:
+				lvl_lbl.text = "限叠 %d 次 · 第 %d → %d/%d 层（将满）" % [max_lv, cur_lv, next_lv, max_lv]
+				lvl_lbl.add_theme_color_override("font_color", Color(0.76, 0.28, 0.12))
 			else:
-				lvl_lbl.text = "可无限叠加 · 第 %d → %d 层" % [cur_lv, next_lv]
+				lvl_lbl.text = "限叠 %d 次 · 第 %d → %d/%d 层" % [max_lv, cur_lv, next_lv, max_lv]
 				lvl_lbl.add_theme_color_override("font_color", Color(0.72, 0.34, 0.12))
 		elif is_new:
 			lvl_lbl.text = "修习 Lv.1 / %d" % max_lv

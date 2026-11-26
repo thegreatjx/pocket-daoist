@@ -74,10 +74,10 @@ func _setup_top_left_hud() -> void:
 		return
 	_top_left_plate = PanelContainer.new()
 	_top_left_plate.name = "TopLeftPlate"
-	_top_left_plate.position = Vector2(12, 10)
+	_top_left_plate.position = Vector2(14, 12)
 	_top_left_plate.custom_minimum_size = Vector2(364, 0)
 	_top_left_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_top_left_plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 10, 14))
+	_top_left_plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 10, 16))
 	XianxiaUITheme.attach_ornaments(_top_left_plate, XianxiaUITheme.COL_GOLD, 11.0, 5.0)
 	hud.add_child(_top_left_plate)
 
@@ -294,10 +294,10 @@ func _setup_timer_plate() -> void:
 	timer_plate.anchor_right = 0.5
 	timer_plate.offset_left = -88.0
 	timer_plate.offset_right = 88.0
-	timer_plate.offset_top = 10.0
-	timer_plate.offset_bottom = 58.0
-	timer_plate.custom_minimum_size = Vector2(176, 48)
-	timer_plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 8, 4))
+	timer_plate.offset_top = 12.0
+	timer_plate.offset_bottom = 62.0
+	timer_plate.custom_minimum_size = Vector2(176, 50)
+	timer_plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 8, 8))
 	XianxiaUITheme.attach_ornaments(timer_plate, XianxiaUITheme.COL_GOLD, 10.0, 4.0)
 	hud.add_child(timer_plate)
 
@@ -321,12 +321,12 @@ func _setup_top_right_hud() -> void:
 	tr_plate.anchors_preset = Control.PRESET_TOP_RIGHT
 	tr_plate.anchor_left = 1.0
 	tr_plate.anchor_right = 1.0
-	tr_plate.offset_left = -204.0
-	tr_plate.offset_right = -12.0
-	tr_plate.offset_top = 10.0
-	tr_plate.offset_bottom = 86.0
-	tr_plate.custom_minimum_size = Vector2(192, 76)
-	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 10)
+	tr_plate.offset_left = -206.0
+	tr_plate.offset_right = -14.0
+	tr_plate.offset_top = 12.0
+	tr_plate.offset_bottom = 90.0
+	tr_plate.custom_minimum_size = Vector2(192, 78)
+	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 12)
 	tr_st.content_margin_left = 20
 	tr_st.content_margin_right = 20
 	tr_plate.add_theme_stylebox_override("panel", tr_st)
@@ -410,8 +410,8 @@ func _setup_hint() -> void:
 		return
 	hint_label.offset_left = 14.0
 	hint_label.offset_right = 560.0
-	hint_label.offset_top = -104.0
-	hint_label.offset_bottom = -12.0
+	hint_label.offset_top = -106.0
+	hint_label.offset_bottom = -14.0
 	hint_label.add_theme_font_size_override("font_size", 15)
 	hint_label.add_theme_color_override("font_color", Color(0.96, 0.96, 0.88))
 	XianxiaUITheme.apply_text_outline(hint_label, 4)
@@ -513,10 +513,13 @@ func _setup_banner() -> void:
 	_banner_panel.anchor_right = 0.5
 	_banner_panel.offset_left = -280.0
 	_banner_panel.offset_right = 280.0
-	_banner_panel.offset_top = 142.0
-	_banner_panel.offset_bottom = 188.0
+	_banner_panel.offset_top = 146.0
+	_banner_panel.offset_bottom = 194.0
 	_banner_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_banner_panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(Color(0.08, 0.20, 0.17, 0.92), XianxiaUITheme.COL_GOLD_BRIGHT, 8, 8))
+	var banner_st := XianxiaUITheme.make_hud_plate(Color(0.08, 0.20, 0.17, 0.92), XianxiaUITheme.COL_GOLD_BRIGHT, 8, 10)
+	banner_st.content_margin_left = 20
+	banner_st.content_margin_right = 20
+	_banner_panel.add_theme_stylebox_override("panel", banner_st)
 	XianxiaUITheme.attach_ornaments(_banner_panel, XianxiaUITheme.COL_GOLD_BRIGHT, 10.0, 4.0)
 
 	_banner_label = Label.new()
@@ -561,10 +564,10 @@ func _setup_boss_bar() -> void:
 	_boss_bar_container.anchor_right = 0.5
 	_boss_bar_container.offset_left = -240.0
 	_boss_bar_container.offset_right = 240.0
-	_boss_bar_container.offset_top = 66.0
-	_boss_bar_container.offset_bottom = 134.0
+	_boss_bar_container.offset_top = 70.0
+	_boss_bar_container.offset_bottom = 138.0
 	_boss_bar_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	var boss_st := XianxiaUITheme.make_hud_plate(Color(0.09, 0.14, 0.13, 0.92), Color(0.92, 0.44, 0.22, 0.96), 8, 12)
+	var boss_st := XianxiaUITheme.make_hud_plate(Color(0.09, 0.14, 0.13, 0.92), Color(0.92, 0.44, 0.22, 0.96), 8, 13)
 	boss_st.content_margin_left = 18
 	boss_st.content_margin_right = 18
 	_boss_bar_container.add_theme_stylebox_override("panel", boss_st)
@@ -713,7 +716,7 @@ func _setup_loadout_grid() -> void:
 	_loadout_box = VBoxContainer.new()
 	_loadout_box.name = "LoadoutGrid"
 	_loadout_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_loadout_box.position = Vector2(12, 140)
+	_loadout_box.position = Vector2(14, 144)
 	_loadout_box.add_theme_constant_override("separation", 5)
 
 	_weapon_row = HBoxContainer.new()
@@ -763,7 +766,8 @@ func refresh_v2_loadout(v2: V2CombatController) -> void:
 	var realm_by_slot := {}
 	for entry in v2.get_realm_table():
 		realm_by_slot[int(entry.get("slots", 0))] = entry
-	for i in range(6):
+	var max_w := v2.get_max_weapon_slots()
+	for i in range(max_w):
 		if i < w_slots.size():
 			var w: Dictionary = w_slots[i]
 			var tier := int(w.get("tier", 1))
@@ -851,10 +855,13 @@ func _make_slot_cell(data: Dictionary, is_weapon: bool) -> Control:
 		st.border_color = XianxiaUITheme.COL_GOLD_BRIGHT if is_maxed else (Color(0.32, 0.86, 0.72, 0.92) if is_weapon else XianxiaUITheme.COL_GOLD)
 	st.set_border_width_all(2 if (is_evo or ready_evo or is_maxed) else 1)
 	st.set_corner_radius_all(6)
+	st.set_content_margin_all(2)
 	slot.add_theme_stylebox_override("panel", st)
 
 	var stack := Control.new()
 	stack.custom_minimum_size = Vector2(36, 36)
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(stack)
 
@@ -907,10 +914,10 @@ func _setup_buff_status() -> void:
 		return
 	_buff_panel = PanelContainer.new()
 	_buff_panel.name = "BuffStatusPanel"
-	_buff_panel.position = Vector2(12, 232)
+	_buff_panel.position = Vector2(14, 236)
 	_buff_panel.visible = false
 	_buff_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_buff_panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, Color(0.28, 0.94, 0.78, 0.92), 6, 5))
+	_buff_panel.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, Color(0.28, 0.94, 0.78, 0.92), 6, 8))
 
 	_buff_label = Label.new()
 	_buff_label.add_theme_font_size_override("font_size", 14)

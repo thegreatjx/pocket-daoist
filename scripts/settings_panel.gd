@@ -80,14 +80,12 @@ func _build() -> void:
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	_scroll.mouse_filter = Control.MOUSE_FILTER_STOP
+	XianxiaUITheme.style_scroll_container(_scroll)
 	panel.add_child(_scroll)
 
-	_content = VBoxContainer.new()
+	_content = XianxiaUITheme.make_scroll_body(_scroll, 14, 12, 4)
 	_content.name = "Content"
-	_content.add_theme_constant_override("separation", 14)
 	_content.custom_minimum_size = Vector2(520, 0)
-	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.add_child(_content)
 
 	var heading = Label.new()
 	heading.text = "设置"
@@ -222,7 +220,7 @@ func _apply_viewport_limits() -> void:
 	# 可用空间：视口减去外边距与底板内边距
 	var avail_w = vp.x - 2.0 * PANEL_MARGIN - inset
 	var avail_h = vp.y - 2.0 * PANEL_MARGIN - inset
-	var need = _content.get_combined_minimum_size()
+	var need = _content.get_combined_minimum_size() + Vector2(12.0, 8.0)
 	# 取"内容所需"与"可用空间"的较小值：窗口够大就按内容收缩，窗口小则填满并可滚动
 	_scroll.custom_minimum_size = Vector2(
 		clampf(need.x, 160.0, maxf(160.0, avail_w)),

@@ -59,7 +59,7 @@ func _build_victory_actions() -> void:
 
 func _apply_qinglv_theme() -> void:
 	if panel_box != null:
-		panel_box.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 26))
+		panel_box.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 28))
 		XianxiaUITheme.attach_ornaments(panel_box, XianxiaUITheme.COL_GOLD, 14.0, 6.0)
 	if title_label != null:
 		var title_font = load("res://assets/title_font.tres")

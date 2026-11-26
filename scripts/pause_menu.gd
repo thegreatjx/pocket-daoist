@@ -58,7 +58,7 @@ func _apply_qinglv_theme() -> void:
 	if dim_rect != null:
 		dim_rect.color = Color(0.05, 0.14, 0.12, 0.52)
 	if panel_box != null:
-		panel_box.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 24))
+		panel_box.add_theme_stylebox_override("panel", XianxiaUITheme.make_scroll_panel(XianxiaUITheme.COL_GOLD, 28))
 		XianxiaUITheme.attach_ornaments(panel_box, XianxiaUITheme.COL_GOLD, 14.0, 6.0)
 	if title_label != null:
 		var title_font = load("res://assets/title_font.tres")

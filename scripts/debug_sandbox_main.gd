@@ -74,7 +74,7 @@ func _spawn_initial_dummies() -> void:
 	spawn_dummies(3, TrainingDummy.ResetMode.INFINITE)
 	_refresh_quick_bar()
 	if ui != null and ui.has_method("show_banner"):
-		ui.show_banner("【演武实验沙盒】无刷怪无选卡 · 按 F9 或点右下实验台自由配装")
+		ui.show_banner("【演武沙盒】右上实验台实时调参 · F9 收起/展开")
 
 func spawn_dummies(count: int, mode: int = TrainingDummy.ResetMode.INFINITE, hp: float = 5000.0) -> void:
 	if player == null or not is_instance_valid(player):
@@ -142,8 +142,8 @@ func _build_debug_quick_bar() -> void:
 	tele_plate.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	tele_plate.offset_left = -450.0
 	tele_plate.offset_right = -14.0
-	tele_plate.offset_top = -98.0
-	tele_plate.offset_bottom = -64.0
+	tele_plate.offset_top = -102.0
+	tele_plate.offset_bottom = -68.0
 	tele_plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_DARK, XianxiaUITheme.COL_GOLD_SOFT, 6, 8))
 	_debug_hud_layer.add_child(tele_plate)
 
@@ -158,8 +158,8 @@ func _build_debug_quick_bar() -> void:
 	plate.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	plate.offset_left = -450.0
 	plate.offset_right = -14.0
-	plate.offset_top = -58.0
-	plate.offset_bottom = -12.0
+	plate.offset_top = -60.0
+	plate.offset_bottom = -14.0
 	plate.add_theme_stylebox_override("panel", XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 8, 8))
 	_debug_hud_layer.add_child(plate)
 
@@ -169,13 +169,15 @@ func _build_debug_quick_bar() -> void:
 
 	var panel_btn := Button.new()
 	panel_btn.text = "实验台 (F9)"
+	panel_btn.focus_mode = Control.FOCUS_NONE
 	panel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	XianxiaUITheme.style_button(panel_btn, "primary")
-	panel_btn.pressed.connect(open_debug_sandbox)
+	panel_btn.pressed.connect(toggle_debug_sandbox)
 	hb.add_child(panel_btn)
 
 	var reset_btn := Button.new()
 	reset_btn.text = "重置木桩"
+	reset_btn.focus_mode = Control.FOCUS_NONE
 	reset_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	XianxiaUITheme.style_button(reset_btn, "dark_gold")
 	reset_btn.pressed.connect(_on_reset_or_respawn_dummies)
@@ -183,6 +185,7 @@ func _build_debug_quick_bar() -> void:
 
 	_quick_invincible_btn = Button.new()
 	_quick_invincible_btn.text = "无敌: 开"
+	_quick_invincible_btn.focus_mode = Control.FOCUS_NONE
 	_quick_invincible_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	XianxiaUITheme.style_button(_quick_invincible_btn, "primary")
 	_quick_invincible_btn.pressed.connect(func():
@@ -194,6 +197,7 @@ func _build_debug_quick_bar() -> void:
 
 	var exit_btn := Button.new()
 	exit_btn.text = "回主菜单"
+	exit_btn.focus_mode = Control.FOCUS_NONE
 	exit_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	XianxiaUITheme.style_button(exit_btn, "cinnabar")
 	exit_btn.pressed.connect(func():
@@ -231,16 +235,22 @@ func _process(_delta: float) -> void:
 		rx_cnt = int(player.v2_combat.reaction_count)
 	_telemetry_lbl.text = "木桩遥测 · 3秒DPS: %.0f | 总伤: %.0f | 命中: %d | 反应: %d" % [sum_dps, sum_tot, sum_hits, rx_cnt]
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	if GameFlow.state != GameFlow.State.PLAYING:
+		return
 	if event is InputEventKey:
 		var k := event as InputEventKey
 		if k.pressed and not k.echo and k.keycode == KEY_F9:
-			open_debug_sandbox()
+			toggle_debug_sandbox()
 			get_viewport().set_input_as_handled()
+
+func toggle_debug_sandbox() -> void:
+	if debug_sandbox != null and is_instance_valid(debug_sandbox):
+		debug_sandbox.toggle_panel()
 
 func open_debug_sandbox() -> void:
 	if debug_sandbox != null and is_instance_valid(debug_sandbox):
-		debug_sandbox.toggle_panel()
+		debug_sandbox.open_panel()
 
 func _on_player_died() -> void:
 	if player != null and is_instance_valid(player):

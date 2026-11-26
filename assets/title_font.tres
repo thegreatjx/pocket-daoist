@@ -1,7 +1,9 @@
-[gd_resource type="SystemFont" format=3]
+[gd_resource type="FontVariation" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/ZCOOLXiaoWei-Regular.ttf" id="1_xiaowei"]
+[ext_resource type="FontFile" path="res://assets/fonts/LXGWWenKaiLite-Medium.ttf" id="2_wenkai_fb"]
 
 [resource]
-font_names = PackedStringArray("STXingkai", "STLiti", "STKaiti", "Noto Serif SC", "KaiTi", "Microsoft YaHei UI")
-allow_system_fallback = true
-force_autohinter = false
-subpixel_positioning = 1
+base_font = ExtResource("1_xiaowei")
+fallbacks = [ExtResource("2_wenkai_fb")]
+spacing_glyph = 1
