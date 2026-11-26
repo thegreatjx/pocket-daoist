@@ -11,6 +11,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPRITES_DIR = os.path.join(PROJECT_ROOT, "assets", "sprites")
 RAW_CONCEPT = r"C:/Users/jiang/Pictures/百宝/Gemini_Generated_Image_jf6lm9jf6lm9jf6l.jpg"
 RAW_VIDEO = r"C:/Users/jiang/Pictures/百宝/gemini_generated_video_a59a9892.mp4"
+RAW_STILLS = r"C:/Users/jiang/Pictures/百宝/Gemini_Generated_Image_pfsptqpfsptqpfsp.jpg"
 WORK_DIR = os.path.join(PROJECT_ROOT, ".tmp", "monsters")
 
 CONCEPT_SIZE = (2752, 1536)
@@ -29,6 +30,24 @@ MONSTERS = [
     {"id": "huapi_huandao", "name": "画皮狐妖", "tier": "boss", "col": 3, "row": 1},
     {"id": "wanjian_mozun", "name": "万剑魔尊", "tier": "boss", "col": 4, "row": 1},
 ]
+
+# 靠引擎程序化动作驱动的小怪：只拆单张立绘（enemy_<id>.png），不配套绿幕视频图集
+STILL_MONSTERS = [
+    {"id": "fenyu_sanya", "name": "焚羽三鸦", "tier": "minion", "col": 0, "row": 0},
+    {"id": "xueyi_yefu", "name": "血翼夜蝠", "tier": "minion", "col": 1, "row": 0},
+    {"id": "qingyan_denglong", "name": "青焰灯笼", "tier": "minion", "col": 2, "row": 0},
+    {"id": "duyan_tangsan", "name": "独眼唐伞", "tier": "minion", "col": 3, "row": 0},
+    {"id": "bichi_zhongsi", "name": "碧翅螽斯", "tier": "minion", "col": 4, "row": 0},
+    {"id": "linjia_chuanshan", "name": "鳞甲穿山", "tier": "minion", "col": 0, "row": 1},
+    {"id": "chihuan_wugong", "name": "赤环蜈蚣", "tier": "minion", "col": 1, "row": 1},
+    {"id": "kulou_dizhu", "name": "骷髅地蛛", "tier": "minion", "col": 2, "row": 1},
+    {"id": "lingzhi_gujing", "name": "灵芝菇精", "tier": "minion", "col": 3, "row": 1},
+    {"id": "tongke_xiejiang", "name": "铜壳蟹将", "tier": "minion", "col": 4, "row": 1},
+]
+# 单张图无标签文字，行带只按上下两排的实际留白切分
+STILL_ROW_BANDS = ((0, 740), (740, CONCEPT_SIZE[1]))
+# 列边界取上下两排投影同时为空的列，避免把火鸦的火苗、穿山甲的尾巴切一半分给邻格
+STILL_COL_SPLITS = (0, 632, 1137, 1660, 2185, CONCEPT_SIZE[0])
 
 VIDEO_CELL = (256, 360)
 VIDEO_ROW_CROP = ((0, 294), (360, 654))
@@ -72,6 +91,9 @@ def key_cutout(rgb: np.ndarray, key: np.ndarray, dist: float = 70.0) -> np.ndarr
     g = out[:, :, 1]
     cap = np.maximum(out[:, :, 0], out[:, :, 2]) + 8
     out[:, :, 1] = np.where(edge & (g > cap), cap, g)
+    # 半透明羽化环里的绿幕色会被缩放后的 alpha 除法放大成绿边，这里直接去饱和
+    ring_cap = (out[:, :, 0] + out[:, :, 2]) * 0.5 + 4
+    out[:, :, 1] = np.where(ring & (out[:, :, 1] > ring_cap), ring_cap, out[:, :, 1])
     return np.dstack([np.clip(out, 0, 255), alpha * 255.0]).astype(np.uint8)
 
 
@@ -85,11 +107,25 @@ def trim_alpha(im: Image.Image, pad: int = 6) -> Image.Image:
     return im.crop((x0, y0, x1, y1))
 
 
+def _resize_rgba(im: Image.Image, size: tuple[int, int]) -> Image.Image:
+    # 预乘 alpha 再缩放：透明区的残留屏幕色不会被插值拉成彩边
+    arr = np.array(im, dtype=np.float32)
+    a = arr[:, :, 3] / 255.0
+    arr[:, :, :3] *= a[:, :, None]
+    planes = [Image.fromarray(arr[:, :, i], "F").resize(size, Image.Resampling.LANCZOS)
+              for i in range(4)]
+    out = np.dstack([np.array(p, dtype=np.float32) for p in planes])
+    out[:, :, 3] = np.clip(out[:, :, 3], 0.0, 255.0)
+    safe = np.maximum(out[:, :, 3] / 255.0, 1e-3)[:, :, None]
+    out[:, :, :3] = np.clip(out[:, :, :3] / safe, 0.0, 255.0)
+    return Image.fromarray(out.astype(np.uint8), "RGBA")
+
+
 def square_fit(im: Image.Image, side: int, foot_y: float = 0.94) -> Image.Image:
     scale = min(side / im.width, side * foot_y / im.height)
     w = max(1, int(round(im.width * scale)))
     h = max(1, int(round(im.height * scale)))
-    resized = im.resize((w, h), Image.Resampling.LANCZOS)
+    resized = _resize_rgba(im, (w, h))
     canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     x = (side - w) // 2
     y = int(round(side * foot_y)) - h
@@ -140,6 +176,23 @@ def build_concept() -> dict[str, Image.Image]:
         out[m["id"]] = crop
         crop.save(os.path.join(WORK_DIR, f"concept_{m['id']}.png"))
         square_fit(crop, 512).save(os.path.join(WORK_DIR, f"concept_{m['id']}_512.png"))
+        square_fit(crop, 256, 0.96).save(os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png"))
+    return out
+
+
+def build_stills() -> dict[str, Image.Image]:
+    rgb = np.array(Image.open(RAW_STILLS).convert("RGB"), dtype=np.float32)
+    cut = Image.fromarray(key_cutout(rgb, sample_key(rgb)), "RGBA")
+    os.makedirs(WORK_DIR, exist_ok=True)
+    cut.save(os.path.join(WORK_DIR, "stills_cutout.png"))
+
+    out = {}
+    for m in STILL_MONSTERS:
+        x0, x1 = STILL_COL_SPLITS[m["col"]], STILL_COL_SPLITS[m["col"] + 1]
+        y0, y1 = STILL_ROW_BANDS[m["row"]]
+        crop = clean_edge_blobs(trim_alpha(cut.crop((x0, y0, x1, y1))))
+        out[m["id"]] = crop
+        crop.save(os.path.join(WORK_DIR, f"still_{m['id']}.png"))
         square_fit(crop, 256, 0.96).save(os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png"))
     return out
 
@@ -267,8 +320,23 @@ def _frame_problems(frame: Image.Image, label: str) -> list[str]:
     return out
 
 
-def verify() -> int:
+def verify_stills() -> list[str]:
     problems: list[str] = []
+    for m in STILL_MONSTERS:
+        path = os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png")
+        if not os.path.exists(path):
+            problems.append(f"{m['id']}: 缺少 enemy_{m['id']}.png")
+            continue
+        still = Image.open(path).convert("RGBA")
+        if still.size != (256, 256):
+            problems.append(f"{m['id']}: 立绘尺寸 {still.size}，应为 (256, 256)")
+            continue
+        problems += _frame_problems(still, f"{m['id']}@still")
+    return problems
+
+
+def verify() -> int:
+    problems: list[str] = verify_stills()
     data_path = os.path.join(PROJECT_ROOT, "data", "v2", "enemies_waves_v2.json")
     data_txt = open(data_path, encoding="utf-8").read() if os.path.exists(data_path) else ""
     visual_path = os.path.join(PROJECT_ROOT, "scripts", "enemy_visual.gd")
@@ -308,6 +376,14 @@ def verify() -> int:
     return 0 if not problems else 1
 
 
+def build_stills_only() -> int:
+    stills = build_stills()
+    contact_sheet([(m["name"], stills[m["id"]]) for m in STILL_MONSTERS],
+                  os.path.join(WORK_DIR, "contact_stills.png"))
+    print("STILLS OK", len(stills), WORK_DIR)
+    return verify()
+
+
 def build() -> int:
     concept = build_concept()
     build_video_frames()
@@ -332,10 +408,15 @@ def main() -> int:
     ap.add_argument("--verify", action="store_true", help="只校验已落库图集，不重新生成")
     ap.add_argument("--concept", default=RAW_CONCEPT)
     ap.add_argument("--video", default=RAW_VIDEO)
+    ap.add_argument("--stills-concept", default=RAW_STILLS, help="静态小怪概念图（只拆单张立绘）")
+    ap.add_argument("--stills", action="store_true", help="只拆 STILL_MONSTERS 的单张立绘")
     args = ap.parse_args()
     globals()["RAW_CONCEPT"] = args.concept
     globals()["RAW_VIDEO"] = args.video
-    return verify() if args.verify else build()
+    globals()["RAW_STILLS"] = args.stills_concept
+    if args.verify:
+        return verify()
+    return build_stills_only() if args.stills else build()
 
 
 if __name__ == "__main__":

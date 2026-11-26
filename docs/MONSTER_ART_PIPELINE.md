@@ -16,6 +16,8 @@
 | **S4 规格校验** | 图集 + JSON + `enemy_visual.gd` | `python tools/build_monster_video_sheets.py --verify` | 失败逐条列出，退出码非 0 |
 | **S5 接入与实机** | 图集 | 数据登记 + `enemy_visual.gd` 绘制分支 + 实机截图 | 进池可玩 |
 
+需要由引擎用代码驱动动作、不配绿幕视频的小怪只走 S0+S1，见本文第 6 节。
+
 完整重建：
 
 ```bash
@@ -60,6 +62,8 @@ python tools/build_monster_video_sheets.py --verify
 | 魔尊剑轮里出现棋盘格 | 绿幕色和剑轮光晕都是绿色，flood-fill 从剑缝钻进去 | 对 `wanjian_mozun` 单独处理：以角色中心为圆心 116px 内、接近 key 的绿色像素清成透明 |
 | 狐妖右侧多一块绿色碎片 | 裁切窗口带进邻格特效 | 删除“接触裁切边缘且面积 < 600px”的连通块 |
 | contact sheet 看着没问题，实机偏小 | 预览按格子缩放，掩盖了显示尺寸问题 | 必须用 `tests/showcase_new_monsters.tscn` 同款实机截图验收，看 60/85/180px 三档 |
+| 蝙蝠格里冒出火鸦的火苗、蜈蚣格里带着穿山甲的尾巴 | 按画布宽度等比五等分切格，相邻角色跨过了等分线 | 列边界用**上下两排投影同时为空的列**（本例 `632 / 1137 / 1660 / 2185`），行带取 `740` |
+| 缩小后角色外圈发绿 | 羽化环（alpha 0.55）里留着绿幕色，缩放时的 alpha 除法把它放大成绿边 | 环上再压一道 `G ≤ (R+B)/2 + 4`，缩放改成预乘 alpha 再 LANCZOS |
 
 ---
 
@@ -84,3 +88,19 @@ python tools/build_monster_video_sheets.py --verify
 3. `godot --headless --path . res://tests/v2_systems_test.tscn` → `fails=0`
 4. 实机截图：小怪约 60px、精英约 85px、BOSS 约 180px，脚底与地面光环对齐
 5. `python tools/studio_audit.py` → 无新增 orphan（新资产都被 JSON/代码引用）
+
+---
+
+## 6. 静态单张分支（引擎驱动动作）
+
+不给每个小怪出绿幕视频、改由 Godot 代码做呼吸/飘浮/摆动时，只跑 S0+S1，产物是单张立绘：
+
+```bash
+python tools/build_monster_video_sheets.py --stills
+python tools/build_monster_video_sheets.py --verify   # 资产巡检会顺带跑
+```
+
+- 角色清单在脚本的 `STILL_MONSTERS`（id / 中文名 / col / row），与视频 pipeline 的 `MONSTERS` 分开，避免 `--verify` 缺少图集时误报。
+- 切格不用等比五等分：列边界写在 `STILL_COL_SPLITS`，取上下两排像素投影同时为空的列；行带写在 `STILL_ROW_BANDS`（本例 `740`），概念图无标签文字时不需要给文字留白。
+- 产物：`assets/sprites/enemy_<id>.png`（256²，脚底落在 96%），预览见 `.tmp/monsters/contact_stills.png`。
+- 只校验尺寸、底部残留、低透明碎片与绿边；进池时仍需在 `enemies_waves_v2.json` 与 `enemy_visual.gd` 登记，才不会再报 orphan。
