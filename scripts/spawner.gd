@@ -664,7 +664,8 @@ func _instantiate_enemy_at(
 			enemy.speed = float(eff_arch["move_speed"]) * _stage_enemy_speed_mult * _wave_speed_scale
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:
-	return pos
+	var arena := _get_arena_rect().grow(-56.0)
+	return Vector2(clampf(pos.x, arena.position.x, arena.end.x), clampf(pos.y, arena.position.y, arena.end.y))
 
 func scale_spawned_minion(enemy: Node) -> void:
 	_scale_to_chapter(enemy)

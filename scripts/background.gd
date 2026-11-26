@@ -82,9 +82,11 @@ var _obstacle_body: StaticBody2D = null
 
 func _ready() -> void:
 	add_to_group("background")
+	_create_boundary_walls()
 	_build_landmarks()
 	_scatter_props()
 	_rebuild_obstacles()
+	_apply_camera_limits()
 
 func get_arena_rect() -> Rect2:
 	return ARENA_RECT
@@ -406,12 +408,15 @@ func _draw() -> void:
 				)
 			if ARENA_RECT.intersects(tile_rect):
 				draw_texture_rect(_tile_tex, tile_rect, false, biome_tint)
+			else:
+				draw_texture_rect(_tile_tex, tile_rect, false, biome_tint * Color(0.62, 0.65, 0.68, 1.0))
 			y += _tile_size
 		x += _tile_size
 
 	_draw_roads_and_landmarks(vis)
 	_draw_pillars(vis)
 	_draw_props(vis)
+	_draw_boundary_barrier()
 
 func _draw_roads_and_landmarks(vis: Rect2) -> void:
 	var padded := vis.grow(280.0)
