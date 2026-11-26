@@ -1,7 +1,7 @@
 class_name HeroMotionRig
 extends Node2D
 
-const TEX_FLYING_SWORD: Texture2D = preload("res://assets/sprites/fx_flying_sword.png")
+const TEX_FLYING_SWORD: Texture2D = preload("res://assets/v2/heroes/mount_jade_sword.png")
 
 var _tex: Texture2D = null
 var _motion_mode: String = "hover_ride"
@@ -263,8 +263,11 @@ func _draw() -> void:
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			if TEX_FLYING_SWORD != null:
 				var pitch := _tilt * 0.85 + clampf(_last_vel.y / 320.0, -0.16, 0.16) * (1.0 if render_fx >= 0.0 else -1.0)
-				draw_set_transform(anchor_pos + Vector2(0.0, 1.0), pitch, Vector2(render_fx * 1.15, 0.92))
-				draw_texture_rect(TEX_FLYING_SWORD, Rect2(-30.0, -24.0, 60.0, 48.0), false, Color.WHITE)
+				var sw_sz := TEX_FLYING_SWORD.get_size()
+				var sw_w := 80.0
+				var sw_h := sw_w * (sw_sz.y / maxf(1.0, sw_sz.x))
+				draw_set_transform(anchor_pos + Vector2(0.0, 1.0), pitch, Vector2(render_fx, 1.0))
+				draw_texture_rect(TEX_FLYING_SWORD, Rect2(-sw_w * 0.56, -sw_h * 0.35, sw_w, sw_h), false, Color.WHITE)
 				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif _mount_type == "cloud":
 			draw_set_transform(anchor_pos + Vector2(0.0, 1.0), _tilt * 0.6, Vector2(render_fx, 1.0))
