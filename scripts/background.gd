@@ -1,5 +1,7 @@
 extends Node2D
 
+enum MapMode { CLASSIC, REALM }
+
 const DEFAULT_TILE: Texture2D = preload("res://assets/terrain/tile_forest.png")
 const TILE_SIZE := 256.0
 const CH1_TILE_PATH := "res://assets/v2/map_ch1/tile_grass_512.png"
@@ -56,18 +58,31 @@ const TERRAIN_TILES := [
 	"res://assets/terrain/tile_ch5_cloud_immortal_512.png",
 ]
 
-var _boundary_pts: PackedVector2Array = PackedVector2Array([
-	ARENA_RECT.position,
-	Vector2(ARENA_RECT.end.x, ARENA_RECT.position.y),
-	ARENA_RECT.end,
-	Vector2(ARENA_RECT.position.x, ARENA_RECT.end.y),
-	ARENA_RECT.position,
-])
+class DecalLayerNode extends Node2D:
+	var owner_bg: Node2D = null
+
+	func _draw() -> void:
+		if owner_bg != null and owner_bg.has_method("_draw_realm_decals"):
+			owner_bg.call("_draw_realm_decals", self)
+
+var _arena_rect: Rect2 = ARENA_RECT
+var _boundary_pts: PackedVector2Array = PackedVector2Array()
+var _boundary_body: StaticBody2D = null
 
 var _tile_tex: Texture2D = DEFAULT_TILE
 var _tile_size: float = TILE_SIZE
 var _tile_cache: Dictionary = {}
 var _chapter_id: int = 1
+var _map_mode: MapMode = MapMode.CLASSIC
+var _realm_id: String = "tutorial"
+var _realm_cfg: Dictionary = {}
+var _realm_floor_tint: Color = Color.WHITE
+var _road_decals: Array[Dictionary] = []
+var _hazard_sites: Array[Dictionary] = []
+var _center_array_tex: Texture2D = null
+var _road_decal_tex: Texture2D = null
+var _decal_layer: DecalLayerNode = null
+
 var _redraw_accum: float = 0.0
 var _last_cam_center: Vector2 = Vector2.INF
 var _ground_color: Color = Color(0.31, 0.36, 0.34, 1.0)
@@ -82,14 +97,21 @@ var _obstacle_body: StaticBody2D = null
 
 func _ready() -> void:
 	add_to_group("background")
-	_create_boundary_walls()
+	z_index = -100
+	_decal_layer = DecalLayerNode.new()
+	_decal_layer.name = "GroundDecalLayer"
+	_decal_layer.z_as_relative = false
+	_decal_layer.z_index = -50
+	_decal_layer.owner_bg = self
+	add_child(_decal_layer)
+	_rebuild_boundary_walls()
 	_build_landmarks()
 	_scatter_props()
 	_rebuild_obstacles()
 	_apply_camera_limits()
 
 func get_arena_rect() -> Rect2:
-	return ARENA_RECT
+	return _arena_rect
 
 func get_pillars() -> Array[Dictionary]:
 	return _pillars
@@ -102,34 +124,203 @@ func get_landmarks_by_role(role: String) -> Array[Dictionary]:
 	return out
 
 func apply_chapter(chapter: Dictionary) -> void:
-	var prev_id := _chapter_id
 	_chapter_id = clampi(int(chapter.get("id", 1)), 1, 5)
-	var tile_idx := clampi(_chapter_id - 1, 0, TERRAIN_TILES.size() - 1)
-	var tile_path: String = TERRAIN_TILES[tile_idx]
-	if _chapter_id == 1:
-		_tile_tex = CH1_TILE
-	elif _tile_cache.has(tile_path):
-		_tile_tex = _tile_cache[tile_path]
-	elif ResourceLoader.exists(tile_path):
-		var loaded := load(tile_path) as Texture2D
-		if loaded != null:
-			_tile_cache[tile_path] = loaded
-			_tile_tex = loaded
-	else:
-		_tile_tex = DEFAULT_TILE
-	_tile_size = CH1_TILE_SIZE if _tile_tex == CH1_TILE else TILE_SIZE
+	var realm_id := MapRealmCatalog.resolve_realm_id(chapter)
+	var realm_cfg := MapRealmCatalog.get_realm(realm_id)
+
 	var palette = chapter.get("palette", {})
 	if palette is Dictionary:
 		var ground = palette.get("ground", null)
 		if ground is Color:
 			_ground_color = ground
+		elif ground is String:
+			_ground_color = Color.from_string(String(ground), _ground_color)
 		var tint = palette.get("tint", null)
 		if tint is Color:
 			_accent_color = tint
-	if prev_id != _chapter_id:
-		_scatter_props()
-		_rebuild_obstacles()
+		elif tint is String:
+			_accent_color = Color.from_string(String(tint), _accent_color)
+
+	if String(realm_cfg.get("mode", "classic")) == "realm":
+		_apply_realm_chapter(realm_id, realm_cfg)
+		return
+
+	_map_mode = MapMode.CLASSIC
+	_realm_id = "tutorial"
+	_realm_cfg = {}
+	_arena_rect = ARENA_RECT
+	_road_decals.clear()
+	_hazard_sites.clear()
+	_center_array_tex = null
+	_road_decal_tex = null
+	_tile_tex = CH1_TILE
+	_tile_size = CH1_TILE_SIZE
+
+	var arena_map := _find_arena_map()
+	if arena_map != null and arena_map.has_method("clear_realm"):
+		arena_map.call("clear_realm")
+
+	_rebuild_boundary_walls()
+	_build_landmarks()
+	_scatter_props()
+	_rebuild_obstacles()
+	_apply_camera_limits()
+
+	var landmarks := _find_landmarks_controller()
+	if landmarks != null and landmarks.has_method("set_classic_mode"):
+		landmarks.call("set_classic_mode")
+
+	if _decal_layer != null:
+		_decal_layer.queue_redraw()
 	queue_redraw()
+
+func _apply_realm_chapter(realm_id: String, realm_cfg: Dictionary) -> void:
+	_map_mode = MapMode.REALM
+	_realm_id = realm_id
+	_realm_cfg = realm_cfg
+
+	var map_sz := float(realm_cfg.get("map_size", 4200.0))
+	_arena_rect = Rect2(
+		SPAWN_CENTER.x - map_sz * 0.5,
+		SPAWN_CENTER.y - map_sz * 0.5,
+		map_sz,
+		map_sz
+	)
+	_tile_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "ground_tile")
+	if _tile_tex == null:
+		_tile_tex = DEFAULT_TILE
+	_tile_size = float(_tile_tex.get_width()) if _tile_tex != null else 512.0
+	var gt = realm_cfg.get("ground_tint", Color.WHITE)
+	_realm_floor_tint = gt if gt is Color else Color.WHITE
+
+	_center_array_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "center_array")
+	_road_decal_tex = MapRealmCatalog.load_realm_texture(realm_cfg, "road_decal")
+	_build_realm_roads(map_sz, realm_cfg)
+	_build_realm_hazards(realm_id, map_sz, realm_cfg)
+
+	_props.clear()
+	_pillars.clear()
+	if _obstacle_body != null and is_instance_valid(_obstacle_body):
+		_obstacle_body.queue_free()
+		_obstacle_body = null
+
+	_rebuild_boundary_walls()
+	_apply_camera_limits()
+
+	var arena_map := _find_arena_map()
+	if arena_map != null and arena_map.has_method("build_realm"):
+		var obs_list: Array = arena_map.call("build_realm", realm_cfg, _arena_rect, SPAWN_CENTER, _hazard_sites)
+		for item in obs_list:
+			if item is Dictionary:
+				_pillars.append(item)
+	else:
+		_pillars = _compute_fallback_pillars(realm_cfg, _arena_rect, _hazard_sites)
+
+	var landmarks := _find_landmarks_controller()
+	if landmarks != null and landmarks.has_method("apply_realm"):
+		landmarks.call("apply_realm", realm_id, realm_cfg, SPAWN_CENTER, _hazard_sites)
+
+	if _decal_layer != null:
+		_decal_layer.queue_redraw()
+	queue_redraw()
+
+func _build_realm_roads(map_sz: float, realm_cfg: Dictionary) -> void:
+	_road_decals.clear()
+	var center_r := float(realm_cfg.get("center_array_radius", 270.0))
+	var half_span := map_sz * 0.5 - 210.0
+	var step := 165.0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(realm_cfg.get("seed", 20261126)) + 17
+	var dirs := [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
+	for d in dirs:
+		var dist := center_r + 35.0
+		while dist <= half_span:
+			var jitter_rot := rng.randf_range(-0.07, 0.07)
+			var base_rot := 0.0 if absf(d.y) > 0.5 else PI * 0.5
+			_road_decals.append({
+				"pos": SPAWN_CENTER + d * dist,
+				"rot": base_rot + jitter_rot,
+				"scale": rng.randf_range(0.42, 0.48),
+			})
+			dist += step
+
+func _build_realm_hazards(realm_id: String, map_sz: float, realm_cfg: Dictionary) -> void:
+	_hazard_sites.clear()
+	var mid_d := map_sz * 0.205
+	var offsets := [
+		Vector2(-mid_d, -mid_d),
+		Vector2(mid_d, -mid_d),
+		Vector2(-mid_d, mid_d),
+		Vector2(mid_d, mid_d),
+	]
+	for i in range(offsets.size()):
+		var htype := "spring_pool"
+		if realm_id == "volcano":
+			htype = "lava_vent"
+		elif realm_id == "ice":
+			htype = "frozen_pond" if (i == 0 or i == 3) else "sword_stele"
+		var rad := 155.0 if htype == "lava_vent" else (130.0 if htype == "sword_stele" else 160.0)
+		var tex := MapRealmCatalog.load_realm_texture(realm_cfg, "hazard", 0, htype)
+		_hazard_sites.append({
+			"id": "%s_%d" % [htype, i],
+			"type": htype,
+			"pos": SPAWN_CENTER + offsets[i],
+			"radius": rad,
+			"tex": tex,
+		})
+
+func _compute_fallback_pillars(realm_cfg: Dictionary, arena_rect: Rect2, hazard_sites: Array[Dictionary]) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var dojo_r := float(realm_cfg.get("center_dojo_radius", 560.0))
+	var road_hw := float(realm_cfg.get("road_half_width", 105.0))
+	var min_spacing := float(realm_cfg.get("obstacle_min_spacing", 260.0))
+	var target_count := clampi(int(realm_cfg.get("obstacle_count", 22)), 18, 26)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(realm_cfg.get("seed", 20261126))
+	var inner_rect := arena_rect.grow(-280.0)
+	var placed: Array[Vector2] = []
+	var attempts := 0
+	while placed.size() < target_count and attempts < target_count * 40:
+		attempts += 1
+		var pos := Vector2(rng.randf_range(inner_rect.position.x, inner_rect.end.x), rng.randf_range(inner_rect.position.y, inner_rect.end.y))
+		if pos.distance_to(SPAWN_CENTER) < dojo_r + 70.0:
+			continue
+		if absf(pos.x - SPAWN_CENTER.x) < road_hw + 95.0 or absf(pos.y - SPAWN_CENTER.y) < road_hw + 95.0:
+			continue
+		var ok := true
+		for h in hazard_sites:
+			if pos.distance_to(h["pos"] as Vector2) < 230.0:
+				ok = false
+				break
+		if not ok:
+			continue
+		for prev in placed:
+			if pos.distance_to(prev) < min_spacing:
+				ok = false
+				break
+		if not ok:
+			continue
+		placed.append(pos)
+		out.append({"id": out.size(), "tag": "realm_prop_%d" % out.size(), "pos": pos, "radius": 32.0, "is_core_pillar": false})
+	return out
+
+func _find_arena_map() -> Node:
+	var parent_n := get_parent()
+	if parent_n != null:
+		var direct := parent_n.get_node_or_null("ArenaMap")
+		if direct != null:
+			return direct
+	var tree := get_tree()
+	return tree.get_first_node_in_group("arena_map") if tree != null else null
+
+func _find_landmarks_controller() -> Node:
+	var parent_n := get_parent()
+	if parent_n != null:
+		var direct := parent_n.get_node_or_null("ArenaLandmarks")
+		if direct != null:
+			return direct
+	var tree := get_tree()
+	return tree.get_first_node_in_group("landmarks_controller") if tree != null else null
 
 func _load_prop_tex(key: String) -> Texture2D:
 	if key == "ch1_pine":
@@ -240,45 +431,6 @@ func _scatter_props() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20261123
 
-	var solid_positions: Array[Vector2] = []
-	for off in CORE_PILLAR_OFFSETS:
-		solid_positions.append(SPAWN_CENTER + off)
-	for lm in _landmarks:
-		solid_positions.append(lm["pos"] as Vector2)
-
-	if _chapter_id != 1:
-		var solid_names := ["pine", "pine", "stele", "rune_stone"]
-		for _i in range(18):
-			var prop_name: String = solid_names[rng.randi_range(0, solid_names.size() - 1)]
-			var tex := _load_prop_tex(prop_name)
-			if tex == null:
-				continue
-			var pos := Vector2(
-				rng.randf_range(ARENA_RECT.position.x + 150.0, ARENA_RECT.end.x - 150.0),
-				rng.randf_range(ARENA_RECT.position.y + 150.0, ARENA_RECT.end.y - 150.0)
-			)
-			if pos.distance_to(SPAWN_CENTER) < 320.0:
-				continue
-			var too_close := false
-			for sp in solid_positions:
-				if pos.distance_to(sp) < 230.0:
-					too_close = true
-					break
-			if too_close:
-				continue
-			solid_positions.append(pos)
-			var is_tree := (prop_name == "pine")
-			var s := rng.randf_range(0.76, 0.96) if is_tree else rng.randf_range(0.64, 0.80)
-			_props.append({
-				"pos": pos,
-				"tex": tex,
-				"scale": s,
-				"style": "ground",
-				"tint": Color(0.82, 0.84, 0.86, 0.94),
-				"collider_radius": 0.0,
-				"collider_offset": Vector2.ZERO,
-			})
-
 	var foliage_names := ["fern", "moss"]
 	for _j in range(28):
 		var prop_name: String = foliage_names[rng.randi_range(0, foliage_names.size() - 1)]
@@ -286,8 +438,8 @@ func _scatter_props() -> void:
 		if tex == null:
 			continue
 		var pos := Vector2(
-			rng.randf_range(ARENA_RECT.position.x + 100.0, ARENA_RECT.end.x - 100.0),
-			rng.randf_range(ARENA_RECT.position.y + 100.0, ARENA_RECT.end.y - 100.0)
+			rng.randf_range(_arena_rect.position.x + 100.0, _arena_rect.end.x - 100.0),
+			rng.randf_range(_arena_rect.position.y + 100.0, _arena_rect.end.y - 100.0)
 		)
 		if pos.distance_to(SPAWN_CENTER) < 240.0:
 			continue
@@ -316,21 +468,30 @@ func _scatter_props() -> void:
 		return (a["pos"] as Vector2).y < (b["pos"] as Vector2).y
 	)
 
-func _create_boundary_walls() -> void:
-	var sb := StaticBody2D.new()
-	sb.name = "ArenaBoundaries"
-	sb.collision_layer = 1 | 4
-	sb.collision_mask = 0
-	add_child(sb)
+func _rebuild_boundary_walls() -> void:
+	_boundary_pts = PackedVector2Array([
+		_arena_rect.position,
+		Vector2(_arena_rect.end.x, _arena_rect.position.y),
+		_arena_rect.end,
+		Vector2(_arena_rect.position.x, _arena_rect.end.y),
+		_arena_rect.position,
+	])
+	if _boundary_body != null and is_instance_valid(_boundary_body):
+		_boundary_body.queue_free()
+	_boundary_body = StaticBody2D.new()
+	_boundary_body.name = "ArenaBoundaries"
+	_boundary_body.collision_layer = 1 | 4 if _map_mode == MapMode.CLASSIC else 1
+	_boundary_body.collision_mask = 0
+	add_child(_boundary_body)
 
-	var c: Vector2 = ARENA_RECT.get_center()
-	var w: float = ARENA_RECT.size.x
-	var h: float = ARENA_RECT.size.y
+	var c: Vector2 = _arena_rect.get_center()
+	var w: float = _arena_rect.size.x
+	var h: float = _arena_rect.size.y
 	var wall_specs := [
-		{"pos": Vector2(ARENA_RECT.position.x - 25.0, c.y), "size": Vector2(50.0, h + 100.0)},
-		{"pos": Vector2(ARENA_RECT.end.x + 25.0, c.y), "size": Vector2(50.0, h + 100.0)},
-		{"pos": Vector2(c.x, ARENA_RECT.position.y - 25.0), "size": Vector2(w + 100.0, 50.0)},
-		{"pos": Vector2(c.x, ARENA_RECT.end.y + 25.0), "size": Vector2(w + 100.0, 50.0)},
+		{"pos": Vector2(_arena_rect.position.x - 25.0, c.y), "size": Vector2(50.0, h + 100.0)},
+		{"pos": Vector2(_arena_rect.end.x + 25.0, c.y), "size": Vector2(50.0, h + 100.0)},
+		{"pos": Vector2(c.x, _arena_rect.position.y - 25.0), "size": Vector2(w + 100.0, 50.0)},
+		{"pos": Vector2(c.x, _arena_rect.end.y + 25.0), "size": Vector2(w + 100.0, 50.0)},
 	]
 	for spec in wall_specs:
 		var col := CollisionShape2D.new()
@@ -338,20 +499,23 @@ func _create_boundary_walls() -> void:
 		shape.size = spec["size"]
 		col.shape = shape
 		col.position = spec["pos"]
-		sb.add_child(col)
+		_boundary_body.add_child(col)
 
 func _apply_camera_limits() -> void:
 	call_deferred("_do_apply_camera_limits")
 
 func _do_apply_camera_limits() -> void:
-	var players := get_tree().get_nodes_in_group("player")
+	var tree := get_tree()
+	if tree == null:
+		return
+	var players := tree.get_nodes_in_group("player")
 	if players.size() > 0:
 		var cam: Camera2D = players[0].get_node_or_null("Camera2D")
 		if cam != null:
-			cam.limit_left = int(ARENA_RECT.position.x)
-			cam.limit_right = int(ARENA_RECT.end.x)
-			cam.limit_top = int(ARENA_RECT.position.y)
-			cam.limit_bottom = int(ARENA_RECT.end.y)
+			cam.limit_left = int(_arena_rect.position.x)
+			cam.limit_right = int(_arena_rect.end.x)
+			cam.limit_top = int(_arena_rect.position.y)
+			cam.limit_bottom = int(_arena_rect.end.y)
 
 func _process(delta: float) -> void:
 	_anim_time += delta
@@ -381,37 +545,57 @@ func _draw() -> void:
 	var start_y := floorf((vis.position.y - margin.y) / _tile_size) * _tile_size
 	var end_y := ceilf((vis.end.y + margin.y) / _tile_size) * _tile_size
 
+	var biome_tint: Color = _realm_floor_tint if _map_mode == MapMode.REALM else CH1_FLOOR_TINT
 	var x := start_x
 	while x <= end_x:
 		var y := start_y
 		while y <= end_y:
 			var tile_rect := Rect2(x, y, _tile_size, _tile_size)
-			var biome_tint: Color
-			if _chapter_id == 1:
-				biome_tint = CH1_FLOOR_TINT
-			else:
-				biome_tint = Color(
-					clampf(_ground_color.r, 0.22, 0.44),
-					clampf(_ground_color.g, 0.22, 0.44),
-					clampf(_ground_color.b, 0.22, 0.44),
-					1.0
-				)
-			if ARENA_RECT.intersects(tile_rect):
+			if _arena_rect.intersects(tile_rect):
 				draw_texture_rect(_tile_tex, tile_rect, false, biome_tint)
 			else:
 				draw_texture_rect(_tile_tex, tile_rect, false, biome_tint * Color(0.62, 0.65, 0.68, 1.0))
 			y += _tile_size
 		x += _tile_size
 
-	_draw_roads_and_landmarks(vis)
-	_draw_pillars(vis)
-	_draw_props(vis)
+	if _map_mode == MapMode.CLASSIC:
+		_draw_roads_and_landmarks(vis)
+		_draw_pillars(vis)
+		_draw_props(vis)
 	_draw_boundary_barrier()
+
+func _draw_realm_decals(canvas: Node2D) -> void:
+	if _map_mode != MapMode.REALM:
+		return
+	if _road_decal_tex != null:
+		var r_sz := Vector2(_road_decal_tex.get_width(), _road_decal_tex.get_height())
+		for stamp in _road_decals:
+			var pos: Vector2 = stamp["pos"]
+			var sc: float = float(stamp["scale"])
+			var rot: float = float(stamp["rot"])
+			var sz := r_sz * sc
+			canvas.draw_set_transform(pos, rot, Vector2.ONE)
+			canvas.draw_texture_rect(_road_decal_tex, Rect2(-sz * 0.5, sz), false, Color(0.95, 0.95, 0.95, 0.92))
+		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+	if _center_array_tex != null:
+		var arr_r := float(_realm_cfg.get("center_array_radius", 270.0))
+		var arr_sz := Vector2(arr_r * 2.0, arr_r * 2.0)
+		canvas.draw_texture_rect(_center_array_tex, Rect2(SPAWN_CENTER - arr_sz * 0.5, arr_sz), false, Color(1.0, 1.0, 1.0, 0.94))
+
+	for h in _hazard_sites:
+		if String(h.get("type", "")) == "sword_stele":
+			continue
+		var tex: Texture2D = h.get("tex", null) as Texture2D
+		if tex == null:
+			continue
+		var rad := float(h.get("radius", 155.0))
+		var h_sz := Vector2(rad * 2.05, rad * 2.05)
+		canvas.draw_texture_rect(tex, Rect2((h["pos"] as Vector2) - h_sz * 0.5, h_sz), false, Color(1.0, 1.0, 1.0, 0.94))
 
 func _draw_roads_and_landmarks(vis: Rect2) -> void:
 	var padded := vis.grow(280.0)
-
-	if padded.has_point(SPAWN_CENTER) and _chapter_id == 1:
+	if padded.has_point(SPAWN_CENTER):
 		var ring_size := Vector2(CH1_CENTER_RING.get_width(), CH1_CENTER_RING.get_height()) * CH1_CENTER_RING_SCALE
 		draw_texture_rect(CH1_CENTER_RING, Rect2(SPAWN_CENTER - ring_size * 0.5, ring_size), false, Color.WHITE)
 
@@ -420,17 +604,6 @@ func _draw_roads_and_landmarks(vis: Rect2) -> void:
 		if not padded.has_point(lp):
 			continue
 		var rad: float = float(lm["radius"])
-		if _chapter_id != 1:
-			var o_col: Color = lm["outer_col"]
-			var i_col: Color = lm["inner_col"]
-			var r_col: Color = lm["ring_col"]
-			draw_circle(lp, rad, o_col)
-			draw_circle(lp, rad * 0.62, i_col)
-			draw_arc(lp, rad, 0.0, TAU, 48, r_col, 2.5)
-			draw_arc(lp, rad * 0.45, 0.0, TAU, 36, r_col, 1.8)
-			var to_center := (SPAWN_CENTER - lp).normalized()
-			draw_line(lp + to_center * rad, lp + to_center * (rad + 120.0), Color(r_col.r, r_col.g, r_col.b, 0.20), 2.4)
-			continue
 		var poi_tex: Texture2D = CH1_LANDMARK_TEXTURES.get(String(lm["id"]), null)
 		if poi_tex != null:
 			var poi_scale := clampf(rad * 1.55 / float(maxi(poi_tex.get_width(), poi_tex.get_height())), 0.52, 0.88)
@@ -449,20 +622,10 @@ func _draw_pillars(vis: Rect2) -> void:
 		var pos: Vector2 = p["pos"]
 		if not padded.has_point(pos):
 			continue
-		if _chapter_id == 1:
-			draw_set_transform(pos + Vector2(0.0, 6.0), 0.0, Vector2(0.95, 0.42))
-			draw_circle(Vector2.ZERO, PILLAR_RADIUS + 4.0, Color(0.04, 0.08, 0.05, 0.38))
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-			draw_texture_rect(CH1_PINE, Rect2(pos - Vector2(tree_size.x * 0.5, tree_size.y * 0.88), tree_size), false, Color.WHITE)
-			continue
-		var r: float = float(p["radius"])
-		draw_set_transform(pos + Vector2(0.0, 12.0), 0.0, Vector2(1.12, 0.68))
-		draw_circle(Vector2.ZERO, r + 6.0, Color(0.05, 0.07, 0.09, 0.45))
+		draw_set_transform(pos + Vector2(0.0, 6.0), 0.0, Vector2(0.95, 0.42))
+		draw_circle(Vector2.ZERO, PILLAR_RADIUS + 4.0, Color(0.04, 0.08, 0.05, 0.38))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		draw_circle(pos, r, Color(0.24, 0.28, 0.32, 1.0))
-		draw_circle(pos + Vector2(0.0, -6.0), r * 0.86, Color(0.35, 0.40, 0.44, 1.0))
-		draw_arc(pos, r, 0.0, TAU, 36, Color(0.10, 0.13, 0.16, 0.95), 3.0)
-		draw_arc(pos + Vector2(0.0, -6.0), r * 0.62, 0.0, TAU, 24, Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.36), 2.0)
+		draw_texture_rect(CH1_PINE, Rect2(pos - Vector2(tree_size.x * 0.5, tree_size.y * 0.88), tree_size), false, Color.WHITE)
 
 func _draw_props(vis: Rect2) -> void:
 	var padded := vis.grow(180.0)
@@ -473,27 +636,7 @@ func _draw_props(vis: Rect2) -> void:
 		var tex: Texture2D = p["tex"]
 		var s: float = p["scale"]
 		var size := Vector2(tex.get_width(), tex.get_height()) * s
-		var style: String = str(p["style"])
-		if style != "flat":
-			draw_set_transform(Vector2(pos.x, pos.y - 3.0), 0.0, Vector2(1.0, 0.42))
-			draw_circle(Vector2.ZERO, size.x * 0.28, Color(0.06, 0.12, 0.10, 0.24))
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		var rect: Rect2
-		match style:
-			"flat":
-				rect = Rect2(pos - Vector2(size.x * 0.5, size.y * 0.72), size)
-			"hang":
-				var hang_pos := pos - Vector2(0.0, 22.0)
-				var post_x := pos.x - size.x * 0.34
-				var hook_y := hang_pos.y - size.y * 0.86
-				draw_circle(Vector2(post_x, pos.y - 2.0), 4.0, Color(0.18, 0.26, 0.23, 0.65))
-				draw_line(Vector2(post_x, pos.y - 2.0), Vector2(post_x, hook_y), Color(0.22, 0.17, 0.13, 0.90), 3.0)
-				draw_line(Vector2(post_x, hook_y), Vector2(hang_pos.x, hook_y), Color(0.22, 0.17, 0.13, 0.90), 2.6)
-				var glow_r := size.x * (0.45 + 0.04 * sin(_anim_time * 3.5 + pos.x * 0.02))
-				draw_circle(hang_pos - Vector2(0.0, size.y * 0.48), glow_r, Color(1.0, 0.78, 0.38, 0.12))
-				rect = Rect2(hang_pos - Vector2(size.x * 0.5, size.y), size)
-			_:
-				rect = Rect2(pos - Vector2(size.x * 0.5, size.y), size)
+		var rect := Rect2(pos - Vector2(size.x * 0.5, size.y * 0.72), size)
 		var tint: Color = p.get("tint", Color(0.76, 0.78, 0.80, 0.92))
 		draw_texture_rect(tex, rect, false, tint)
 

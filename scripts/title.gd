@@ -1041,7 +1041,8 @@ func _refresh_stage_ui() -> void:
 		return
 	var cleared := Stats.is_stage_cleared(int(ch["id"]))
 	var mins := int(round(float(ch.get("duration", 480.0)) / 60.0))
-	_stage_title_lbl.text = "秘境 %d · %s" % [int(ch["id"]), str(ch["name"])]
+	var badge := str(ch.get("chapter_badge", "秘境 %d" % int(ch["id"])))
+	_stage_title_lbl.text = "%s · %s" % [badge, str(ch["name"])]
 	if _stage_clear_pill != null:
 		_stage_clear_pill.visible = cleared
 	_stage_meta_lbl.text = "%d分钟 · %s · %s · 灵石×%.1f" % [

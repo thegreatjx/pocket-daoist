@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 15:07:09）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 17:17:25）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -41,8 +41,7 @@
 | `GAP` (MISSING_ART_SLOT) | 商店宝物缺少独立图标 (16/16) | `data/v2/items_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 天道道韵缺少独立图标 (8/8) | `data/v2/arcana_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
-| `WARNING` (STORY_STAGE_MISMATCH) | 剧情章节数 (6) 与 V2 关卡数 (1) 不一致 | `scripts/story.gd` |
-| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 7 个未引用媒体文件（含多版本残留） | `assets/` |
+| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 8 个未引用媒体文件（含多版本残留） | `assets/` |
 | `WARNING` (UI_THEME_BYPASS) | 5 个 UI 脚本绕过 XianxiaUITheme 私写 25 处 StyleBoxFlat.new() | `scripts/ui/xianxia_ui_theme.gd` |
 
 ## 4. 已有核心资产速查表（直接复用，勿重复生成）
@@ -62,8 +61,11 @@
 - `wpn_jade_vase` (甘露玉净瓶, water) -> `res://assets/v2/weapons/wpn_jade_vase.png`
 - `wpn_spirit_vine` (青藤灵鞭, none) -> `res://assets/v2/weapons/wpn_spirit_vine.png`
 
-### 推图关卡与地砖（1 关）
-- 第 1 关 `青冥古林` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/map_ch1/tile_grass_512.png` | 已配地标
+### 推图关卡与地砖（4 关）
+- 第 1 关 `青岚问道坪` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/map_ch1/tile_grass_512.png` | 已配地标
+- 第 2 关 `青冥古林` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/maps/forest/tile_ground_grass.png` | 已配地标
+- 第 3 关 `赤炎丹谷` | Boss `成精八卦丹炉` (`cauldron`) | 地砖 `res://assets/v2/maps/volcano/tile_ground_basalt.png` | 已配地标
+- 第 4 关 `玄冰剑冢` | Boss `万剑魔尊` (`swordmaster`) | 地砖 `res://assets/terrain/tile_ch3_nether_altar_512.png` | 已配地标
 
 ### 怪物与精英精灵表（`scripts/enemy_visual.gd`）
 - `enemy_swarm_imp` (幽冥小鬼, species=1) -> `res://assets/sprites/anim_paper_doll_float.png`
@@ -84,4 +86,4 @@
 
 ### 音频与特效白名单
 - 已接入音频：`res://assets/audio/boss_charge.wav`, `res://assets/audio/boss_dash.wav`, `res://assets/audio/boss_roar.wav`, `res://assets/audio/boss_slam.wav`, `res://assets/audio/cannon_blast.wav`, `res://assets/audio/chest_open.wav`, `res://assets/audio/dash.wav`, `res://assets/audio/enemy_die.wav`, `res://assets/audio/fire_gourd_burn.wav`, `res://assets/audio/gem_pickup.wav`, `res://assets/audio/gun_shot.wav`, `res://assets/audio/jar_break.wav`, `res://assets/audio/level_up.wav`, `res://assets/audio/music_battle.ogg`, `res://assets/audio/music_boss.ogg`, `res://assets/audio/music_swarm.ogg`, `res://assets/audio/music_title.ogg`, `res://assets/audio/player_hurt.wav`, `res://assets/audio/swarm_horn.wav`, `res://assets/audio/sword_cast.wav`, `res://assets/audio/sword_hit.wav`, `res://assets/audio/thunder.wav`, `res://assets/audio/thunder_arc_snap.wav`, `res://assets/audio/water_ripple_splash.wav`
-- 归档区 `assets/_legacy_unused/` 共有 49 个历史弃用文件，禁止新代码引用。
+- 归档区 `assets/_legacy_unused/` 共有 50 个历史弃用文件，禁止新代码引用。

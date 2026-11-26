@@ -1,14 +1,14 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 15:07:09",
-    "active_media_count": 202,
-    "used_media_count": 195,
-    "orphan_media_count": 7,
-    "legacy_count": 49,
-    "usage_rate_pct": 96.5,
+    "generated_at": "2026-11-26 17:17:25",
+    "active_media_count": 221,
+    "used_media_count": 213,
+    "orphan_media_count": 8,
+    "legacy_count": 50,
+    "usage_rate_pct": 96.4,
     "error_count": 4,
     "gap_count": 3,
-    "warning_count": 3,
+    "warning_count": 2,
     "ui_bypass_files": 5
   },
   "project": {
@@ -182,27 +182,16 @@
     {
       "id": "ISS-008",
       "severity": "warning",
-      "code": "STORY_STAGE_MISMATCH",
-      "title": "剧情章节数 (6) 与 V2 关卡数 (1) 不一致",
-      "detail": "scripts/story.gd 维护了 6 章旧剧情且 assets/art/chapter_1~6.png 均未引用；data/v2/stages_v2.json 为 1 关，且第 2 关标题已改为《落霞花溪》但剧情仍写赤砂/红月。",
-      "file": "scripts/story.gd",
-      "entity_id": "story_vs_stages",
-      "tab": "progression",
-      "prompt_hint": null
-    },
-    {
-      "id": "ISS-009",
-      "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 7 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 7 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 8 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 8 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(7), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
       "prompt_hint": null
     },
     {
-      "id": "ISS-010",
+      "id": "ISS-009",
       "severity": "warning",
       "code": "UI_THEME_BYPASS",
       "title": "5 个 UI 脚本绕过 XianxiaUITheme 私写 25 处 StyleBoxFlat.new()",
@@ -216,13 +205,13 @@
   "progression_stages": [
     {
       "id": 1,
-      "name": "青冥古林",
-      "subtitle": "初入仙途 · 8分钟试炼",
-      "difficulty": "初阶 · 推荐",
+      "name": "青岚问道坪",
+      "subtitle": "新手序章 · 问道初试",
+      "difficulty": "新手 · 教学推荐",
       "duration": 480.0,
       "boss_name": "苍鬃狼王",
       "boss_type": "wolf",
-      "boss_hp": 22000.0,
+      "boss_hp": 18500.0,
       "boss_sprite": "res://assets/sprites/anim_wolf_boss_run.png",
       "floor_tile": "res://assets/v2/map_ch1/tile_grass_512.png",
       "palette": {
@@ -232,9 +221,9 @@
       "story": {
         "intro": [
           "林雾压得极低，像一层没散干净的旧灰。",
-          "阿箬的玉简在这里第一次发烫，指向林心深处。"
+          "师门试炼场外，阿箬留下的玉简第一次微微发烫。"
         ],
-        "outro": "苍鬃狼王倒下时，玉简上的血痕却淡了一分。有人不想你看到她看见了什么。",
+        "outro": "苍鬃狼王倒下时，玉简上的血痕却淡了一分，秘境真正的入口在林雾之外显形。",
         "chapter_art": "res://assets/art/chapter_1.png"
       },
       "map_arena": {
@@ -354,6 +343,378 @@
           "reward_desc": "灵石 +90"
         }
       ]
+    },
+    {
+      "id": 2,
+      "name": "青冥古林",
+      "subtitle": "秘境一 · 灵泉古道",
+      "difficulty": "初阶 · 推荐",
+      "duration": 480.0,
+      "boss_name": "苍鬃狼王",
+      "boss_type": "wolf",
+      "boss_hp": 19500.0,
+      "boss_sprite": "res://assets/sprites/anim_wolf_boss_run.png",
+      "floor_tile": "res://assets/v2/maps/forest/tile_ground_grass.png",
+      "palette": {
+        "ground": "#5c7a56",
+        "tint": "#3dd1b3"
+      },
+      "story": {
+        "intro": [
+          "古松蔽日，石灯幽明，林间灵泉仍泛着清冽微光。",
+          "玉简指向古林深处，苍鬃妖影已在雾里踱步。"
+        ],
+        "outro": "青冥古林的妖雾散去，灵泉倒影里浮出赤炎丹谷的火光。",
+        "chapter_art": "res://assets/art/chapter_2.png"
+      },
+      "map_arena": {
+        "configured": true,
+        "chapter_name": "第一章 · 青冥古林",
+        "center_anchor": "res://assets/v2/maps/forest/decal_spirit_array.png",
+        "cover_count": 3,
+        "landmarks": [
+          {
+            "id": "spring_nw",
+            "name": "灵露清泉",
+            "texture": "res://assets/v2/maps/forest/decal_spring_pool.png"
+          }
+        ]
+      },
+      "wave_count": 10,
+      "events_count": 4,
+      "enemies": [
+        {
+          "id": "enemy_swarm_imp",
+          "name": "幽冥小鬼",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_skitter_shenjing",
+          "name": "地灵参精",
+          "species": 5,
+          "sprite": "res://assets/sprites/anim_shenjing_run.png"
+        },
+        {
+          "id": "enemy_hopper_jiangshi",
+          "name": "符箓小僵",
+          "species": 3,
+          "sprite": "res://assets/sprites/anim_jiangshi_run.png"
+        },
+        {
+          "id": "enemy_kiter_fox",
+          "name": "赤尾妖狐",
+          "species": 0,
+          "sprite": "res://assets/sprites/anim_fox_run.png"
+        },
+        {
+          "id": "enemy_zhusha_zhiren",
+          "name": "朱砂纸人",
+          "species": 7,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_canjian_jiankui",
+          "name": "残剑剑傀",
+          "species": 10,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_bulwark_golem",
+          "name": "青石镇傀",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_bulwark_jinchan",
+          "name": "三足金蟾",
+          "species": 4,
+          "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_charger_boar",
+          "name": "狂鬃山魈",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_charger_huodou",
+          "name": "炎煞祸斗",
+          "species": 6,
+          "sprite": "res://assets/sprites/anim_huodou_run.png"
+        },
+        {
+          "id": "enemy_bomber_wisp",
+          "name": "阴火毒灯",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_chihuo_danling",
+          "name": "炽火丹灵",
+          "species": 8,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_wudu_zhangchan",
+          "name": "五毒蟾蜍",
+          "species": 9,
+          "sprite": ""
+        }
+      ],
+      "achievements": [
+        {
+          "id": "ach_clear_stage2",
+          "name": "落霞归舟",
+          "reward_desc": "灵石 +100"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "赤炎丹谷",
+      "subtitle": "秘境二 · 地火熔炉",
+      "difficulty": "中阶 · 灼热",
+      "duration": 480.0,
+      "boss_name": "成精八卦丹炉",
+      "boss_type": "cauldron",
+      "boss_hp": 23500.0,
+      "boss_sprite": "",
+      "floor_tile": "res://assets/v2/maps/volcano/tile_ground_basalt.png",
+      "palette": {
+        "ground": "#4e3b35",
+        "tint": "#f97316"
+      },
+      "story": {
+        "intro": [
+          "玄武岩地脉滚烫，残鼎与丹霞柱间不时喷出赤炎。",
+          "八卦丹炉自燃不熄，谁在拿整座丹谷炼一炉煞气？"
+        ],
+        "outro": "八卦丹炉轰然倾覆，炉灰底下压着一枚指向北方剑冢的寒铁剑穗。",
+        "chapter_art": "res://assets/art/chapter_3.png"
+      },
+      "map_arena": {
+        "configured": true,
+        "chapter_name": "第二章 · 赤炎丹谷",
+        "center_anchor": "res://assets/v2/maps/volcano/decal_alchemy_array.png",
+        "cover_count": 2,
+        "landmarks": [
+          {
+            "id": "lava_nw",
+            "name": "地火喷口",
+            "texture": "res://assets/v2/maps/volcano/decal_lava_vent.png"
+          }
+        ]
+      },
+      "wave_count": 10,
+      "events_count": 4,
+      "enemies": [
+        {
+          "id": "enemy_swarm_imp",
+          "name": "幽冥小鬼",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_skitter_shenjing",
+          "name": "地灵参精",
+          "species": 5,
+          "sprite": "res://assets/sprites/anim_shenjing_run.png"
+        },
+        {
+          "id": "enemy_hopper_jiangshi",
+          "name": "符箓小僵",
+          "species": 3,
+          "sprite": "res://assets/sprites/anim_jiangshi_run.png"
+        },
+        {
+          "id": "enemy_kiter_fox",
+          "name": "赤尾妖狐",
+          "species": 0,
+          "sprite": "res://assets/sprites/anim_fox_run.png"
+        },
+        {
+          "id": "enemy_zhusha_zhiren",
+          "name": "朱砂纸人",
+          "species": 7,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_canjian_jiankui",
+          "name": "残剑剑傀",
+          "species": 10,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_bulwark_golem",
+          "name": "青石镇傀",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_bulwark_jinchan",
+          "name": "三足金蟾",
+          "species": 4,
+          "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_charger_boar",
+          "name": "狂鬃山魈",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_charger_huodou",
+          "name": "炎煞祸斗",
+          "species": 6,
+          "sprite": "res://assets/sprites/anim_huodou_run.png"
+        },
+        {
+          "id": "enemy_bomber_wisp",
+          "name": "阴火毒灯",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_chihuo_danling",
+          "name": "炽火丹灵",
+          "species": 8,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_wudu_zhangchan",
+          "name": "五毒蟾蜍",
+          "species": 9,
+          "sprite": ""
+        }
+      ],
+      "achievements": [
+        {
+          "id": "ach_clear_stage3",
+          "name": "幽冥破阵",
+          "reward_desc": "灵石 +130"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "玄冰剑冢",
+      "subtitle": "秘境三 · 寒潭剑碑",
+      "difficulty": "高阶 · 凛冽",
+      "duration": 480.0,
+      "boss_name": "万剑魔尊",
+      "boss_type": "swordmaster",
+      "boss_hp": 28000.0,
+      "boss_sprite": "",
+      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png",
+      "palette": {
+        "ground": "#364654",
+        "tint": "#7dd3fc"
+      },
+      "story": {
+        "intro": [
+          "风雪落满千柄断剑，寒潭薄冰下封着上古剑意。",
+          "无主古剑碑尚有余温，万剑魔尊的气息就在剑冢尽头。"
+        ],
+        "outro": "万剑魔尊散作霜雪，千柄断剑齐鸣归鞘，玉简终于亮出下一程的方位。",
+        "chapter_art": "res://assets/art/chapter_4.png"
+      },
+      "map_arena": {
+        "configured": true,
+        "chapter_name": "第三章 · 玄冰剑冢",
+        "center_anchor": "res://assets/v2/map_ch1/prop_center_stone_ring.png",
+        "cover_count": 0,
+        "landmarks": []
+      },
+      "wave_count": 10,
+      "events_count": 4,
+      "enemies": [
+        {
+          "id": "enemy_swarm_imp",
+          "name": "幽冥小鬼",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_skitter_shenjing",
+          "name": "地灵参精",
+          "species": 5,
+          "sprite": "res://assets/sprites/anim_shenjing_run.png"
+        },
+        {
+          "id": "enemy_hopper_jiangshi",
+          "name": "符箓小僵",
+          "species": 3,
+          "sprite": "res://assets/sprites/anim_jiangshi_run.png"
+        },
+        {
+          "id": "enemy_kiter_fox",
+          "name": "赤尾妖狐",
+          "species": 0,
+          "sprite": "res://assets/sprites/anim_fox_run.png"
+        },
+        {
+          "id": "enemy_zhusha_zhiren",
+          "name": "朱砂纸人",
+          "species": 7,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_canjian_jiankui",
+          "name": "残剑剑傀",
+          "species": 10,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_bulwark_golem",
+          "name": "青石镇傀",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_bulwark_jinchan",
+          "name": "三足金蟾",
+          "species": 4,
+          "sprite": "res://assets/sprites/anim_jinchan_run.png"
+        },
+        {
+          "id": "enemy_charger_boar",
+          "name": "狂鬃山魈",
+          "species": 2,
+          "sprite": "res://assets/sprites/anim_shanxiao_run.png"
+        },
+        {
+          "id": "enemy_charger_huodou",
+          "name": "炎煞祸斗",
+          "species": 6,
+          "sprite": "res://assets/sprites/anim_huodou_run.png"
+        },
+        {
+          "id": "enemy_bomber_wisp",
+          "name": "阴火毒灯",
+          "species": 1,
+          "sprite": "res://assets/sprites/anim_paper_doll_float.png"
+        },
+        {
+          "id": "enemy_chihuo_danling",
+          "name": "炽火丹灵",
+          "species": 8,
+          "sprite": ""
+        },
+        {
+          "id": "enemy_wudu_zhangchan",
+          "name": "五毒蟾蜍",
+          "species": 9,
+          "sprite": ""
+        }
+      ],
+      "achievements": [
+        {
+          "id": "ach_clear_stage4",
+          "name": "赤焰镇魔",
+          "reward_desc": "灵石 +160"
+        }
+      ]
     }
   ],
   "entities": {
@@ -365,16 +726,16 @@
         "desc": "脚踏本命青霜飞剑御空游斗，玄袍金纹束冠掐剑诀，号令漫天飞剑与百宝神通。",
         "sprite": "res://assets/v2/heroes/hero_sword_qwen.png",
         "foot_anchor": [
-          518,
-          967
+          511,
+          966
         ],
-        "showcase_top_y": 68,
+        "showcase_top_y": 66,
         "showcase_height": 346.0,
         "avatar_region": [
+          341,
+          66,
           340,
-          88,
-          368,
-          368
+          340
         ],
         "motion_mode": "hover_ride",
         "mount_type": "sword",
@@ -867,82 +1228,98 @@
             "tier": 1,
             "damage": 6,
             "cooldown": 1.24,
-            "range": 320,
+            "range": 380,
+            "proj_speed": 235,
+            "pierce": 3,
             "projectile_count": 3,
             "slow_pct": 0.3,
             "slow_dur": 2.4,
-            "level_summary": "低伤控场：扇形 3 道冰锥强力减速"
+            "level_summary": "低伤控场：3 枚玄冰雪花慢速旋转穿透，遇潮湿妖物立刻玄霜冰封"
           },
           {
             "tier": 2,
             "damage": 8,
             "cooldown": 1.18,
-            "range": 330,
+            "range": 386,
+            "proj_speed": 235,
+            "pierce": 3,
             "projectile_count": 3,
             "slow_pct": 0.34,
             "slow_dur": 2.6,
-            "level_summary": "寒意减速增强，持续延长"
+            "level_summary": "玄冰雪花寒意减速增强，遇潮湿妖物立刻玄霜冰封"
           },
           {
             "tier": 3,
             "damage": 10,
             "cooldown": 1.13,
-            "range": 342,
+            "range": 392,
+            "proj_speed": 235,
+            "pierce": 3,
             "projectile_count": 4,
             "slow_pct": 0.37,
             "slow_dur": 2.8,
-            "level_summary": "冰锥增至 4 道"
+            "level_summary": "玄冰雪花增至 4 枚，慢速旋转穿透"
           },
           {
             "tier": 4,
             "damage": 12,
             "cooldown": 1.08,
-            "range": 356,
+            "range": 400,
+            "proj_speed": 235,
+            "pierce": 3,
             "projectile_count": 4,
             "slow_pct": 0.4,
             "slow_dur": 3.0,
-            "level_summary": "射程扩大，强效迟滞冲锋怪"
+            "level_summary": "玄冰雪花飘飞射程扩大，强效迟滞冲锋怪"
           },
           {
             "tier": 5,
             "damage": 14,
             "cooldown": 1.03,
-            "range": 370,
+            "range": 408,
+            "proj_speed": 235,
+            "pierce": 4,
             "projectile_count": 5,
             "slow_pct": 0.44,
             "slow_dur": 3.2,
-            "level_summary": "冰锥增至 5 道"
+            "level_summary": "玄冰雪花增至 5 枚，穿透提升至 4"
           },
           {
             "tier": 6,
             "damage": 17,
             "cooldown": 0.98,
-            "range": 384,
+            "range": 416,
+            "proj_speed": 235,
+            "pierce": 4,
             "projectile_count": 6,
             "slow_pct": 0.48,
             "slow_dur": 3.4,
-            "level_summary": "冰锥增至 6 道，冷却缩短"
+            "level_summary": "玄冰雪花增至 6 枚，冷却缩短，遇潮湿立刻冰封"
           },
           {
             "tier": 7,
             "damage": 19,
             "cooldown": 0.94,
-            "range": 400,
+            "range": 422,
+            "proj_speed": 235,
+            "pierce": 4,
             "projectile_count": 6,
             "slow_pct": 0.51,
             "slow_dur": 3.6,
-            "level_summary": "寒霜封脉减速突破 50%"
+            "level_summary": "玄冰雪花寒霜封脉减速突破 50%"
           },
           {
             "tier": 8,
             "damage": 22,
             "cooldown": 0.89,
-            "range": 415,
+            "range": 430,
+            "proj_speed": 255,
+            "pierce": 5,
             "projectile_count": 7,
             "slow_pct": 0.54,
             "slow_dur": 3.9,
             "max_tier_perk": "bagua_frost_wheel",
-            "level_summary": "【质变】幽蓝极寒 7 锥 + 八卦冰轮"
+            "level_summary": "【质变】幽蓝极寒 7 枚玄冰雪花（5 穿透）+ 八卦冰轮"
           }
         ],
         "vfx_profile": {
@@ -1435,15 +1812,18 @@
           ]
         ],
         "formula_cn": "雷 + 水 / 金",
-        "role_tag": "清杂控群",
-        "damage_mult": 0.2,
-        "chain_count": 3,
-        "chain_range": 155,
-        "stun_dur": 0.35,
+        "role_tag": "连环雷网",
+        "damage_mult": 0.22,
+        "chain_count": 5,
+        "chain_range": 210,
+        "stun_dur": 0.65,
+        "elite_stun_dur": 0.35,
         "boss_immune_stun": true,
-        "vfx_color": "#818CF8",
+        "second_wave_delay": 0.45,
+        "prefer_wet_targets": true,
+        "vfx_color": "#A78BFA",
         "sfx_cue": "sfx_react_zap",
-        "desc": "以剑引雷、借水导雷：紫电在附近 3 名妖物间弹射并轻度麻痹 0.35s（首领免疫麻痹）。"
+        "desc": "水/金导雷成网：以紫电串连附近 5 名妖物（优先潮湿目标）并麻痹 0.65s，0.45s 后自动再爆第 2 波余电（首领免疫麻痹）。"
       },
       {
         "id": "react_freeze",
@@ -2810,6 +3190,24 @@
   },
   "assets": [
     {
+      "path": "assets/_legacy_unused/hero_gourd_daoist_prev.png",
+      "res_path": "res://assets/_legacy_unused/hero_gourd_daoist_prev.png",
+      "name": "hero_gourd_daoist_prev.png",
+      "category": "legacy_unused",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 818248,
+      "width": 1024,
+      "height": 1024,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "hero"
+    },
+    {
       "path": "assets/_legacy_unused/hero_gourd_daoist_riding_old.png",
       "res_path": "res://assets/_legacy_unused/hero_gourd_daoist_riding_old.png",
       "name": "hero_gourd_daoist_riding_old.png",
@@ -3806,7 +4204,8 @@
       "duration_sec": 1.15,
       "spritesheet": null,
       "used_by": [
-        "scripts/autoload/sfx.gd"
+        "scripts/autoload/sfx.gd",
+        "scripts/v2/v2_combat_controller.gd"
       ],
       "status": "used",
       "cluster": "boss"
@@ -5934,6 +6333,75 @@
       "cluster": "fx"
     },
     {
+      "path": "assets/sprites/fx_slash_arc_strip.png",
+      "res_path": "res://assets/sprites/fx_slash_arc_strip.png",
+      "name": "fx_slash_arc_strip.png",
+      "category": "vfx_particles",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 24880,
+      "width": 900,
+      "height": 150,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 6,
+        "rows": 1
+      },
+      "used_by": [
+        "scripts/v2/v2_vfx_factory.gd"
+      ],
+      "status": "used",
+      "cluster": "fx"
+    },
+    {
+      "path": "assets/sprites/fx_slash_cross_strip.png",
+      "res_path": "res://assets/sprites/fx_slash_cross_strip.png",
+      "name": "fx_slash_cross_strip.png",
+      "category": "vfx_particles",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 24632,
+      "width": 900,
+      "height": 150,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 6,
+        "rows": 1
+      },
+      "used_by": [
+        "scripts/v2/v2_vfx_factory.gd"
+      ],
+      "status": "used",
+      "cluster": "fx"
+    },
+    {
+      "path": "assets/sprites/fx_slash_thrust_strip.png",
+      "res_path": "res://assets/sprites/fx_slash_thrust_strip.png",
+      "name": "fx_slash_thrust_strip.png",
+      "category": "vfx_particles",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 18014,
+      "width": 900,
+      "height": 150,
+      "duration_sec": null,
+      "spritesheet": {
+        "frames": 6,
+        "rows": 1
+      },
+      "used_by": [
+        "scripts/v2/v2_vfx_factory.gd"
+      ],
+      "status": "used",
+      "cluster": "fx"
+    },
+    {
       "path": "assets/sprites/fx_sword_slash.png",
       "res_path": "res://assets/sprites/fx_sword_slash.png",
       "name": "fx_sword_slash.png",
@@ -6158,6 +6626,8 @@
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
+        "data/v2/map_arena_v2.json",
+        "data/v2/stages_v2.json",
         "scripts/background.gd"
       ],
       "status": "used",
@@ -6773,7 +7243,7 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 818248,
+      "size_bytes": 854080,
       "width": 1024,
       "height": 1024,
       "duration_sec": null,
@@ -6829,7 +7299,7 @@
       "is_media": true,
       "is_image": true,
       "is_audio": false,
-      "size_bytes": 542092,
+      "size_bytes": 618650,
       "width": 1024,
       "height": 1024,
       "duration_sec": null,
@@ -6839,6 +7309,24 @@
         "scripts/data/character_data.gd"
       ],
       "status": "used",
+      "cluster": "hero"
+    },
+    {
+      "path": "assets/v2/heroes/hero_sword_qwen_new.png",
+      "res_path": "res://assets/v2/heroes/hero_sword_qwen_new.png",
+      "name": "hero_sword_qwen_new.png",
+      "category": "heroes",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 618650,
+      "width": 1024,
+      "height": 1024,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "orphan",
       "cluster": "hero"
     },
     {
@@ -7025,6 +7513,319 @@
         "data/v2/map_arena_v2.json",
         "data/v2/stages_v2.json",
         "scripts/background.gd"
+      ],
+      "status": "used",
+      "cluster": "tile"
+    },
+    {
+      "path": "assets/v2/maps/forest/border_cliff_trees.png",
+      "res_path": "res://assets/v2/maps/forest/border_cliff_trees.png",
+      "name": "border_cliff_trees.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 190004,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "border"
+    },
+    {
+      "path": "assets/v2/maps/forest/decal_road_stone.png",
+      "res_path": "res://assets/v2/maps/forest/decal_road_stone.png",
+      "name": "decal_road_stone.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 283198,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/forest/decal_spirit_array.png",
+      "res_path": "res://assets/v2/maps/forest/decal_spirit_array.png",
+      "name": "decal_spirit_array.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 461582,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/forest/decal_spring_pool.png",
+      "res_path": "res://assets/v2/maps/forest/decal_spring_pool.png",
+      "name": "decal_spring_pool.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 350733,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/forest/prop_ancient_pine.png",
+      "res_path": "res://assets/v2/maps/forest/prop_ancient_pine.png",
+      "name": "prop_ancient_pine.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 228214,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/forest/prop_jade_rock.png",
+      "res_path": "res://assets/v2/maps/forest/prop_jade_rock.png",
+      "name": "prop_jade_rock.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 327110,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/forest/prop_lantern_stele.png",
+      "res_path": "res://assets/v2/maps/forest/prop_lantern_stele.png",
+      "name": "prop_lantern_stele.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 174547,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/forest/tile_ground_grass.png",
+      "res_path": "res://assets/v2/maps/forest/tile_ground_grass.png",
+      "name": "tile_ground_grass.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 228018,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "data/v2/stages_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "tile"
+    },
+    {
+      "path": "assets/v2/maps/volcano/border_volcano_cliff.png",
+      "res_path": "res://assets/v2/maps/volcano/border_volcano_cliff.png",
+      "name": "border_volcano_cliff.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 179339,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "border"
+    },
+    {
+      "path": "assets/v2/maps/volcano/decal_alchemy_array.png",
+      "res_path": "res://assets/v2/maps/volcano/decal_alchemy_array.png",
+      "name": "decal_alchemy_array.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 411144,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/volcano/decal_lava_vent.png",
+      "res_path": "res://assets/v2/maps/volcano/decal_lava_vent.png",
+      "name": "decal_lava_vent.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 238390,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/volcano/decal_road_basalt.png",
+      "res_path": "res://assets/v2/maps/volcano/decal_road_basalt.png",
+      "name": "decal_road_basalt.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 352317,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "decal"
+    },
+    {
+      "path": "assets/v2/maps/volcano/prop_bronze_cauldron.png",
+      "res_path": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png",
+      "name": "prop_bronze_cauldron.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 234305,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/volcano/prop_danxia_pillar.png",
+      "res_path": "res://assets/v2/maps/volcano/prop_danxia_pillar.png",
+      "name": "prop_danxia_pillar.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 193995,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "scripts/data/map_realm_catalog.gd"
+      ],
+      "status": "used",
+      "cluster": "prop"
+    },
+    {
+      "path": "assets/v2/maps/volcano/tile_ground_basalt.png",
+      "res_path": "res://assets/v2/maps/volcano/tile_ground_basalt.png",
+      "name": "tile_ground_basalt.png",
+      "category": "terrain_maps",
+      "ext": ".png",
+      "is_media": true,
+      "is_image": true,
+      "is_audio": false,
+      "size_bytes": 238160,
+      "width": 512,
+      "height": 512,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/map_arena_v2.json",
+        "data/v2/stages_v2.json",
+        "scripts/data/map_realm_catalog.gd"
       ],
       "status": "used",
       "cluster": "tile"
@@ -8497,7 +9298,8 @@
         "scripts": [
           "res://scripts/background.gd",
           "res://scripts/debug_sandbox_main.gd",
-          "res://scripts/v2/arena_landmarks_controller.gd"
+          "res://scripts/v2/arena_landmarks_controller.gd",
+          "res://scripts/v2/arena_map_controller.gd"
         ]
       },
       {
@@ -8573,7 +9375,8 @@
           "res://scripts/spawner.gd",
           "res://scripts/stage_director.gd",
           "res://scripts/upgrade_manager.gd",
-          "res://scripts/v2/arena_landmarks_controller.gd"
+          "res://scripts/v2/arena_landmarks_controller.gd",
+          "res://scripts/v2/arena_map_controller.gd"
         ]
       },
       {
@@ -8703,6 +9506,7 @@
       "scripts/v2/hero_cutout_rig.gd",
       "scripts/v2/hero_frame_anim.gd",
       "scripts/v2/hero_motion_rig.gd",
+      "scripts/v2/map_prop_obstacle.gd",
       "scripts/v2/orbit_weapon_rig.gd",
       "scripts/v2/reaction_engine.gd",
       "scripts/v2/spawn_telegraph.gd",
@@ -8730,6 +9534,8 @@
       "shaders/fire_flame_2d.gdshader",
       "shaders/flame_tongue.gdshader",
       "shaders/ground_scorch.gdshader",
+      "shaders/impact_ring.gdshader",
+      "shaders/spark_star.gdshader",
       "shaders/sword_glint_trail.gdshader"
     ],
     "data_graph": {
@@ -8737,7 +9543,7 @@
         {
           "id": "stages_v2",
           "label": "stages_v2.json",
-          "count": 1,
+          "count": 4,
           "group": "progression",
           "x": 80,
           "y": 50
@@ -8745,7 +9551,7 @@
         {
           "id": "map_arena_v2",
           "label": "map_arena_v2.json",
-          "count": 1,
+          "count": 4,
           "group": "progression",
           "x": 80,
           "y": 150
@@ -8842,7 +9648,7 @@
         {
           "from": "stages_v2",
           "to": "map_arena_v2",
-          "label": "chapter 1/1",
+          "label": "chapter 4/4",
           "valid": true,
           "notes": []
         },
@@ -8850,10 +9656,8 @@
           "from": "stages_v2",
           "to": "story_gd",
           "label": "关卡 ↔ 剧情",
-          "valid": false,
-          "notes": [
-            "剧情章节数 (6) 与 V2 关卡数 (1) 不一致"
-          ]
+          "valid": true,
+          "notes": []
         },
         {
           "from": "enemies_waves_v2",

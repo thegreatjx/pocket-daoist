@@ -154,6 +154,59 @@
           }
         }
       ]
+    },
+    {
+      "chapter_id": "ch2_forest_realm",
+      "name": "第一章 · 青冥古林",
+      "map_size": 4200,
+      "floor_tile": "res://assets/v2/maps/forest/tile_ground_grass.png",
+      "floor_tint": "#EBFAF0",
+      "center_anchor": {
+        "texture": "res://assets/v2/maps/forest/decal_spirit_array.png",
+        "pos": [0, 0],
+        "scale": 1.05
+      },
+      "cover_pillars": [
+        {"id": "forest_pine", "texture": "res://assets/v2/maps/forest/prop_ancient_pine.png", "pos": [-800, -800], "trunk_radius": 34},
+        {"id": "forest_rock", "texture": "res://assets/v2/maps/forest/prop_jade_rock.png", "pos": [800, -800], "trunk_radius": 32},
+        {"id": "forest_stele", "texture": "res://assets/v2/maps/forest/prop_lantern_stele.png", "pos": [-800, 800], "trunk_radius": 28}
+      ],
+      "landmarks": [
+        {"id": "spring_nw", "name": "灵露清泉", "texture": "res://assets/v2/maps/forest/decal_spring_pool.png", "pos": [-860, -860], "trigger_radius": 150}
+      ]
+    },
+    {
+      "chapter_id": "ch3_volcano_realm",
+      "name": "第二章 · 赤炎丹谷",
+      "map_size": 4400,
+      "floor_tile": "res://assets/v2/maps/volcano/tile_ground_basalt.png",
+      "floor_tint": "#F2E6E0",
+      "center_anchor": {
+        "texture": "res://assets/v2/maps/volcano/decal_alchemy_array.png",
+        "pos": [0, 0],
+        "scale": 1.05
+      },
+      "cover_pillars": [
+        {"id": "volcano_cauldron", "texture": "res://assets/v2/maps/volcano/prop_bronze_cauldron.png", "pos": [-850, -850], "trunk_radius": 36},
+        {"id": "volcano_pillar", "texture": "res://assets/v2/maps/volcano/prop_danxia_pillar.png", "pos": [850, -850], "trunk_radius": 38}
+      ],
+      "landmarks": [
+        {"id": "lava_nw", "name": "地火喷口", "texture": "res://assets/v2/maps/volcano/decal_lava_vent.png", "pos": [-900, -900], "trigger_radius": 155}
+      ]
+    },
+    {
+      "chapter_id": "ch4_ice_realm",
+      "name": "第三章 · 玄冰剑冢",
+      "map_size": 4600,
+      "floor_tile": "res://assets/terrain/tile_ch3_nether_altar_512.png",
+      "floor_tint": "#D8ECFA",
+      "center_anchor": {
+        "texture": "res://assets/v2/map_ch1/prop_center_stone_ring.png",
+        "pos": [0, 0],
+        "scale": 1.05
+      },
+      "cover_pillars": [],
+      "landmarks": []
     }
   ]
 }

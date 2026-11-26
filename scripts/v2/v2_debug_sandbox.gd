@@ -231,7 +231,8 @@ func _build_arena_tab(parent: Control) -> Control:
 	for st in _loader.stages:
 		var sid := int(st.get("id", 1))
 		var sname := String(st.get("name", "秘境 %d" % sid))
-		var sbtn := _add_action_btn(stage_grid, "第%d境 · %s" % [sid, sname], "secondary", func(): _on_switch_stage(sid))
+		var badge := String(st.get("chapter_badge", "第%d境" % sid))
+		var sbtn := _add_action_btn(stage_grid, "%s · %s" % [badge, sname], "secondary", func(): _on_switch_stage(sid))
 		_stage_btns[sid] = sbtn
 
 	return body.get_parent().get_parent() as Control

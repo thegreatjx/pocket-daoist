@@ -925,7 +925,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	p2.queue_free()
 
 func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
-	check("t3_stages_count_1", loader.stages.size() == 1 and ChapterData.count() == 1, "stages=%d ch=%d" % [loader.stages.size(), ChapterData.count()])
+	check("t3_stages_count_4", loader.stages.size() == 4 and ChapterData.count() == 4, "stages=%d ch=%d" % [loader.stages.size(), ChapterData.count()])
 	var all_chs := ChapterData.all()
 	var copy_probe := all_chs[0]
 	copy_probe["duration"] = 1.0
@@ -1553,11 +1553,133 @@ func _test_batch4_ch1_map() -> void:
 	var parsed: Variant = JSON.parse_string(raw)
 	_check("b4_stages_json_valid", parsed is Dictionary, "")
 	var stages: Array = (parsed as Dictionary).get("stages", [])
-	_check("b4_single_stage", stages.size() == 1, "got=%d" % stages.size())
+	_check("b4_four_stages", stages.size() == 4, "got=%d" % stages.size())
 	var expected := "res://assets/v2/map_ch1/tile_grass_512.png"
 	var st_tile := String((stages[0] as Dictionary).get("floor_tile", ""))
 	var tex := load(expected) as Texture2D
 	_check("b4_ch1_floor_tile_loads", st_tile == expected and tex != null, st_tile)
+
+	var bg_script := load("res://scripts/background.gd") as Script
+	var map_script := load("res://scripts/v2/arena_map_controller.gd") as Script
+	var lm_script := load("res://scripts/v2/arena_landmarks_controller.gd") as Script
+	var host := Node2D.new()
+	add_child(host)
+	var bg := bg_script.new() as Node2D
+	bg.name = "Background"
+	host.add_child(bg)
+	var amap := map_script.new() as Node2D
+	amap.name = "ArenaMap"
+	host.add_child(amap)
+	var alm := lm_script.new() as Node2D
+	alm.name = "ArenaLandmarks"
+	host.add_child(alm)
+	var player := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
+	host.add_child(player)
+	alm.setup(bg, player)
+
+	var expected_sizes := {2: 4200.0, 3: 4400.0, 4: 4600.0}
+	for st in stages:
+		var sid := int((st as Dictionary).get("id", 1))
+		if sid == 1:
+			continue
+		bg.apply_chapter(st)
+		var rect: Rect2 = bg.call("get_arena_rect")
+		var want_sz: float = float(expected_sizes.get(sid, 4200.0))
+		_check("b4_realm_%d_size" % sid, is_equal_approx(rect.size.x, want_sz) and is_equal_approx(rect.size.y, want_sz), str(rect))
+		var pillars: Array = bg.call("get_pillars")
+		var prop_count := 0
+		var obs_positions: Array[Vector2] = []
+		for p in pillars:
+			if String((p as Dictionary).get("tag", "")).begins_with("realm_prop_"):
+				prop_count += 1
+				obs_positions.append(p["pos"] as Vector2)
+		_check("b4_realm_%d_prop_count" % sid, prop_count >= 18 and prop_count <= 26, "count=%d" % prop_count)
+		var spacing_ok := true
+		var dojo_clear := true
+		var road_clear := true
+		var center := Vector2(640.0, 360.0)
+		for i in range(obs_positions.size()):
+			var pos := obs_positions[i]
+			if pos.distance_to(center) < 560.0:
+				dojo_clear = false
+			if absf(pos.x - center.x) < 105.0 or absf(pos.y - center.y) < 105.0:
+				road_clear = false
+			for j in range(i + 1, obs_positions.size()):
+				if pos.distance_to(obs_positions[j]) < 259.0:
+					spacing_ok = false
+		_check("b4_realm_%d_layout_rules" % sid, spacing_ok and dojo_clear and road_clear, "spacing=%s dojo=%s road=%s" % [str(spacing_ok), str(dojo_clear), str(road_clear)])
+
+	var obs_layer_ok := true
+	for ch_node in amap.get_children():
+		if ch_node is MapPropObstacle and (ch_node as StaticBody2D).collision_layer != 1:
+			obs_layer_ok = false
+			break
+	_check("b4_realm_obstacle_collision_layer_1", obs_layer_ok, "obstacle must be layer 1 only")
+
+	# Hazard 1: spring_pool applies water aura without HP damage
+	bg.apply_chapter(stages[1])
+	var sp_e := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
+	host.add_child(sp_e)
+	sp_e.max_health = 500.0
+	sp_e.current_health = 500.0
+	sp_e.global_position = alm._hazards[0]["pos"] as Vector2
+	alm._hazards[0]["tick_timer"] = 0.5
+	alm._process(0.05)
+	var sp_auras: Array = player.v2_combat.reaction_engine.get_aura_elements(sp_e.get_instance_id(), float(Time.get_ticks_msec()) * 0.001)
+	_check("b4_hazard_spring_pool_water_aura", sp_auras == ["water"] and is_equal_approx(sp_e.current_health, 500.0), str(sp_auras))
+
+	# Hazard 2: lava_vent cycles IDLE -> WARNING -> ERUPTING and deals fire dmg + fire aura
+	bg.apply_chapter(stages[2])
+	var lv_e := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
+	host.add_child(lv_e)
+	lv_e.max_health = 500.0
+	lv_e.current_health = 500.0
+	lv_e.global_position = alm._hazards[0]["pos"] as Vector2
+	alm._hazards[0]["vent_state"] = ArenaLandmarksController.VentState.IDLE
+	alm._hazards[0]["vent_timer"] = 7.3
+	alm._process(0.05)
+	var lv_warn := int(alm._hazards[0]["vent_state"]) == ArenaLandmarksController.VentState.WARNING
+	alm._hazards[0]["vent_timer"] = 1.5
+	alm._process(0.05)
+	var lv_erupt := int(alm._hazards[0]["vent_state"]) == ArenaLandmarksController.VentState.ERUPTING
+	var lv_auras: Array = player.v2_combat.reaction_engine.get_aura_elements(lv_e.get_instance_id(), float(Time.get_ticks_msec()) * 0.001)
+	_check("b4_hazard_lava_vent_erupts_and_burns", lv_warn and lv_erupt and lv_e.current_health < 500.0 and lv_auras == ["fire"], "warn=%s erupt=%s hp=%.1f auras=%s" % [str(lv_warn), str(lv_erupt), lv_e.current_health, str(lv_auras)])
+
+	# Hazard 3 & 4: frozen_pond slows + ice aura; sword_stele awakens, shatters shield, enters 25s cooldown
+	bg.apply_chapter(stages[3])
+	var fp_site := {}
+	var ss_site := {}
+	for hz in alm._hazards:
+		if String(hz["type"]) == "frozen_pond" and fp_site.is_empty():
+			fp_site = hz
+		elif String(hz["type"]) == "sword_stele" and ss_site.is_empty():
+			ss_site = hz
+	var ice_e := (load("res://scenes/enemy.tscn") as PackedScene).instantiate() as Enemy
+	host.add_child(ice_e)
+	ice_e.setup_type(Enemy.Type.ELITE, 0.0, 2)
+	ice_e.max_health = 1000.0
+	ice_e.current_health = 1000.0
+	ice_e.max_shield = 400.0
+	ice_e.current_shield = 400.0
+	ice_e.global_position = fp_site["pos"] as Vector2
+	fp_site["tick_timer"] = 0.55
+	alm._process(0.05)
+	var ice_auras: Array = player.v2_combat.reaction_engine.get_aura_elements(ice_e.get_instance_id(), float(Time.get_ticks_msec()) * 0.001)
+	_check("b4_hazard_frozen_pond_slow_and_ice", ice_e._slow_ratio >= 0.19 and ice_auras == ["ice"] and is_equal_approx(ice_e.current_health, 1000.0), "slow=%.2f auras=%s" % [ice_e._slow_ratio, str(ice_auras)])
+
+	ice_e.apply_freeze(2.0)
+	ice_e.global_position = (ss_site["pos"] as Vector2) + Vector2(180.0, 0.0)
+	player.global_position = ss_site["pos"] as Vector2
+	alm._process(0.6)
+	alm._process(0.7)
+	_check(
+		"b4_hazard_sword_stele_shatters_and_cooldowns",
+		int(ss_site["stele_state"]) == ArenaLandmarksController.SteleState.COOLDOWN and float(ss_site["stele_cd"]) >= 24.0 and ice_e.current_shield < 400.0,
+		"state=%s cd=%.1f sh=%.1f" % [str(ss_site["stele_state"]), float(ss_site["stele_cd"]), ice_e.current_shield]
+	)
+
+	player.v2_combat.set_arena_bonuses({})
+	host.free()
 
 func _test_batch5_seven_elite_variants() -> void:
 	var raw := FileAccess.get_file_as_string("res://data/v2/enemies_waves_v2.json")

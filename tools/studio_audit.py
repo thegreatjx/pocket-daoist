@@ -397,7 +397,7 @@ def _categorize_asset(rel: str) -> str:
         return "heroes"
     if "/weapons/" in rel or pathlib.Path(rel).name.startswith("wpn_"):
         return "weapons"
-    if "/map_ch1/" in rel or "/terrain/" in rel or "/props/" in rel:
+    if "/map_ch1/" in rel or "/maps/" in rel or "/terrain/" in rel or "/props/" in rel:
         return "terrain_maps"
     if "/icons/" in rel or "pickup_" in pathlib.Path(rel).name or "exp_gem" in pathlib.Path(rel).name:
         return "icons_pickups"

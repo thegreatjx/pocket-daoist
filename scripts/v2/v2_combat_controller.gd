@@ -55,6 +55,7 @@ var run_gold: int = 0
 var owned_items: Array[Dictionary] = []
 var item_mods: Dictionary = {}
 var realm_bonuses: Dictionary = {}
+var arena_bonuses: Dictionary = {}
 var stat_pick_counts: Dictionary = {}
 var unlocked_weapon_slots: int = 1
 var weapon_limit_breaks: Dictionary = {}
@@ -377,6 +378,8 @@ func recompute_player_stats() -> void:
 			item_mods[sk] = float(item_mods.get(sk, 0.0)) + float(sect_mods[sk])
 	for k in realm_bonuses.keys():
 		item_mods[k] = float(item_mods.get(k, 0.0)) + float(realm_bonuses[k])
+	for k in arena_bonuses.keys():
+		item_mods[k] = float(item_mods.get(k, 0.0)) + float(arena_bonuses[k])
 	for it in owned_items:
 		var mods: Dictionary = it.get("mods", {})
 		for k in mods.keys():
@@ -405,6 +408,46 @@ func recompute_player_stats() -> void:
 	player.magnet_radius = player.base_magnet_radius * maxf(0.5, 1.0 + float(item_mods.get("pickup_radius_pct", 0.0)))
 	player.dash_cooldown = maxf(0.75, player.base_dash_cooldown * maxf(0.4, 1.0 + float(item_mods.get("dash_cooldown_pct", 0.0))))
 	player.regen_per_second = maxf(0.0, float(item_mods.get("hp_regen", 0.0)))
+
+func set_arena_bonuses(bonuses: Dictionary) -> void:
+	if arena_bonuses.size() == bonuses.size():
+		var same := true
+		for k in bonuses.keys():
+			if not arena_bonuses.has(k) or not is_equal_approx(float(arena_bonuses[k]), float(bonuses[k])):
+				same = false
+				break
+		if same:
+			return
+	arena_bonuses = bonuses.duplicate()
+	recompute_player_stats()
+
+func apply_environment_aura(enemy: Node2D, element: String, duration: float = 3.5) -> void:
+	if enemy == null or not is_instance_valid(enemy) or bool(enemy.get("is_dead")):
+		return
+	if element.is_empty() or element == "none" or reaction_engine == null:
+		return
+	var now_sec := float(Time.get_ticks_msec()) * 0.001
+	var eid := enemy.get_instance_id()
+	var existing := reaction_engine.get_aura_elements(eid, now_sec)
+	if existing.is_empty() or String(existing[0]) == element:
+		reaction_engine._enemy_auras[eid] = {
+			"elem": element,
+			"expires": now_sec + duration,
+		}
+		if enemy.has_method("set_active_element"):
+			enemy.set_active_element(element, duration)
+		return
+	var is_frozen := bool(enemy.is_frozen()) if enemy.has_method("is_frozen") else false
+	var is_boss_or_mb := bool(enemy.get("is_boss")) or bool(enemy.get("is_mini_boss"))
+	var trigger_dmg := 18.0 * get_damage_mult()
+	var rx := reaction_engine.apply_element_hit(eid, element, now_sec, trigger_dmg, get_mastery_bonus(), {}, is_boss_or_mb, is_frozen, false)
+	if not rx.is_empty():
+		if not bool(enemy.get("is_dead")) and enemy.has_method("set_active_element"):
+			enemy.set_active_element("", 0.0)
+		_execute_reaction_effect(rx, enemy, enemy.global_position, trigger_dmg)
+
+func apply_environment_hit(enemy: Node2D, dmg: float, element: String, opts: Dictionary = {}) -> void:
+	deal_v2_damage(enemy, dmg, element, opts)
 
 func add_weapon(weapon_id: String, tier: int = 1) -> bool:
 	if orbit_rig == null:
