@@ -1,7 +1,7 @@
 class_name XianxiaUITheme
 extends RefCounted
 
-const COL_PLATE_BG := Color(0.07, 0.16, 0.14, 0.90)
+const COL_PLATE_BG := Color(0.07, 0.16, 0.14, 0.72)
 const COL_PLATE_DARK := Color(0.05, 0.12, 0.11, 0.95)
 const COL_GOLD := Color(0.88, 0.70, 0.30, 0.96)
 const COL_GOLD_SOFT := Color(0.78, 0.62, 0.28, 0.55)

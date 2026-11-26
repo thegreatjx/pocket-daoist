@@ -1,8 +1,8 @@
 class_name V2SpawnDirector
 extends RefCounted
 
-const OFFSCREEN_MIN := 120.0
-const OFFSCREEN_MAX := 240.0
+const OFFSCREEN_MIN := 180.0
+const OFFSCREEN_MAX := 340.0
 const TELEGRAPH_SEC := 0.8
 const RECYCLE_SCREEN_MULT := 1.8
 const EXTREME_DESPAWN_DIST := 3000.0
@@ -249,13 +249,21 @@ func pick_spawn_point(
 	var safe_arena := arena_rect.grow(-48.0)
 	if not force_telegraph:
 		var side: int = randi() % 4
-		for _attempt in range(3):
+		for _attempt in range(6):
 			var cand: Vector2 = _sample_offscreen_side(camera_rect, side)
 			if safe_arena.has_point(cand) and not EnemySteeringDirector.check_pillar_collision(cand, 24.0, pillars, 12.0):
 				return {"pos": cand, "use_telegraph": false, "telegraph_sec": 0.0}
+			side = (side + 1) % 4
 
 	var tele_pos := _sample_telegraph_point(arena_rect.grow(-64.0), player_pos, pillars, min_telegraph_dist)
 	return {"pos": tele_pos, "use_telegraph": true, "telegraph_sec": TELEGRAPH_SEC}
+
+func sample_offscreen_point(camera_rect: Rect2, pad_min: float = OFFSCREEN_MIN, pad_max: float = OFFSCREEN_MAX) -> Vector2:
+	var half := camera_rect.size * 0.5
+	var low := maxf(OFFSCREEN_MIN, pad_min)
+	var pad := randf_range(low, maxf(low + 1.0, pad_max))
+	var ang := randf() * TAU
+	return camera_rect.get_center() + Vector2(cos(ang) * (half.x + pad), sin(ang) * (half.y + pad))
 
 func _sample_offscreen_side(camera_rect: Rect2, side: int) -> Vector2:
 	var pad := randf_range(OFFSCREEN_MIN, OFFSCREEN_MAX)
@@ -282,8 +290,8 @@ func _sample_offscreen_side(camera_rect: Rect2, side: int) -> Vector2:
 			)
 
 func _sample_telegraph_point(inner_arena: Rect2, player_pos: Vector2, pillars: Array, min_telegraph_dist: float = 220.0) -> Vector2:
-	var min_d := maxf(220.0, min_telegraph_dist)
-	var max_d := maxf(min_d + 160.0, 420.0)
+	var min_d := maxf(300.0, min_telegraph_dist)
+	var max_d := maxf(min_d + 200.0, 480.0)
 	for _i in range(16):
 		var ang := randf() * TAU
 		var dist := randf_range(min_d, max_d)

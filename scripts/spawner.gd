@@ -130,7 +130,7 @@ func _process(delta: float) -> void:
 						if get_tree().get_nodes_in_group("enemies").size() + _pending_telegraphs >= current_cap:
 							break
 						var arch: Dictionary = req["archetype"]
-						_spawn_from_archetype(arch, _director.formation == V2SpawnDirector.Formation.ENCIRCLEMENT_RING)
+						_spawn_from_archetype(arch)
 
 	if _extra_chest_elite_per_min and not _is_boss_spawned and _chapter_elapsed >= _next_stage_elite_time:
 		_next_stage_elite_time += 60.0
@@ -345,7 +345,7 @@ func _spawn_boss(chapter: Dictionary) -> Node2D:
 	get_tree().call_group("ui", "show_banner", "【首领降临 · %s】" % boss_name)
 
 	var angle := randf() * TAU
-	var spawn_pos := _clamp_to_arena(player.global_position + Vector2(cos(angle), sin(angle)) * 520.0)
+	var spawn_pos := _offscreen_ring_point(angle, randf_range(240.0, 400.0))
 
 	var boss = ObjectPools.acquire(enemy_scene_path, get_parent())
 	if boss == null:
@@ -520,7 +520,7 @@ func _spawn_from_archetype(arch: Dictionary, force_telegraph: bool = false) -> v
 				sp_id = 2
 			_:
 				sp_id = 0
-	var min_tele_dist := 360.0 if e_type == Enemy.Type.ELITE else 240.0
+	var min_tele_dist := 380.0 if e_type == Enemy.Type.ELITE else 300.0
 	var pick := _director.pick_spawn_point(arena, cam, player.global_position, pillars, force_telegraph or e_type == Enemy.Type.ELITE, min_tele_dist)
 	if bool(pick["use_telegraph"]):
 		spawn_telegraphed_enemy(pick["pos"] as Vector2, e_type, float(pick["telegraph_sec"]), sp_id, arch)
@@ -533,15 +533,15 @@ func _spawn_ring_event(count: int, msg: String) -> void:
 		get_tree().call_group("ui", "show_banner", msg)
 	var room := maxi(0, _enemy_cap() - get_tree().get_nodes_in_group("enemies").size())
 	var n := mini(count, room)
-	var slots := _director.build_formation_offsets(V2SpawnDirector.Formation.ENCIRCLEMENT_RING, player.global_position, player.global_position, n)
-	for i in range(slots.size()):
-		var pos := _clamp_to_arena(slots[i]["pos"] as Vector2)
+	var cam := _camera_world_rect()
+	var cam_half := cam.size * 0.5
+	for i in range(n):
+		var ang := TAU * float(i) / float(maxi(1, n)) + randf_range(-0.08, 0.08)
+		var pad := randf_range(200.0, 360.0)
+		var pos := _clamp_to_arena(cam.get_center() + Vector2(cos(ang) * (cam_half.x + pad), sin(ang) * (cam_half.y + pad)))
 		var arch := _pick_pool_archetype()
 		var sp_id := int(arch.get("species", _pick_minion_species())) if not arch.is_empty() else _pick_minion_species()
-		if i % 3 == 0:
-			spawn_telegraphed_enemy(pos, Enemy.Type.MINION, 0.8, sp_id, arch)
-		else:
-			_instantiate_enemy_at(pos, Enemy.Type.MINION, sp_id, arch)
+		_instantiate_enemy_at(pos, Enemy.Type.MINION, sp_id, arch)
 
 func _spawn_flank_lanes(count: int, msg: String) -> void:
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.95)
@@ -550,10 +550,13 @@ func _spawn_flank_lanes(count: int, msg: String) -> void:
 	var room := maxi(0, _enemy_cap() - get_tree().get_nodes_in_group("enemies").size())
 	var n := mini(count, room)
 	var half := maxi(1, n / 2)
+	var cam := _camera_world_rect()
+	var cam_half := cam.size * 0.5
+	var pad := randf_range(200.0, 360.0)
 	for side in [-1.0, 1.0]:
 		for i in range(half):
 			var oy := (float(i) - float(half - 1) * 0.5) * 44.0
-			var pos := _clamp_to_arena(player.global_position + Vector2(side * 560.0, oy))
+			var pos := _clamp_to_arena(Vector2(cam.get_center().x + side * (cam_half.x + pad), cam.get_center().y + oy))
 			var arch := _pick_pool_archetype()
 			var sp_id := int(arch.get("species", _pick_minion_species())) if not arch.is_empty() else _pick_minion_species()
 			_instantiate_enemy_at(pos, Enemy.Type.MINION, sp_id, arch)
@@ -562,7 +565,7 @@ func _spawn_mini_boss(base_hp: float, msg: String, species_override: int = -1) -
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.85)
 	if msg != "":
 		get_tree().call_group("ui", "show_banner", msg)
-	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), true, 360.0)
+	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), true, 380.0)
 	var sp_id := species_override if species_override >= 0 else _pick_minion_species()
 	spawn_telegraphed_enemy(pick["pos"] as Vector2, Enemy.Type.ELITE, 1.25, sp_id, {"override_hp": base_hp})
 
@@ -581,8 +584,7 @@ func _trigger_swarm(count: int, elites: int, msg: String) -> void:
 
 	for i in range(count):
 		var angle := (float(i) / float(maxi(1, count))) * TAU + randf_range(-0.1, 0.1)
-		var dist := randf_range(540.0, 680.0)
-		var spawn_pos := _clamp_to_arena(player.global_position + Vector2(cos(angle), sin(angle)) * dist)
+		var spawn_pos := _offscreen_ring_point(angle, randf_range(200.0, 360.0))
 		var arch := _pick_pool_archetype()
 		var sp_id := int(arch.get("species", _pick_minion_species())) if not arch.is_empty() else _pick_minion_species()
 		_instantiate_enemy_at(spawn_pos, Enemy.Type.MINION, sp_id, arch)
@@ -592,17 +594,22 @@ func _trigger_swarm(count: int, elites: int, msg: String) -> void:
 
 func _spawn_enemy(type: Enemy.Type = Enemy.Type.MINION, species_override: int = -1, force_telegraph: bool = false) -> void:
 	if base_spawn_interval < 0.05:
-		var ang := randf() * TAU
-		var d := randf_range(520.0, 680.0)
-		var pos := _clamp_to_arena(player.global_position + Vector2(cos(ang), sin(ang)) * d)
+		var pos := _offscreen_ring_point(randf() * TAU, randf_range(200.0, 360.0))
 		_instantiate_enemy_at(pos, type, species_override)
 		return
 
-	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), force_telegraph)
+	var min_tele := 380.0 if type == Enemy.Type.ELITE else 300.0
+	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), force_telegraph, min_tele)
 	if bool(pick["use_telegraph"]):
 		spawn_telegraphed_enemy(pick["pos"] as Vector2, type, float(pick["telegraph_sec"]), species_override)
 	else:
 		_instantiate_enemy_at(pick["pos"] as Vector2, type, species_override)
+
+func _offscreen_ring_point(angle: float, pad: float) -> Vector2:
+	var cam := _camera_world_rect()
+	var cam_half := cam.size * 0.5
+	var offset := Vector2(cos(angle) * (cam_half.x + pad), sin(angle) * (cam_half.y + pad))
+	return _clamp_to_arena(cam.get_center() + offset)
 
 func _instantiate_enemy_at(
 	spawn_pos: Vector2,
