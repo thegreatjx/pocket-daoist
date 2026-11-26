@@ -18,7 +18,7 @@ func _ready() -> void:
 	add_to_group("game_manager")
 	GameFlow.sync_after_scene_load(GameFlow.State.PLAYING)
 	ObjectPools.clear()
-	Music.play_track("battle")
+	BgmDirector.play_stage(Stats.selected_stage_id)
 
 	_loader = V2DataLoader.new()
 	_loader.load_all("res://data/v2")
@@ -64,6 +64,7 @@ func switch_stage(stage_id: int) -> void:
 	var chapters := ChapterData.all()
 	var idx := clampi(stage_id - 1, 0, maxi(0, chapters.size() - 1))
 	var ch: Dictionary = chapters[idx] if not chapters.is_empty() else {}
+	BgmDirector.play_stage(stage_id)
 	if background != null and background.has_method("apply_chapter") and not ch.is_empty():
 		background.apply_chapter(ch)
 	var st_name := String(ch.get("name", "演武沙盒"))

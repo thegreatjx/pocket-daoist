@@ -21,7 +21,7 @@ func _ready() -> void:
 	add_to_group("game_manager")
 	GameFlow.sync_after_scene_load(GameFlow.State.PLAYING)
 	ObjectPools.clear()
-	Music.play_track("battle")
+	BgmDirector.play_stage(Stats.selected_stage_id)
 
 	if upgrade_mgr and upgrade_mgr.has_method("reset_run_controls"):
 		upgrade_mgr.reset_run_controls()
@@ -80,7 +80,9 @@ func _process(delta: float) -> void:
 	var chapter: Dictionary = stage_director.current_chapter()
 	if chapter.is_empty():
 		return
-	ui.update_chapter_progress(stage_director.chapter_time(), float(chapter.get("duration", 480.0)))
+	var ch_time: float = stage_director.chapter_time()
+	ui.update_chapter_progress(ch_time, float(chapter.get("duration", 480.0)))
+	BgmDirector.update_battle_time(ch_time)
 
 func _on_wave_completed(_completed_wave: int, _next_wave: int) -> void:
 	return

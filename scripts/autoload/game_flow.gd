@@ -102,6 +102,7 @@ func on_escape() -> void:
 
 func quit_game(reason: String = "quit_game") -> void:
 	log_exit(reason)
+	BgmDirector.stop_all(0.0)
 	Music.stop_music()
 	Sfx.stop_all()
 	get_tree().quit()

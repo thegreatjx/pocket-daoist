@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 17:57:12",
-    "active_media_count": 227,
-    "used_media_count": 220,
+    "generated_at": "2026-11-26 18:02:25",
+    "active_media_count": 231,
+    "used_media_count": 224,
     "orphan_media_count": 7,
-    "legacy_count": 50,
-    "usage_rate_pct": 96.9,
+    "legacy_count": 54,
+    "usage_rate_pct": 97.0,
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 2,
@@ -45,6 +45,10 @@
       {
         "name": "Music",
         "path": "res://scripts/autoload/music.gd"
+      },
+      {
+        "name": "BgmDirector",
+        "path": "res://scripts/autoload/bgm_director.gd"
       },
       {
         "name": "GameFlow",
@@ -4101,6 +4105,78 @@
       "cluster": "window"
     },
     {
+      "path": "assets/_legacy_unused/music_battle.ogg",
+      "res_path": "res://assets/_legacy_unused/music_battle.ogg",
+      "name": "music_battle.ogg",
+      "category": "legacy_unused",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 511742,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "music"
+    },
+    {
+      "path": "assets/_legacy_unused/music_boss.ogg",
+      "res_path": "res://assets/_legacy_unused/music_boss.ogg",
+      "name": "music_boss.ogg",
+      "category": "legacy_unused",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 541318,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "music"
+    },
+    {
+      "path": "assets/_legacy_unused/music_swarm.ogg",
+      "res_path": "res://assets/_legacy_unused/music_swarm.ogg",
+      "name": "music_swarm.ogg",
+      "category": "legacy_unused",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 471816,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "music"
+    },
+    {
+      "path": "assets/_legacy_unused/music_title.ogg",
+      "res_path": "res://assets/_legacy_unused/music_title.ogg",
+      "name": "music_title.ogg",
+      "category": "legacy_unused",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 628749,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [],
+      "status": "legacy",
+      "cluster": "music"
+    },
+    {
       "path": "assets/art/ending.png",
       "res_path": "res://assets/art/ending.png",
       "name": "ending.png",
@@ -4159,6 +4235,173 @@
       ],
       "status": "used",
       "cluster": "title"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_boss_p1.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_boss_p1.ogg",
+      "name": "bgm_boss_p1.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 1026961,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/bgm_director.gd",
+        "scripts/autoload/music.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_boss_p2.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_boss_p2.ogg",
+      "name": "bgm_boss_p2.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 850071,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/bgm_director.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_forest.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_forest.ogg",
+      "name": "bgm_forest.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 1290380,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/stages_v2.json",
+        "scripts/autoload/bgm_director.gd",
+        "scripts/autoload/music.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_ice.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_ice.ogg",
+      "name": "bgm_ice.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 1193525,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/stages_v2.json",
+        "scripts/autoload/bgm_director.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_lobby.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_lobby.ogg",
+      "name": "bgm_lobby.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 820268,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/bgm_director.gd",
+        "scripts/autoload/music.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_miniboss.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_miniboss.ogg",
+      "name": "bgm_miniboss.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 934888,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/bgm_director.gd",
+        "scripts/autoload/music.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/bgm_volcano.ogg",
+      "res_path": "res://assets/audio/bgm/bgm_volcano.ogg",
+      "name": "bgm_volcano.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 1414049,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "data/v2/stages_v2.json",
+        "scripts/autoload/bgm_director.gd"
+      ],
+      "status": "used",
+      "cluster": "bgm"
+    },
+    {
+      "path": "assets/audio/bgm/loop_tension_drums.ogg",
+      "res_path": "res://assets/audio/bgm/loop_tension_drums.ogg",
+      "name": "loop_tension_drums.ogg",
+      "category": "audio_bgm",
+      "ext": ".ogg",
+      "is_media": true,
+      "is_image": false,
+      "is_audio": true,
+      "size_bytes": 236868,
+      "width": null,
+      "height": null,
+      "duration_sec": null,
+      "spritesheet": null,
+      "used_by": [
+        "scripts/autoload/bgm_director.gd"
+      ],
+      "status": "used",
+      "cluster": "loop"
     },
     {
       "path": "assets/audio/boss_charge.wav",
@@ -4443,86 +4686,6 @@
       ],
       "status": "used",
       "cluster": "level"
-    },
-    {
-      "path": "assets/audio/music_battle.ogg",
-      "res_path": "res://assets/audio/music_battle.ogg",
-      "name": "music_battle.ogg",
-      "category": "audio_bgm",
-      "ext": ".ogg",
-      "is_media": true,
-      "is_image": false,
-      "is_audio": true,
-      "size_bytes": 511742,
-      "width": null,
-      "height": null,
-      "duration_sec": null,
-      "spritesheet": null,
-      "used_by": [
-        "scripts/autoload/music.gd"
-      ],
-      "status": "used",
-      "cluster": "music"
-    },
-    {
-      "path": "assets/audio/music_boss.ogg",
-      "res_path": "res://assets/audio/music_boss.ogg",
-      "name": "music_boss.ogg",
-      "category": "audio_bgm",
-      "ext": ".ogg",
-      "is_media": true,
-      "is_image": false,
-      "is_audio": true,
-      "size_bytes": 541318,
-      "width": null,
-      "height": null,
-      "duration_sec": null,
-      "spritesheet": null,
-      "used_by": [
-        "scripts/autoload/music.gd"
-      ],
-      "status": "used",
-      "cluster": "music"
-    },
-    {
-      "path": "assets/audio/music_swarm.ogg",
-      "res_path": "res://assets/audio/music_swarm.ogg",
-      "name": "music_swarm.ogg",
-      "category": "audio_bgm",
-      "ext": ".ogg",
-      "is_media": true,
-      "is_image": false,
-      "is_audio": true,
-      "size_bytes": 471816,
-      "width": null,
-      "height": null,
-      "duration_sec": null,
-      "spritesheet": null,
-      "used_by": [
-        "scripts/autoload/music.gd"
-      ],
-      "status": "used",
-      "cluster": "music"
-    },
-    {
-      "path": "assets/audio/music_title.ogg",
-      "res_path": "res://assets/audio/music_title.ogg",
-      "name": "music_title.ogg",
-      "category": "audio_bgm",
-      "ext": ".ogg",
-      "is_media": true,
-      "is_image": false,
-      "is_audio": true,
-      "size_bytes": 628749,
-      "width": null,
-      "height": null,
-      "duration_sec": null,
-      "spritesheet": null,
-      "used_by": [
-        "scripts/autoload/music.gd"
-      ],
-      "status": "used",
-      "cluster": "music"
     },
     {
       "path": "assets/audio/player_hurt.wav",
@@ -9389,6 +9552,10 @@
       {
         "name": "Music",
         "path": "res://scripts/autoload/music.gd"
+      },
+      {
+        "name": "BgmDirector",
+        "path": "res://scripts/autoload/bgm_director.gd"
       },
       {
         "name": "GameFlow",

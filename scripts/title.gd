@@ -372,7 +372,7 @@ class HeroStageView extends Control:
 
 func _ready() -> void:
 	GameFlow.sync_after_scene_load(GameFlow.State.TITLE)
-	Music.play_track("title")
+	BgmDirector.play_lobby()
 	_build_atmospheric_scrims()
 	_build_peach_blossom_particles()
 	_build_title_lockup()
@@ -1096,7 +1096,7 @@ func _on_start_pressed() -> void:
 		return
 	_close_settings()
 	_close_sect()
-	Music.play_track("battle")
+	BgmDirector.play_stage(Stats.selected_stage_id)
 	var status := ResourceLoader.load_threaded_get_status(GameFlow.GAME_SCENE)
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		var packed := ResourceLoader.load_threaded_get(GameFlow.GAME_SCENE) as PackedScene
@@ -1117,7 +1117,7 @@ func _on_debug_mode_pressed() -> void:
 		return
 	_close_settings()
 	_close_sect()
-	Music.play_track("battle")
+	BgmDirector.play_stage(Stats.selected_stage_id)
 	GameFlow.start_debug_sandbox()
 
 func _on_settings_pressed() -> void:

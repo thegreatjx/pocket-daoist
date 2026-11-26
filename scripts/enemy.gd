@@ -1144,6 +1144,8 @@ func die() -> void:
 
 	if is_boss:
 		get_tree().call_group("game_manager", "on_boss_killed")
+	elif is_mini_boss:
+		BgmDirector.on_miniboss_killed(get_instance_id())
 
 	if enemy_type == Type.MINION and not is_visual_culled and is_inside_tree():
 		_begin_death_anim()
@@ -1242,6 +1244,8 @@ func _release_to_pool() -> void:
 	if _releasing:
 		return
 	_releasing = true
+	if is_mini_boss:
+		BgmDirector.on_miniboss_killed(get_instance_id())
 	is_dying_anim = false
 	set_process(false)
 	if is_in_group("enemies"):
@@ -1263,6 +1267,7 @@ func _do_release() -> void:
 
 func _enter_boss_phase2() -> void:
 	_boss_enraged = true
+	BgmDirector.enter_boss_p2(0.8)
 	speed *= 1.22
 	_boss_skill_cd = minf(_boss_skill_cd, 0.45)
 	if not _boss_p2_shield_refilled:

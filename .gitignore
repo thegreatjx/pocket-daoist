@@ -36,3 +36,7 @@ vs_analysis/
 # 本地工作树与临时参考图
 worktrees/
 exports/
+
+# 原始未切片高体积 BGM 源文件（本地保留，由 tools/process_bgm.py 生成 assets/audio/bgm/*.ogg）
+assets/audio/raw/*.mp3
+assets/audio/raw/*.wav

@@ -116,7 +116,7 @@ func enter_endless_mode() -> void:
 	_resolve_nodes()
 	if spawner != null and spawner.has_method("set_endless_level"):
 		spawner.set_endless_level(endless_cycle)
-	Music.play_track("battle", 0.8)
+	BgmDirector.resume_stage_bgm(0.8)
 	if ui != null and ui.has_method("show_banner"):
 		ui.show_banner("【无尽试炼 · 第 %d 劫开启！】" % endless_cycle)
 
@@ -192,6 +192,7 @@ func _apply_current_stage() -> void:
 			p.set_stage_speed_mult(p_spd)
 
 	chapter_started.emit(chapter)
+	BgmDirector.start_stage_from_chapter(chapter)
 
 func _spawn_plan_boss(plan: Dictionary) -> void:
 	_resolve_nodes()
@@ -311,7 +312,7 @@ func _clear_boss(entry: Dictionary, killed: bool) -> void:
 			_endless_timer = 120.0
 			if spawner != null and spawner.has_method("set_endless_level"):
 				spawner.set_endless_level(endless_cycle)
-			Music.play_track("battle", 0.9)
+			BgmDirector.resume_stage_bgm(0.9)
 			if ui != null and ui.has_method("show_banner"):
 				ui.show_banner("斩杀首领！无尽第 %d 劫即将降临！" % endless_cycle)
 		else:

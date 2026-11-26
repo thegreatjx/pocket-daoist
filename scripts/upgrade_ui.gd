@@ -125,6 +125,7 @@ func show_choices(choices: Array, remaining_after: int = 0, rerolls: int = 0, ba
 
 	visible = true
 	is_showing = true
+	BgmDirector.set_muffled(true)
 	_opened_msec = Time.get_ticks_msec()
 	_choice_ids.clear()
 
@@ -484,3 +485,5 @@ func hide_panel() -> void:
 	_banish_mode = false
 	_choice_ids.clear()
 	_choices_data.clear()
+	if GameFlow != null and not GameFlow.is_paused_state():
+		BgmDirector.set_muffled(false)

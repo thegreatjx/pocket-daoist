@@ -2,10 +2,10 @@ extends Node
 # 动态背景音乐：双播放器平滑交叉淡入淡出（标题 / 常规战斗 / 妖潮激燃 / 首领决战）。
 
 const TRACKS := {
-	"title": "res://assets/audio/music_title.ogg",
-	"battle": "res://assets/audio/music_battle.ogg",
-	"swarm": "res://assets/audio/music_swarm.ogg",
-	"boss": "res://assets/audio/music_boss.ogg",
+	"title": "res://assets/audio/bgm/bgm_lobby.ogg",
+	"battle": "res://assets/audio/bgm/bgm_forest.ogg",
+	"swarm": "res://assets/audio/bgm/bgm_miniboss.ogg",
+	"boss": "res://assets/audio/bgm/bgm_boss_p1.ogg",
 }
 
 var _player: AudioStreamPlayer = null
@@ -60,7 +60,18 @@ func _on_track_finished() -> void:
 	_player.play()
 	loop_count += 1
 
+func sync_external_track(track: String) -> void:
+	if fade_tween != null and fade_tween.is_valid():
+		fade_tween.kill()
+	_player.stop()
+	_player.stream = null
+	_fade_out_player.stop()
+	_fade_out_player.stream = null
+	current_track = track
+
 func play_track(track: String, fade_seconds: float = 0.9) -> void:
+	if BgmDirector != null and BgmDirector.has_method("stop_all"):
+		BgmDirector.stop_all(0.0)
 	if not _streams.has(track):
 		return
 	if current_track == track and _player.playing:

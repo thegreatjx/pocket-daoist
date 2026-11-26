@@ -102,7 +102,7 @@ func _process(delta: float) -> void:
 	if _swarm_music_timer > 0.0:
 		_swarm_music_timer -= delta
 		if _swarm_music_timer <= 0.0 and not _is_boss_spawned:
-			Music.play_track("battle", 1.0)
+			BgmDirector.resume_stage_bgm(1.0)
 
 	var current_cap := mini(max_enemies, 40 if _is_boss_spawned else _enemy_cap())
 	var alive := get_tree().get_nodes_in_group("enemies").size()
@@ -357,7 +357,7 @@ func spawn_boss_entry(entry: Dictionary) -> Node2D:
 func _spawn_boss(chapter: Dictionary) -> Node2D:
 	_is_boss_spawned = true
 	_swarm_music_timer = 0.0
-	Music.play_track("boss", 0.55)
+	BgmDirector.enter_boss_p1(0.6)
 	Sfx.play_boss_or_fallback("boss_roar", "thunder", -1.0, 0.85)
 	var boss_name := str(chapter.get("boss_name", chapter_boss_name))
 	get_tree().call_group("ui", "show_banner", "【首领降临 · %s】" % boss_name)
@@ -614,9 +614,6 @@ func _spawn_mini_boss(base_hp: float, msg: String, species_override: int = -1) -
 
 func _trigger_swarm(count: int, elites: int, msg: String) -> void:
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.92)
-	if not _is_boss_spawned:
-		Music.play_track("swarm", 0.6)
-		_swarm_music_timer = 18.0
 	if msg != "":
 		get_tree().call_group("ui", "show_banner", msg)
 
@@ -679,6 +676,8 @@ func _instantiate_enemy_at(
 			enemy.max_health = bhp
 			enemy.current_health = bhp
 			enemy.is_mini_boss = bool(eff_arch.get("is_mini_boss", false))
+			if enemy.is_mini_boss:
+				BgmDirector.on_miniboss_spawned(enemy.get_instance_id())
 			if enemy.has_method("sync_qi_shield"):
 				enemy.sync_qi_shield()
 			enemy.exp_gem_value = 45.0

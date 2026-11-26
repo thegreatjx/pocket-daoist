@@ -406,7 +406,8 @@ def _categorize_asset(rel: str) -> str:
     if "/art/" in rel:
         return "art_story"
     if "/audio/" in rel:
-        return "audio_bgm" if pathlib.Path(rel).name.startswith("music_") else "audio_sfx"
+        name = pathlib.Path(rel).name
+        return "audio_bgm" if ("/audio/bgm/" in rel or name.startswith(("music_", "bgm_", "loop_"))) else "audio_sfx"
     if (
         "/sprites/" in rel
         or "/creatures/" in rel
@@ -438,6 +439,8 @@ def scan_assets(root: pathlib.Path, ref_to_files: dict[str, list[str]]) -> list[
             if p.name.endswith(".import") or p.name == ".gdignore":
                 continue
             rel = p.relative_to(root).as_posix()
+            if "assets/audio/raw/" in rel:
+                continue
             ext = p.suffix.lower()
             if ext not in MEDIA_EXTS and ext not in {".tres", ".ttf", ".otf", ".txt", ".md", ".json"}:
                 continue

@@ -495,7 +495,9 @@
       ],
       "floor_tile": "res://assets/v2/map_ch1/tile_grass_512.png",
       "realm_id": "tutorial",
-      "chapter_badge": "新手序章"
+      "chapter_badge": "新手序章",
+      "bgm_track": "forest",
+      "bgm": "res://assets/audio/bgm/bgm_forest.ogg"
     },
     {
       "id": 2,
@@ -991,7 +993,9 @@
       ],
       "floor_tile": "res://assets/v2/maps/forest/tile_ground_grass.png",
       "realm_id": "forest",
-      "chapter_badge": "第一章"
+      "chapter_badge": "第一章",
+      "bgm_track": "forest",
+      "bgm": "res://assets/audio/bgm/bgm_forest.ogg"
     },
     {
       "id": 3,
@@ -1491,7 +1495,9 @@
       ],
       "floor_tile": "res://assets/v2/maps/volcano/tile_ground_basalt.png",
       "realm_id": "volcano",
-      "chapter_badge": "第二章"
+      "chapter_badge": "第二章",
+      "bgm_track": "volcano",
+      "bgm": "res://assets/audio/bgm/bgm_volcano.ogg"
     },
     {
       "id": 4,
@@ -1991,7 +1997,9 @@
       ],
       "floor_tile": "res://assets/v2/maps/ice/tile_ground_snow.png",
       "realm_id": "ice",
-      "chapter_badge": "第三章"
+      "chapter_badge": "第三章",
+      "bgm_track": "ice",
+      "bgm": "res://assets/audio/bgm/bgm_ice.ogg"
     }
   ]
 }
