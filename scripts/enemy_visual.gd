@@ -43,6 +43,28 @@ const DOLL_FRAMES := 6
 const WOLF_BOSS_SIZE := 220.0
 const CHARGE_PREP_DURATION := 0.40
 
+# 四层怪物黄金像素标尺（以主角视觉身高 ~80px 为锚点）
+const SIZE_MINION_FAST := 58.0      # 疾行/纸符等轻巧小怪
+const SIZE_MINION_BASE := 62.0      # 常规小怪
+const SIZE_MINION_TANK := 66.0      # 肉盾小怪（略敦实但不越级）
+const SIZE_ELITE := 92.0            # 精英怪 = 小怪 ~1.5x
+const SIZE_MINI_BOSS := 120.0       # 小 Boss = 小怪 ~2.0x
+const SIZE_HUMANOID_BOSS := 136.0   # 人形大 Boss = 主角 ~1.7x（靠法阵/气场显霸气）
+const SIZE_BEAST_BOSS := 175.0      # 巨兽大 Boss（苍鬃狼王）= 小怪 ~2.8x / 主角 ~2.1x
+
+static func get_target_draw_size(e_type: int, sp: int, is_mini: bool, is_humanoid_boss: bool = false) -> float:
+	if e_type == 0:
+		match sp:
+			0, 1, 5:
+				return SIZE_MINION_FAST
+			4, 9:
+				return SIZE_MINION_TANK
+			_:
+				return SIZE_MINION_BASE
+	if e_type == 1:
+		return SIZE_MINI_BOSS if is_mini else SIZE_ELITE
+	return SIZE_HUMANOID_BOSS if is_humanoid_boss else SIZE_BEAST_BOSS
+
 var enemy_type: int = 0
 var species: int = 0
 var tier_variant: int = 1
@@ -480,8 +502,10 @@ func _process(delta: float) -> void:
 		max_spd = maxf(60.0, float(_parent_body.speed))
 		if "_boss_dashing" in _parent_body:
 			dashing = bool(_parent_body._boss_dashing)
-	rig.update(delta, vel, max_spd, dashing)
-	_update_charge_squash()
+	var frozen_now: bool = _parent_body != null and "_freeze_timer" in _parent_body and float(_parent_body.get("_freeze_timer")) > 0.0
+	if not frozen_now:
+		rig.update(delta, vel, max_spd, dashing)
+		_update_charge_squash()
 	queue_redraw()
 
 func _draw() -> void:
@@ -490,20 +514,26 @@ func _draw() -> void:
 	var mini_boss := false
 	if _parent_body != null and "is_mini_boss" in _parent_body:
 		mini_boss = bool(_parent_body.get("is_mini_boss"))
+	var is_humanoid := false
+	if _parent_body != null and "is_humanoid_boss" in _parent_body:
+		is_humanoid = bool(_parent_body.get("is_humanoid_boss"))
+	var draw_sz: float = get_target_draw_size(enemy_type, species, mini_boss, is_humanoid)
+	var frozen_now: bool = _parent_body != null and "_freeze_timer" in _parent_body and float(_parent_body.get("_freeze_timer")) > 0.0
+
 	if mini_boss and _parent_body != null:
 		var mb_total := float(_parent_body.get("max_health"))
 		var mb_now := float(_parent_body.get("current_health"))
 		if mb_total > 0.0:
 			var bar_w := 76.0
 			var bar_ratio := clampf(mb_now / mb_total, 0.0, 1.0)
-			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.05, 0.09, 0.07, 0.86))
-			draw_rect(Rect2(-bar_w * 0.5 + 1.0, -85.0, (bar_w - 2.0) * bar_ratio, 6.0), Color(0.88, 0.28, 0.20, 1.0))
-			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.92, 0.76, 0.34, 0.9), false, 1.0)
-			_draw_qi_shield_bar(0.0, -86.0, bar_w)
+			draw_rect(Rect2(-bar_w * 0.5, -92.0, bar_w, 8.0), Color(0.05, 0.09, 0.07, 0.86))
+			draw_rect(Rect2(-bar_w * 0.5 + 1.0, -91.0, (bar_w - 2.0) * bar_ratio, 6.0), Color(0.88, 0.28, 0.20, 1.0))
+			draw_rect(Rect2(-bar_w * 0.5, -92.0, bar_w, 8.0), Color(0.92, 0.76, 0.34, 0.9), false, 1.0)
+			_draw_qi_shield_bar(0.0, -92.0, bar_w)
 	elif enemy_type == 1:
-		_draw_qi_shield_bar(0.0, -52.0, 52.0)
+		_draw_qi_shield_bar(0.0, -68.0, 52.0)
 	elif enemy_type == 2:
-		_draw_qi_shield_bar(0.0, -78.0, 104.0)
+		_draw_qi_shield_bar(0.0, -90.0 if is_humanoid else -112.0, 104.0)
 	var pose := rig.get_pose()
 	var t := rig.anim_time
 	var off: Vector2 = pose["offset"]
@@ -512,8 +542,6 @@ func _draw() -> void:
 	var tint: Color = pose["dir_tint"]
 	var idx: int = int(pose["frame_idx"])
 	var sh_sc: float = float(pose["shadow_scale"])
-	if mini_boss:
-		sc *= 1.7
 	var affix_aura := Color(0.0, 0.0, 0.0, 0.0)
 	if _parent_body != null and "elite_aura_color" in _parent_body:
 		var raw_aura = _parent_body.get("elite_aura_color")
@@ -525,6 +553,8 @@ func _draw() -> void:
 		sc = Vector2(sc.x * last_charge_squash.x, sc.y * last_charge_squash.y)
 		if _is_charge_windup:
 			tint = Color(1.25, 0.88, 0.80, 1.0)
+	if frozen_now:
+		tint *= Color(0.72, 0.94, 1.12, 1.0)
 
 	if enemy_type == 0:
 		if tier_variant == 2:
@@ -537,6 +567,7 @@ func _draw() -> void:
 		if tier_variant >= 3:
 			_draw_kenney_aura(Vector2(0.0, 17.0), 26.0, Color(0.96, 0.36, 0.30, 0.42), false)
 		rig.draw_dust(self, Vector2(0.0, 17.0))
+		var m_rect := Rect2(-draw_sz * 0.5, -draw_sz * 0.88, draw_sz, draw_sz)
 		match species:
 			1:
 				var float_y := roundf(sin(t * 4.5) * 4.0)
@@ -546,35 +577,35 @@ func _draw() -> void:
 					var doll_idx := int(floor(t * 8.0)) % DOLL_FRAMES
 					var src := Rect2(float(doll_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(14.0 + float_y + off.y * 0.4)), rot, sc)
-					draw_texture_rect_region(TEX_DOLL_SHEET, Rect2(-29.0, -54.0, 58.0, 58.0), src, tint)
+					draw_texture_rect_region(TEX_DOLL_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			2:
 				if TEX_SHANXIAO_SHEET != null:
 					var sx_idx := idx % SHANXIAO_FRAMES
 					var src := Rect2(float(sx_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_SHANXIAO_SHEET, Rect2(-32.0, -60.0, 64.0, 64.0), src, tint)
+					draw_texture_rect_region(TEX_SHANXIAO_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			3:
 				if TEX_JIANGSHI_SHEET != null:
 					var js_idx := idx % RUN_FRAMES
 					var src := Rect2(float(js_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_JIANGSHI_SHEET, Rect2(-32.0, -58.0, 64.0, 64.0), src, tint)
+					draw_texture_rect_region(TEX_JIANGSHI_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			4:
 				if TEX_JINCHAN_SHEET != null:
 					var jc_idx := idx % RUN_FRAMES
 					var src := Rect2(float(jc_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_JINCHAN_SHEET, Rect2(-36.0, -54.0, 72.0, 72.0), src, tint)
+					draw_texture_rect_region(TEX_JINCHAN_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			5:
 				if TEX_SHENJING_SHEET != null:
 					var sj_idx := idx % RUN_FRAMES
 					var src := Rect2(float(sj_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_SHENJING_SHEET, Rect2(-30.0, -56.0, 60.0, 60.0), src, tint)
+					draw_texture_rect_region(TEX_SHENJING_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			6:
 				_draw_kenney_aura(Vector2(0.0, 18.0), 28.0, Color(0.98, 0.48, 0.22, 0.34 + 0.12 * sin(t * 5.2)), false)
@@ -582,14 +613,14 @@ func _draw() -> void:
 					var hd_idx := idx % RUN_FRAMES
 					var src := Rect2(float(hd_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_HUODOU_SHEET, Rect2(-36.0, -54.0, 72.0, 72.0), src, tint)
+					draw_texture_rect_region(TEX_HUODOU_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			7:
 				if TEX_ZHUSHA_ZIREN_SHEET != null:
 					var zz_idx := idx % RUN_FRAMES
 					var src := Rect2(float(zz_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_ZHUSHA_ZIREN_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
+					draw_texture_rect_region(TEX_ZHUSHA_ZIREN_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			8:
 				_draw_kenney_aura(Vector2(0.0, 18.0), 24.0, Color(1.0, 0.56, 0.22, 0.30 + 0.10 * sin(t * 6.0)), false)
@@ -597,21 +628,21 @@ func _draw() -> void:
 					var cd_idx := idx % RUN_FRAMES
 					var src := Rect2(float(cd_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_CHIHUO_DANLING_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
+					draw_texture_rect_region(TEX_CHIHUO_DANLING_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			9:
 				if TEX_WUDU_ZHANGCHAN_SHEET != null:
 					var wz_idx := idx % RUN_FRAMES
 					var src := Rect2(float(wz_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_WUDU_ZHANGCHAN_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
+					draw_texture_rect_region(TEX_WUDU_ZHANGCHAN_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			10:
 				if TEX_CANJIAN_JIANKUI_SHEET != null:
 					var cj_idx := idx % RUN_FRAMES
 					var src := Rect2(float(cj_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_CANJIAN_JIANKUI_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
+					draw_texture_rect_region(TEX_CANJIAN_JIANKUI_SHEET, m_rect, src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			_:
 				if TEX_FOX_SHEET != null:
@@ -622,7 +653,7 @@ func _draw() -> void:
 					var fox_rot := rot + cos(fox_phase) * 0.03 * rig.facing_sign * stride
 					var src := Rect2(float(r_idx) * 96.0, 0.0, 96.0, 96.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y + bob_y)), fox_rot, sc)
-					draw_texture_rect_region(TEX_FOX_SHEET, Rect2(-32.0, -52.0, 64.0, 64.0), src, tint)
+					draw_texture_rect_region(TEX_FOX_SHEET, Rect2(-draw_sz * 0.5, -draw_sz * 0.82, draw_sz, draw_sz), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	elif enemy_type == 1:
 		_draw_shadow(28.0 * sh_sc, 22.0)
@@ -632,7 +663,7 @@ func _draw() -> void:
 		var elite_tex: Texture2D = TEX_ELITE_FOX
 		var elite_sheet: Texture2D = TEX_ELITE_FOX_SHEET
 		var elite_frames := FOX_FRAMES
-		var draw_rect := Rect2(-46.0, -81.0, 92.0, 92.0)
+		var draw_rect := Rect2(-draw_sz * 0.5, -draw_sz * 0.88, draw_sz, draw_sz)
 		var extra_y := 0.0
 		var elite_frame_px := 128.0
 		match species:
@@ -641,63 +672,53 @@ func _draw() -> void:
 				elite_tex = TEX_ELITE_FOX
 				elite_sheet = TEX_ELITE_FOX_SHEET
 				elite_frames = FOX_FRAMES
-				draw_rect = Rect2(-46.0, -81.0, 92.0, 92.0)
 			1:
 				elite_col = Color(0.22, 0.88, 0.78, aura_a)
 				elite_tex = TEX_ELITE_DOLL
 				elite_sheet = TEX_ELITE_DOLL_SHEET
 				elite_frames = DOLL_FRAMES
-				draw_rect = Rect2(-46.0, -85.0, 92.0, 92.0)
 			2:
 				elite_col = Color(0.96, 0.62, 0.22, aura_a)
 				elite_tex = TEX_ELITE_SHANXIAO
 				elite_sheet = TEX_ELITE_SHANXIAO_SHEET
 				elite_frames = RUN_FRAMES
-				draw_rect = Rect2(-50.0, -90.0, 100.0, 100.0)
 			3:
 				elite_col = Color(0.84, 0.76, 0.30, aura_a)
 				elite_tex = TEX_ELITE_JIANGSHI
 				elite_sheet = TEX_ELITE_JIANGSHI_SHEET
 				elite_frames = RUN_FRAMES
-				draw_rect = Rect2(-50.0, -92.0, 100.0, 100.0)
 			4:
 				elite_col = Color(0.45, 0.94, 0.56, aura_a)
 				elite_tex = TEX_ELITE_JINCHAN
 				elite_sheet = TEX_ELITE_JINCHAN_SHEET
 				elite_frames = RUN_FRAMES
-				draw_rect = Rect2(-50.0, -84.0, 100.0, 100.0)
 			5:
 				elite_col = Color(0.48, 0.96, 0.56, aura_a)
 				elite_tex = TEX_ELITE_SHENJING
 				elite_sheet = TEX_ELITE_SHENJING_SHEET
 				elite_frames = RUN_FRAMES
-				draw_rect = Rect2(-44.0, -84.0, 88.0, 88.0)
 			6:
 				elite_col = Color(1.0, 0.42, 0.16, aura_a)
 				elite_tex = TEX_ELITE_HUODOU
 				elite_sheet = TEX_ELITE_HUODOU_SHEET
 				elite_frames = RUN_FRAMES
-				draw_rect = Rect2(-50.0, -84.0, 100.0, 100.0)
 			11:
 				elite_col = Color(0.31, 0.90, 0.76, aura_a)
 				elite_tex = TEX_ELITE_YINSHA
 				elite_sheet = TEX_ELITE_YINSHA_SHEET
 				elite_frames = RUN_FRAMES
 				elite_frame_px = 160.0
-				draw_rect = Rect2(-66.0, -92.0, 132.0, 132.0)
 			12:
 				elite_col = Color(0.88, 0.74, 0.34, aura_a)
 				elite_tex = TEX_ELITE_SHIDUN
 				elite_sheet = TEX_ELITE_SHIDUN_SHEET
 				elite_frames = RUN_FRAMES
 				elite_frame_px = 160.0
-				draw_rect = Rect2(-66.0, -92.0, 132.0, 132.0)
 			_:
 				elite_col = Color(0.96, 0.44, 0.24, aura_a)
 				elite_tex = TEX_ELITE_FOX
 				elite_sheet = TEX_ELITE_FOX_SHEET
 				elite_frames = FOX_FRAMES
-				draw_rect = Rect2(-46.0, -81.0, 92.0, 92.0)
 		draw_set_transform(Vector2(0.0, 22.0), 0.0, Vector2(1.0, 0.45))
 		draw_arc(Vector2.ZERO, 34.0, 0.0, TAU, 24, elite_col, 3.0)
 		draw_arc(Vector2.ZERO, 40.0 + sin(t * 4.0) * 1.5, 0.0, TAU, 24, Color(1.0, 0.86, 0.34, aura_a * 0.65), 1.6)
@@ -716,7 +737,7 @@ func _draw() -> void:
 			var r_idx := idx % RUN_FRAMES
 			var src := Rect2(float(r_idx) * 128.0, 0.0, 128.0, 128.0)
 			draw_set_transform(Vector2(roundf(off.x), roundf(22.0 + off.y)), rot, sc)
-			draw_texture_rect_region(TEX_ELITE_SHEET, Rect2(-48.0, -83.0, 96.0, 96.0), src, tint)
+			draw_texture_rect_region(TEX_ELITE_SHEET, draw_rect, src, tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	elif enemy_type == 2:
 		_draw_shadow(52.0 * sh_sc, 36.0)
@@ -735,25 +756,28 @@ func _draw() -> void:
 			boss_tint = Color(1.0 + _boss_charge_ratio * 0.45 * pulse, 0.92 - _boss_charge_ratio * 0.25, 0.82 - _boss_charge_ratio * 0.3, 1.0)
 		elif _boss_enraged:
 			boss_tint = Color(1.18, 0.90, 0.88, 1.0)
+		if frozen_now:
+			boss_tint *= Color(0.72, 0.94, 1.12, 1.0)
 
 		var anim_state := "chase"
 		if _parent_body != null and _parent_body.has_method("get_boss_anim_state"):
 			anim_state = _parent_body.get_boss_anim_state()
 
+		var b_rect := Rect2(-draw_sz * 0.5, -draw_sz * 0.89, draw_sz, draw_sz)
 		if species == 1 and TEX_DOLL_SHEET != null:
 			var fy := 0.0 if anim_state == "windup" else sin(t * 4.5) * 6.0
 			var use_sc := Vector2(sc.x * last_charge_squash.x, sc.y * last_charge_squash.y) if anim_state == "windup" and _is_charge_windup else (Vector2(sc.x * 1.08, sc.y * 0.88) if anim_state == "windup" else sc)
 			var doll_idx := 0 if anim_state == "windup" else int(floor(t * 8.0)) % DOLL_FRAMES
 			var src := Rect2(float(doll_idx) * 96.0, 0.0, 96.0, 96.0)
 			draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, use_sc)
-			draw_texture_rect_region(TEX_DOLL_SHEET, Rect2(-74.0, -142.0 + fy, 148.0, 148.0), src, boss_tint)
+			draw_texture_rect_region(TEX_DOLL_SHEET, Rect2(b_rect.position.x, b_rect.position.y + fy, draw_sz, draw_sz), src, boss_tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif species == 2 and TEX_ELITE_SHEET != null:
 			var use_sc := Vector2(sc.x * last_charge_squash.x, sc.y * last_charge_squash.y) if (anim_state == "windup" and _is_charge_windup) or anim_state == "pounce" else (Vector2(sc.x * 1.08, sc.y * 0.88) if anim_state == "windup" else sc)
 			var r_idx := 2 if anim_state == "windup" else idx % RUN_FRAMES
 			var src := Rect2(float(r_idx) * 128.0, 0.0, 128.0, 128.0)
 			draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, use_sc)
-			draw_texture_rect_region(TEX_ELITE_SHEET, Rect2(-80.0, -142.0, 160.0, 160.0), src, boss_tint)
+			draw_texture_rect_region(TEX_ELITE_SHEET, b_rect, src, boss_tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif species >= 3 and species <= 6:
 			var boss_sheet: Texture2D = TEX_BAGUA_DANLU_SHEET
@@ -768,7 +792,7 @@ func _draw() -> void:
 				var col := idx % RUN_FRAMES
 				draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, sc)
 				var src := Rect2(float(col) * 224.0, 0.0, 224.0, 224.0)
-				draw_texture_rect_region(boss_sheet, Rect2(-135.0, -233.0, 270.0, 270.0), src, boss_tint)
+				draw_texture_rect_region(boss_sheet, b_rect, src, boss_tint)
 				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif TEX_WOLF_SHEET != null:
 			var col := idx % RUN_FRAMES
@@ -784,9 +808,11 @@ func _draw() -> void:
 				"roar":
 					use_sc = Vector2(sc.x * 0.94, sc.y * 1.14)
 					boss_tint = Color(1.22, 0.86, 0.84, 1.0)
+					if frozen_now:
+						boss_tint *= Color(0.72, 0.94, 1.12, 1.0)
 			draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), use_rot, use_sc)
 			var src := Rect2(float(col) * WOLF_BOSS_SIZE, 0.0, WOLF_BOSS_SIZE, WOLF_BOSS_SIZE)
-			draw_texture_rect_region(TEX_WOLF_SHEET, Rect2(-94.0, -168.0, 188.0, 188.0), src, boss_tint)
+			draw_texture_rect_region(TEX_WOLF_SHEET, b_rect, src, boss_tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if _parent_body != null and not _parent_body.is_dead and _parent_body.has_method("is_burning") and _parent_body.is_burning():
@@ -812,6 +838,60 @@ func _draw() -> void:
 			draw_texture_rect(glyph, Rect2(pip_pos - Vector2(6.5, 6.5), Vector2(13.0, 13.0)), false, ec)
 		else:
 			draw_circle(pip_pos, 4.2, ec)
+
+	_draw_element_status_badges(draw_sz)
+
+func _draw_element_status_badges(draw_sz: float) -> void:
+	if _parent_body == null or bool(_parent_body.get("is_dead")):
+		return
+	var t: float = float(Time.get_ticks_msec()) * 0.001
+	var half_h: float = draw_sz * 0.45
+	var half_w: float = draw_sz * 0.32
+
+	# 1) 潮湿（5 秒水印记）：脚底淡蓝水波 + 两侧飘浮 2 颗晶莹水滴
+	if _active_elem == "water":
+		draw_set_transform(Vector2(0.0, half_h * 0.35), 0.0, Vector2(1.0, 0.36))
+		draw_arc(Vector2.ZERO, half_w * 1.05, 0.0, TAU, 18, Color(0.26, 0.84, 0.98, 0.45), 1.8)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		for i in range(2):
+			var side: float = -1.0 if i == 0 else 1.0
+			var drop_y: float = -half_h * 0.45 + fmod(t * 26.0 + float(i) * 14.0, 26.0)
+			var drop_p := Vector2(side * (half_w * 0.95), drop_y)
+			draw_colored_polygon(PackedVector2Array([
+				drop_p + Vector2(0.0, -5.0),
+				drop_p + Vector2(3.5, 1.5),
+				drop_p + Vector2(0.0, 4.5),
+				drop_p + Vector2(-3.5, 1.5),
+			]), Color(0.45, 0.92, 1.0, 0.88))
+
+	# 2) 火印记：怪身斜上方冒 2 粒橘红小火星
+	elif _active_elem == "fire":
+		for i in range(2):
+			var phase: float = fmod(t * 2.2 + float(i) * 0.5, 1.0)
+			var p := Vector2((-8.0 if i == 0 else 9.0) + sin(t * 8.0 + float(i)) * 3.0, -half_h * 0.25 - phase * 22.0)
+			draw_circle(p, lerpf(3.2, 1.2, phase), Color(1.0, 0.56, 0.16, (1.0 - phase) * 0.92))
+
+	# 3) 雷印记 / 麻痹抽搐：身上闪细碎紫白电丝
+	var stunned: bool = "_stun_timer" in _parent_body and float(_parent_body.get("_stun_timer")) > 0.0
+	if _active_elem == "thunder" or stunned:
+		var zig_seed: int = int(t * 14.0) + _parent_body.get_instance_id()
+		var sx: float = -half_w * 0.7 if (zig_seed % 2 == 0) else half_w * 0.3
+		var p0 := Vector2(sx, -half_h * 0.65)
+		var p1 := p0 + Vector2(8.0, 10.0)
+		var p2 := p1 + Vector2(-7.0, 9.0)
+		var p3 := p2 + Vector2(9.0, 11.0)
+		draw_polyline(PackedVector2Array([p0, p1, p2, p3]), Color(0.76, 0.68, 1.0, 0.92), 2.0)
+
+	# 4) 熔金（4 秒唯一易伤）：橙金熔甲光环
+	if "damage_taken_mult" in _parent_body and float(_parent_body.get("damage_taken_mult")) > 1.05:
+		var pulse: float = 0.55 + 0.35 * sin(t * 10.0)
+		draw_arc(Vector2(0.0, -half_h * 0.25), half_w * 1.15, 0.0, TAU, 20, Color(1.0, 0.62, 0.20, pulse * 0.65), 2.2)
+
+	# 5) 焚煞印记（待尸爆）：胸口暗红脉动火核
+	if "_detonate_mark_timer" in _parent_body and float(_parent_body.get("_detonate_mark_timer")) > 0.0:
+		var pulse_r: float = 5.5 + 2.5 * sin(t * 14.0)
+		draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r, Color(0.98, 0.28, 0.10, 0.72))
+		draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r * 0.45, Color(1.0, 0.88, 0.45, 0.92))
 
 func _elem_color(elem: String) -> Color:
 	match elem:

@@ -758,14 +758,16 @@ func setup_ice_shard(
 	shard_col: Color,
 	split_perk: bool = false,
 	pierce: int = 1,
-	awakened_flag: bool = false
+	awakened_flag: bool = false,
+	proj_spd: float = 235.0,
+	area_m: float = 1.0
 ) -> void:
 	mode = Mode.ICE_SHARD
 	controller = ctrl
 	global_position = origin
 	dir = direction.normalized() if direction.length_squared() > 0.001 else Vector2.RIGHT
 	damage = dmg
-	speed = 700.0
+	speed = maxf(60.0, proj_spd)
 	max_range = rng
 	shot_id = s_id
 	slow_pct = sl_pct
@@ -773,13 +775,15 @@ func setup_ice_shard(
 	color = shard_col
 	split_on_hit = split_perk
 	pierce_left = pierce
+	area_scale = maxf(0.5, area_m)
+	spin_ang = randf() * TAU
 	element = "ice"
 	z_index = 4
 
-	_trail_line = V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, 11.0, {
-		"primary_color": Color(color.r, color.g, color.b, 0.72),
-		"edge_color": Color(0.92, 0.99, 1.0, 1.0),
-		"intensity": 1.35,
+	_trail_line = V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, 9.0, {
+		"primary_color": Color(color.r, color.g, color.b, 0.52),
+		"edge_color": Color(0.92, 0.99, 1.0, 0.85),
+		"intensity": 1.15,
 		"use_texture_mask": 0.0,
 	}, V2VfxFactory.make_taper_curve(0.05, 1.0))
 	_trail_line.top_level = true
@@ -800,16 +804,8 @@ func setup_ice_shard(
 	})
 	add_child(_trail_particles)
 
-	_main_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_TRACE_01_ROT, 34.0, Color(color.r, color.g, color.b, 0.95), true)
-	_main_sprite.rotation = dir.angle()
-	add_child(_main_sprite)
-
-	_glow_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_STAR_08, 22.0, Color(0.92, 0.99, 1.0, 0.95), true)
-	_glow_sprite.position = dir * 8.0
+	_glow_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_STAR_08, 28.0 * clampf(area_scale, 0.85, 1.55), Color(0.78, 0.96, 1.0, 0.45), true)
 	add_child(_glow_sprite)
-
-	_mist_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_TWIRL_02, 24.0, Color(0.32, 0.90, 1.0, 0.52), true)
-	add_child(_mist_sprite)
 
 	if split_on_hit:
 		_perk_sprite = V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_MAGIC_03, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
@@ -819,7 +815,7 @@ func setup_ice_shard(
 			"spin_speed": 3.5,
 			"alpha_limit": 0.58,
 			"is_wave": 0.0,
-		}, 44.0)
+		}, 48.0 * clampf(area_scale, 0.85, 1.55))
 		add_child(_perk_sprite)
 
 	if awakened_flag:
@@ -827,7 +823,7 @@ func setup_ice_shard(
 		awakened_effect = "frost_wheel_shatter"
 		_trail_limit = 14
 		if _trail_line != null:
-			_trail_line.width = 18.0
+			_trail_line.width = 14.0
 		_trail_particles.amount = awakened_particle_amount(14)
 		for i in range(3):
 			var crystal := V2VfxFactory.make_sprite(
@@ -852,6 +848,7 @@ func setup_ice_shard(
 			"color_end": Color(0.22, 0.66, 0.92, 0.0),
 		}))
 		awaken_layers = 4
+	queue_redraw()
 
 func setup_pulse_ring(
 	center: Vector2,
@@ -2031,6 +2028,46 @@ func _detonate_lotus_implosion() -> void:
 		if global_position.distance_squared_to(e.global_position) <= (radius * 1.1) * (radius * 1.1):
 			controller.call("deal_v2_damage", e, burst, element, {})
 
+func _draw() -> void:
+	if mode == Mode.ICE_SHARD:
+		_draw_snowflake_projectile()
+
+func _draw_snowflake_projectile() -> void:
+	var r: float = (26.0 if awakened else 17.0) * clampf(area_scale, 0.85, 1.55)
+	var col_outer := Color(0.76, 0.96, 1.0, 0.94)
+	var col_core := Color(0.96, 0.99, 1.0, 0.98)
+	var col_glow := Color(0.32, 0.84, 1.0, 0.24 if not awakened else 0.34)
+	var line_w: float = 2.6 if awakened else 2.0
+
+	draw_circle(Vector2.ZERO, r * 1.15, col_glow)
+
+	for i in range(6):
+		var ang: float = spin_ang + float(i) * (TAU / 6.0)
+		var dir_v := Vector2(cos(ang), sin(ang))
+		var tip := dir_v * r
+		draw_line(Vector2.ZERO, tip, col_outer, line_w, true)
+
+		var left_a := Vector2(cos(ang + 0.65), sin(ang + 0.65))
+		var right_a := Vector2(cos(ang - 0.65), sin(ang - 0.65))
+		var p1 := dir_v * (r * 0.48)
+		var p2 := dir_v * (r * 0.74)
+		draw_line(p1, p1 + left_a * (r * 0.32), col_outer, line_w * 0.72, true)
+		draw_line(p1, p1 + right_a * (r * 0.32), col_outer, line_w * 0.72, true)
+		draw_line(p2, p2 + left_a * (r * 0.22), col_core, line_w * 0.62, true)
+		draw_line(p2, p2 + right_a * (r * 0.22), col_core, line_w * 0.62, true)
+
+		if awakened:
+			var next_ang: float = spin_ang + float(i + 1) * (TAU / 6.0)
+			var mid_a := dir_v * (r * 0.62)
+			var mid_b := Vector2(cos(next_ang), sin(next_ang)) * (r * 0.62)
+			draw_line(mid_a, mid_b, Color(0.86, 0.97, 1.0, 0.72), 1.6, true)
+
+	var hex := PackedVector2Array()
+	for i in range(6):
+		var ha: float = spin_ang + float(i) * (TAU / 6.0)
+		hex.append(Vector2(cos(ha), sin(ha)) * (r * 0.26))
+	draw_colored_polygon(hex, col_core)
+
 func _step_ice_shard(delta: float) -> void:
 	if controller == null or not is_instance_valid(controller):
 		queue_free()
@@ -2038,16 +2075,18 @@ func _step_ice_shard(delta: float) -> void:
 	var step := speed * delta
 	global_position += dir * step
 	travelled += step
+	spin_ang += delta * (4.2 if awakened else 2.6)
+	queue_redraw()
 
 	trail.append(global_position)
 	if trail.size() > _trail_limit:
 		trail.remove_at(0)
 	if _trail_line != null and trail.size() >= 2:
 		_trail_line.points = PackedVector2Array(trail)
+	if _glow_sprite != null:
+		_glow_sprite.rotation = spin_ang * 0.5
 	if _perk_sprite != null:
 		_perk_sprite.rotation += delta * 6.0
-	if _mist_sprite != null:
-		_mist_sprite.rotation -= delta * 7.5
 	for item in _awaken_orbit:
 		var crystal := item.get("node") as Sprite2D
 		if crystal == null or not is_instance_valid(crystal):
@@ -2056,14 +2095,15 @@ func _step_ice_shard(delta: float) -> void:
 		crystal.position = Vector2(cos(ang), sin(ang)) * float(item.get("radius", 30.0))
 		crystal.rotation -= delta * 4.5
 
-	for raw_e in CombatGrid.query(global_position, 22.0):
+	var hit_r := 28.0 * clampf(area_scale, 0.85, 1.55)
+	for raw_e in CombatGrid.query(global_position, hit_r):
 		var e := raw_e as Enemy
 		if e == null or not is_instance_valid(e) or e.is_dead:
 			continue
 		var eid := e.get_instance_id()
 		if hit_ids.has(eid):
 			continue
-		if global_position.distance_squared_to(e.global_position) > 24.0 * 24.0:
+		if global_position.distance_squared_to(e.global_position) > hit_r * hit_r:
 			continue
 		hit_ids[eid] = true
 		if e.has_method("apply_slow") and slow_pct > 0.0:
@@ -2078,7 +2118,7 @@ func _step_ice_shard(delta: float) -> void:
 			for k in [-1, 0, 1]:
 				var sub := V2AttackFx.new()
 				get_parent().add_child(sub)
-				sub.setup_ice_shard(controller, global_position, dir.rotated(float(k) * 0.48), damage * 0.45, 150.0, shot_id, slow_pct * 0.6, 1.2, color, false, 1)
+				sub.setup_ice_shard(controller, global_position, dir.rotated(float(k) * 0.48), damage * 0.45, 175.0, shot_id, slow_pct * 0.6, 1.2, color, false, 2, false, speed * 1.15, area_scale * 0.85)
 		pierce_left -= 1
 		if pierce_left <= 0:
 			queue_free()

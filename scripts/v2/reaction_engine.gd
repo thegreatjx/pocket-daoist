@@ -3,6 +3,7 @@ extends RefCounted
 
 var loader: V2DataLoader
 var _aura_dur: float = 3.5
+var _water_aura_dur: float = 5.0
 var _icd_sec: float = 2.0
 var _min_icd_sec: float = 1.2
 var _boss_icd_sec: float = 2.5
@@ -21,6 +22,7 @@ func _init(data_loader: V2DataLoader) -> void:
 	if loader != null:
 		var cfg: Dictionary = loader.reaction_config
 		_aura_dur = float(cfg.get("aura_duration_sec", 3.5))
+		_water_aura_dur = float(cfg.get("water_aura_duration_sec", 5.0))
 		_icd_sec = float(cfg.get("per_enemy_icd_sec", 2.0))
 		_min_icd_sec = float(cfg.get("min_enemy_icd_sec", 1.2))
 		_boss_icd_sec = float(cfg.get("boss_icd_sec", 2.5))
@@ -130,10 +132,14 @@ func apply_element_hit(
 	return {}
 
 func _calc_aura_dur(elem: String, eff_mods: Dictionary) -> float:
-	var dur: float = _aura_dur
+	var dur: float = _water_aura_dur if elem == "water" else _aura_dur
 	if elem == "fire":
 		dur += float(eff_mods.get("fire_aura_dur_bonus", 0.0))
 	return dur
+
+func get_aura_duration(elem: String, mods: Dictionary = {}) -> float:
+	var eff_mods: Dictionary = _modifiers if mods.is_empty() else _merge_mods(_modifiers, mods)
+	return _calc_aura_dur(elem, eff_mods)
 
 func _set_enemy_icd(enemy_id: int, now_sec: float, is_boss: bool, eff_mods: Dictionary) -> void:
 	var base_icd: float = _boss_icd_sec if is_boss else _icd_sec

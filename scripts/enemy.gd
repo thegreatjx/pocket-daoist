@@ -33,6 +33,7 @@ var exp_gem_value: float = 6.0
 var can_despawn: bool = true
 var is_boss: bool = false
 var is_mini_boss: bool = false
+var is_humanoid_boss: bool = false
 var elite_affix_id: String = ""
 var elite_aura_color: Color = Color(0.0, 0.0, 0.0, 0.0)
 var elite_blast_delay: float = 0.0
@@ -78,6 +79,7 @@ var _vuln_timer: float = 0.0
 var max_shield: float = 0.0
 var current_shield: float = 0.0
 var _shield_break_flash: float = 0.0
+var _boss_p2_shield_refilled: bool = false
 var _detonate_mark_timer: float = 0.0
 var _detonate_mark_radius: float = 95.0
 var _detonate_mark_pct: float = 0.22
@@ -158,6 +160,7 @@ func _reset_state() -> void:
 	can_despawn = true
 	is_boss = false
 	is_mini_boss = false
+	is_humanoid_boss = false
 	elite_affix_id = ""
 	elite_aura_color = Color(0.0, 0.0, 0.0, 0.0)
 	elite_blast_delay = 0.0
@@ -175,7 +178,7 @@ func _reset_state() -> void:
 	_slow_ratio = 0.0
 	_slow_timer = 0.0
 	_stun_timer = 0.0
-	_clear_freeze_visual()
+	_clear_freeze_visual(false, true)
 	_freeze_timer = 0.0
 	_hitstop_timer = 0.0
 	if visual_node != null:
@@ -205,6 +208,7 @@ func _reset_state() -> void:
 	max_shield = 0.0
 	current_shield = 0.0
 	_shield_break_flash = 0.0
+	_boss_p2_shield_refilled = false
 	_detonate_mark_timer = 0.0
 	_detonate_mark_radius = 95.0
 	_detonate_mark_pct = 0.22
@@ -404,7 +408,7 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 			separation_force = 120.0
 			_update_shapes(18.0, 22.0)
 		Type.BOSS:
-			max_health = 22000.0
+			max_health = 18500.0
 			speed = 138.0
 			contact_damage = 30.0
 			knockback_resistance = 0.95
@@ -412,9 +416,10 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 			exp_gem_count = 14
 			can_despawn = false
 			is_boss = true
+			is_humanoid_boss = sp in [1, 4, 5, 6]
 			separation_radius = 55.0
 			separation_force = 200.0
-			_update_shapes(32.0, 36.0)
+			_update_shapes(40.0, 44.0)
 			if sp == 4:
 				knockback_resistance = 1.0
 
@@ -447,9 +452,9 @@ func sync_qi_shield() -> void:
 		Type.MINION:
 			max_shield = 0.0
 		Type.ELITE:
-			max_shield = roundf(max_health * (0.32 if is_mini_boss else 0.25))
+			max_shield = roundf(max_health * (0.14 if is_mini_boss else 0.16))
 		Type.BOSS:
-			max_shield = roundf(max_health * (6500.0 / 22000.0))
+			max_shield = roundf(max_health * (2000.0 / 18500.0))
 	current_shield = max_shield
 
 func apply_curse_scaling(curse_pct: float) -> void:
@@ -559,10 +564,8 @@ func _physics_process(delta: float) -> void:
 		_freeze_timer = maxf(0.0, _freeze_timer - delta)
 		velocity = Vector2.ZERO
 		_knockback = Vector2.ZERO
-		if visual_node != null:
-			visual_node.set_process(false)
 		if _freeze_timer <= 0.0:
-			_clear_freeze_visual()
+			_clear_freeze_visual(false)
 		return
 
 	if _hitstop_timer > 0.0:
@@ -670,7 +673,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	var touch_distance = 32.0 if not is_boss else 52.0
+	var touch_distance = 32.0 if not is_boss else 46.0
 	if global_position.distance_to(target.global_position) <= touch_distance:
 		if target.has_method("take_damage"):
 			target.take_damage(contact_damage)
@@ -841,10 +844,10 @@ func apply_freeze(duration: float) -> void:
 func is_frozen() -> bool:
 	return _freeze_timer > 0.0
 
-func unfreeze() -> void:
+func unfreeze(heavy: bool = false) -> void:
 	if _freeze_timer > 0.0:
 		_freeze_timer = 0.0
-		_clear_freeze_visual()
+		_clear_freeze_visual(heavy)
 
 func _show_freeze_marker() -> void:
 	if _freeze_marker != null and is_instance_valid(_freeze_marker) and not _freeze_marker.is_queued_for_deletion():
@@ -858,9 +861,12 @@ func _show_freeze_marker() -> void:
 	if _freeze_marker.has_method("setup"):
 		_freeze_marker.setup(self)
 
-func _clear_freeze_visual() -> void:
+func _clear_freeze_visual(heavy: bool = false, immediate_free: bool = false) -> void:
 	if _freeze_marker != null and is_instance_valid(_freeze_marker):
-		_freeze_marker.queue_free()
+		if not immediate_free and _freeze_marker.has_method("shatter_and_detach"):
+			_freeze_marker.shatter_and_detach(heavy)
+		else:
+			_freeze_marker.queue_free()
 	_freeze_marker = null
 	if visual_node != null and not is_visual_culled and not is_dying_anim:
 		visual_node.set_process(true)
@@ -1173,6 +1179,9 @@ func _begin_death_anim() -> void:
 	if hurt_col_shape != null:
 		hurt_col_shape.set_deferred("disabled", true)
 	set_active_element("", 0.0)
+	if _freeze_timer > 0.0 or _freeze_marker != null:
+		_freeze_timer = 0.0
+		_clear_freeze_visual(false)
 	if visual_node != null:
 		visual_node.set_process(false)
 		visual_node.scale = Vector2.ONE
@@ -1254,6 +1263,14 @@ func _enter_boss_phase2() -> void:
 	_boss_enraged = true
 	speed *= 1.22
 	_boss_skill_cd = minf(_boss_skill_cd, 0.45)
+	if not _boss_p2_shield_refilled:
+		_boss_p2_shield_refilled = true
+		max_shield = roundf(max_health * 0.12)
+		current_shield = max_shield
+		get_tree().call_group("game_manager", "update_boss_hp", current_health, max_health, current_shield, max_shield)
+		if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:
+			target.v2_combat._spawn_text_popup(global_position + Vector2(0.0, -56.0), "护体罡气重聚！", Color(0.95, 0.98, 1.0))
+			target.v2_combat.play_v2_cue("sfx_boss_roar", "boss", 1.05)
 	Sfx.play_boss_or_fallback("boss_roar", "thunder", -1.0, 0.78)
 	get_tree().call_group("ui", "show_banner", "【首领狂暴 · 妖气暴走！】")
 	if get_parent() != null:
@@ -1429,11 +1446,11 @@ func _emit_boss_dash_ghost() -> void:
 	if visual_node == null or get_parent() == null:
 		return
 	var tex: Texture2D = visual_node.get("TEX_WOLF_SHEET") as Texture2D
-	var d_rect := Rect2(-94.0, -168.0, 188.0, 188.0)
+	var d_rect := Rect2(-87.5, -156.0, 175.0, 175.0)
 	var s_rect := Rect2(0.0, 0.0, 220.0, 220.0)
 	if species == 1:
 		tex = visual_node.get("TEX_DOLL_SHEET") as Texture2D
-		d_rect = Rect2(-74.0, -142.0, 148.0, 148.0)
+		d_rect = Rect2(-68.0, -120.0, 136.0, 136.0)
 		s_rect = Rect2(0.0, 0.0, 96.0, 96.0)
 	elif species == 2:
 		tex = visual_node.get("TEX_ELITE_SHEET") as Texture2D

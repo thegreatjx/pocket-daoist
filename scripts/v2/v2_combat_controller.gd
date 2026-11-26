@@ -39,6 +39,7 @@ const CUE_FALLBACK_PATHS := {
 	"sfx_react_freeze": "res://assets/audio/sword_hit.wav",
 	"sfx_react_slash": "res://assets/audio/sword_cast.wav",
 	"sfx_react_forge": "res://assets/audio/cannon_blast.wav",
+	"sfx_boss_roar": "res://assets/audio/boss_roar.wav",
 	"sfx_crit_hit": "res://assets/audio/sword_hit.wav",
 	"xp_orb": "res://assets/audio/gem_pickup.wav",
 	"ui_event": "res://assets/audio/chest_open.wav",
@@ -74,6 +75,7 @@ var _prune_timer: float = 0.0
 var _reaction_pop_budget: int = 12
 var _reaction_pop_timer: float = 0.0
 var _pending_salvos: Array[Dictionary] = []
+var _pending_shock_waves: Array[Dictionary] = []
 var _gold_frac: float = 0.0
 var _drop_wave: int = 1
 var _wave_dropped_gold: int = 0
@@ -231,9 +233,11 @@ func _on_orbit_loadout_changed(_slots: Array) -> void:
 func _physics_process(delta: float) -> void:
 	if player == null or not is_instance_valid(player) or player.is_dead or orbit_rig == null:
 		_pending_salvos.clear()
+		_pending_shock_waves.clear()
 		return
 
 	_step_pending_salvos(delta)
+	_step_pending_shock_waves(delta)
 
 	_lifesteal_budget = minf(player.max_health * 0.06, _lifesteal_budget + player.max_health * 0.06 * delta)
 	_reaction_pop_timer += delta
@@ -735,8 +739,9 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 			var col := Color.from_string(sh_hex, Color(0.22, 0.74, 0.97))
 			var base_ang := (target_pos - origin).angle()
 			var spread := 0.76
-			var pierce := 1 + int(item_mods.get("pierce_flat", 0))
-			var rng := float(stats.get("range", 310.0))
+			var pierce := maxi(1, int(stats.get("pierce", 3))) + int(item_mods.get("pierce_flat", 0))
+			var rng := float(stats.get("range", 380.0))
+			var proj_spd := float(stats.get("proj_speed", 235.0))
 			var sl_pct := float(stats.get("slow_pct", 0.25))
 			var sl_dur := float(stats.get("slow_dur", 2.0))
 			for k in range(cnt):
@@ -746,7 +751,7 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 				if k == 0:
 					var fx := V2AttackFx.new()
 					parent_world.add_child(fx)
-					fx.setup_ice_shard(self, origin, shot_dir, base_dmg, rng, s_id, sl_pct, sl_dur, col, is_wheel, pierce, awakened_fx)
+					fx.setup_ice_shard(self, origin, shot_dir, base_dmg, rng, s_id, sl_pct, sl_dur, col, is_wheel, pierce, awakened_fx, proj_spd, area_m)
 				else:
 					_enqueue_salvo({
 						"kind": "ice_shard",
@@ -756,6 +761,8 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 						"dir": shot_dir,
 						"damage": base_dmg,
 						"range": rng,
+						"proj_speed": proj_spd,
+						"area_mult": area_m,
 						"shot_id": s_id,
 						"slow_pct": sl_pct,
 						"slow_dur": sl_dur,
@@ -1056,7 +1063,7 @@ func deal_v2_damage(enemy: Node, base_dmg: float, element: String, opts: Diction
 		if not bool(enemy.get("is_dead")) and enemy.has_method("set_active_element"):
 			var aur := reaction_engine.get_aura_elements(eid, now_sec)
 			var disp_elem := String(aur[0]) if not aur.is_empty() else element
-			enemy.set_active_element(disp_elem, 3.5 + (float(item_mods.get("fire_aura_dur_bonus", 0.0)) if disp_elem == "fire" else 0.0))
+			enemy.set_active_element(disp_elem, reaction_engine.get_aura_duration(disp_elem, item_mods))
 		return
 
 	if not bool(enemy.get("is_dead")) and enemy.has_method("set_active_element"):
@@ -1088,24 +1095,24 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 
 	match rx_id:
 		"react_shock":
-			var chain_n: int = maxi(1, int(rx.get("chain_count", 3)))
-			var chain_r: float = float(spec.get("chain_range", 155.0)) * get_area_mult()
-			var stun_d: float = float(spec.get("stun_dur", 0.35))
-			var hit_targets := _pick_chain_targets(target, chain_n, chain_r)
-			var pts := PackedVector2Array([hit_pos])
-			for e in hit_targets:
-				if e == null or not is_instance_valid(e) or bool(e.get("is_dead")):
-					continue
-				if (e as Node2D).global_position.distance_squared_to(pts[pts.size() - 1]) > 1.0:
-					pts.append((e as Node2D).global_position)
-				if e.has_method("take_damage_v2"):
-					e.take_damage_v2(bonus_dmg, false, false, "", rx_col, false)
-				if not bool(e.get("is_boss")) and e.has_method("apply_stun"):
-					e.apply_stun(stun_d * (0.5 if int(e.get("enemy_type")) == Enemy.Type.ELITE else 1.0))
-			if pts.size() >= 2 and player != null and player.get_parent() != null and V2VfxFactory.can_spawn_transient(player.get_parent()):
-				var bolt := V2AttackFx.new()
-				player.get_parent().add_child(bolt)
-				bolt.setup_chain_bolt(pts, rx_col, true, false)
+			var chain_n: int = maxi(2, int(rx.get("chain_count", 5)))
+			var chain_r: float = float(spec.get("chain_range", 210.0)) * get_area_mult()
+			var stun_d: float = float(spec.get("stun_dur", 0.65))
+			var elite_stun_d: float = float(spec.get("elite_stun_dur", 0.35))
+			var wave2_delay: float = float(spec.get("second_wave_delay", 0.45))
+			_trigger_shock_chain_wave(target, hit_pos, bonus_dmg, chain_n, chain_r, stun_d, elite_stun_d, rx_col, false)
+			if wave2_delay > 0.0:
+				_pending_shock_waves.append({
+					"delay": wave2_delay,
+					"anchor": target,
+					"fallback_pos": hit_pos,
+					"dmg": bonus_dmg,
+					"count": chain_n,
+					"range": chain_r,
+					"stun": stun_d * 0.55,
+					"elite_stun": elite_stun_d * 0.5,
+					"color": rx_col,
+				})
 
 		"react_freeze":
 			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
@@ -1122,9 +1129,9 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 		"react_shatter":
 			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
 				if target.has_method("unfreeze"):
-					target.unfreeze()
+					target.unfreeze(true)
 				if target.has_method("apply_shield_chunk_damage"):
-					target.apply_shield_chunk_damage(float(rx.get("shield_max_pct", 0.18)), float(rx.get("shield_flat_min", 90.0)))
+					target.apply_shield_chunk_damage(float(rx.get("shield_max_pct", 0.35)), float(rx.get("shield_flat_min", 160.0)))
 			var eff_aoe := maxf(60.0, aoe_r)
 			for e in CombatGrid.query(hit_pos, eff_aoe):
 				if e != null and is_instance_valid(e) and not bool(e.get("is_dead")) and hit_pos.distance_squared_to((e as Node2D).global_position) <= eff_aoe * eff_aoe:
@@ -1169,6 +1176,90 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 						float(spec.get("death_max_hp_pct", 0.22)),
 						cap
 					)
+
+func _step_pending_shock_waves(delta: float) -> void:
+	if _pending_shock_waves.is_empty():
+		return
+	var i: int = _pending_shock_waves.size() - 1
+	while i >= 0:
+		var w: Dictionary = _pending_shock_waves[i]
+		w["delay"] = float(w["delay"]) - delta
+		if float(w["delay"]) <= 0.0:
+			_pending_shock_waves.remove_at(i)
+			_trigger_shock_chain_wave(
+				w.get("anchor", null) as Node2D,
+				w.get("fallback_pos", Vector2.ZERO) as Vector2,
+				float(w.get("dmg", 0.0)),
+				int(w.get("count", 5)),
+				float(w.get("range", 210.0)),
+				float(w.get("stun", 0.35)),
+				float(w.get("elite_stun", 0.18)),
+				w.get("color", Color(0.65, 0.55, 0.98)) as Color,
+				true
+			)
+		i -= 1
+
+func _trigger_shock_chain_wave(
+	anchor: Node2D,
+	fallback_pos: Vector2,
+	dmg: float,
+	chain_count: int,
+	chain_range: float,
+	stun_dur: float,
+	elite_stun_dur: float,
+	rx_col: Color,
+	is_second_wave: bool
+) -> void:
+	var origin_pos: Vector2 = anchor.global_position if (anchor != null and is_instance_valid(anchor) and not bool(anchor.get("is_dead"))) else fallback_pos
+	var candidates := CombatGrid.query(origin_pos, chain_range)
+	var wet_list: Array[Node2D] = []
+	var dry_list: Array[Node2D] = []
+	var now_sec: float = float(Time.get_ticks_msec()) * 0.001
+
+	for c in candidates:
+		if c == null or not is_instance_valid(c) or bool(c.get("is_dead")):
+			continue
+		var e_node := c as Node2D
+		if e_node == null:
+			continue
+		if reaction_engine != null and reaction_engine.has_aura(e_node.get_instance_id(), "water", now_sec):
+			wet_list.append(e_node)
+		else:
+			dry_list.append(e_node)
+
+	var sort_by_dist := func(a: Node2D, b: Node2D) -> bool:
+		return a.global_position.distance_squared_to(origin_pos) < b.global_position.distance_squared_to(origin_pos)
+	wet_list.sort_custom(sort_by_dist)
+	dry_list.sort_custom(sort_by_dist)
+
+	var targets: Array[Node2D] = []
+	for w in wet_list:
+		if targets.size() >= chain_count:
+			break
+		targets.append(w)
+	for d in dry_list:
+		if targets.size() >= chain_count:
+			break
+		targets.append(d)
+	if targets.is_empty():
+		return
+
+	var pts := PackedVector2Array([origin_pos])
+	for e in targets:
+		if e.global_position.distance_squared_to(pts[pts.size() - 1]) > 1.0:
+			pts.append(e.global_position)
+		if e.has_method("take_damage_v2"):
+			e.take_damage_v2(dmg, false, false, "", rx_col, false)
+		if not bool(e.get("is_boss")) and e.has_method("apply_stun"):
+			var is_el: bool = (int(e.get("enemy_type")) == Enemy.Type.ELITE) or bool(e.get("is_mini_boss"))
+			e.apply_stun(elite_stun_dur if is_el else stun_dur)
+
+	if pts.size() >= 2 and player != null and player.get_parent() != null and V2VfxFactory.can_spawn_transient(player.get_parent()):
+		var bolt := V2AttackFx.new()
+		player.get_parent().add_child(bolt)
+		bolt.setup_chain_bolt(pts, rx_col, false, false)
+	if is_second_wave:
+		play_v2_cue("sfx_react_zap", "reaction", randf_range(1.08, 1.18))
 
 func _pick_chain_targets(primary: Node2D, max_count: int, max_range: float) -> Array:
 	var out: Array = []
@@ -1359,14 +1450,16 @@ func _spawn_staggered_projectile(parent_world: Node, item: Dictionary) -> void:
 				origin,
 				dir_v,
 				float(item.get("damage", 10.0)),
-				float(item.get("range", 310.0)),
+				float(item.get("range", 380.0)),
 				int(item.get("shot_id", 0)),
 				float(item.get("slow_pct", 0.25)),
 				float(item.get("slow_dur", 2.0)),
 				item.get("color", Color(0.22, 0.74, 0.97)) as Color,
 				bool(item.get("split_perk", false)),
-				int(item.get("pierce", 1)),
-				bool(item.get("awakened", false))
+				int(item.get("pierce", 3)),
+				bool(item.get("awakened", false)),
+				float(item.get("proj_speed", 235.0)),
+				float(item.get("area_mult", 1.0))
 			)
 		"flame_boomerang":
 			var fx := V2AttackFx.new()

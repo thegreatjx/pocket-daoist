@@ -258,7 +258,7 @@ func _test_reaction_engine(loader: V2DataLoader) -> void:
 	check("reaction_single_aura_keeps_first_on_non_pair", engine.has_aura(103, "metal", 1.2) and not engine.has_aura(103, "water", 1.2), str(engine.get_aura_elements(103, 1.2)))
 
 	var sh_rx: Dictionary = engine.apply_element_hit(104, "metal", 1.1, 20.0, 0.0, {}, false, true, false)
-	check("reaction_shatter_bypasses_freeze_icd", String(sh_rx.get("reaction_id", "")) == "react_shatter" and bool(sh_rx.get("unfreeze", false)) and is_equal_approx(float(sh_rx.get("shield_flat_min", 0.0)), 90.0), str(sh_rx))
+	check("reaction_shatter_bypasses_freeze_icd", String(sh_rx.get("reaction_id", "")) == "react_shatter" and bool(sh_rx.get("unfreeze", false)) and is_equal_approx(float(sh_rx.get("shield_flat_min", 0.0)), 160.0), str(sh_rx))
 
 	var boss_engine := ReactionEngine.new(loader)
 	boss_engine.apply_element_hit(102, "fire", 1.0, 20.0, 0.0, {}, true)
@@ -1036,12 +1036,12 @@ func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
 	golem.setup_type(Enemy.Type.ELITE, 0.0, 4)
 	var sh_total := golem.max_shield
 	golem.apply_vulnerability(1.25, 4.0)
-	golem.take_damage_v2(100.0, false, false, "metal", Color.WHITE, false, 1.4)
+	golem.take_damage_v2(50.0, false, false, "metal", Color.WHITE, false, 1.4)
 	var vuln_sh_dmg := sh_total - golem.current_shield
 	golem.take_damage_v2(10000.0, false, false, "metal")
 	check(
 		"t3_white_qi_shield_and_break",
-		sh_total > 0.0 and is_equal_approx(vuln_sh_dmg, 175.0) and is_equal_approx(golem.current_shield, 0.0) and golem._stun_timer >= 0.50 and is_equal_approx(golem.damage_taken_mult, 1.25),
+		is_equal_approx(sh_total, 144.0) and is_equal_approx(vuln_sh_dmg, 87.5) and is_equal_approx(golem.current_shield, 0.0) and golem._stun_timer >= 0.50 and is_equal_approx(golem.damage_taken_mult, 1.25),
 		"sh=%.1f vuln_sh=%.1f cur_sh=%.1f stun=%.2f vuln=%.2f" % [sh_total, vuln_sh_dmg, golem.current_shield, golem._stun_timer, golem.damage_taken_mult]
 	)
 

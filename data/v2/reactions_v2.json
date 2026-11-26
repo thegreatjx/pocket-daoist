@@ -1,6 +1,7 @@
 {
   "schema_version": "2.1",
   "aura_duration_sec": 3.5,
+  "water_aura_duration_sec": 5.0,
   "per_enemy_icd_sec": 2.0,
   "min_enemy_icd_sec": 1.2,
   "boss_icd_sec": 2.5,
@@ -20,15 +21,18 @@
         ["thunder", "metal"]
       ],
       "formula_cn": "雷 + 水 / 金",
-      "role_tag": "清杂控群",
-      "damage_mult": 0.2,
-      "chain_count": 3,
-      "chain_range": 155,
-      "stun_dur": 0.35,
+      "role_tag": "连环雷网",
+      "damage_mult": 0.22,
+      "chain_count": 5,
+      "chain_range": 210,
+      "stun_dur": 0.65,
+      "elite_stun_dur": 0.35,
       "boss_immune_stun": true,
-      "vfx_color": "#818CF8",
+      "second_wave_delay": 0.45,
+      "prefer_wet_targets": true,
+      "vfx_color": "#A78BFA",
       "sfx_cue": "sfx_react_zap",
-      "desc": "以剑引雷、借水导雷：紫电在附近 3 名妖物间弹射并轻度麻痹 0.35s（首领免疫麻痹）。"
+      "desc": "水/金导雷成网：以紫电串连附近 5 名妖物（优先潮湿目标）并麻痹 0.65s，0.45s 后自动再爆第 2 波余电（首领免疫麻痹）。"
     },
     {
       "id": "react_freeze",
@@ -116,12 +120,12 @@
     "name": "破冰裂罡",
     "trigger_elem": "metal",
     "requires_frozen": true,
-    "damage_mult": 0.3,
-    "aoe_radius": 85,
-    "shield_max_pct": 0.18,
-    "shield_flat_min": 90.0,
+    "damage_mult": 0.30,
+    "aoe_radius": 90,
+    "shield_max_pct": 0.35,
+    "shield_flat_min": 160.0,
     "vfx_color": "#9AE6FF",
     "sfx_cue": "sfx_react_shatter",
-    "desc": "金系法宝击中已冰封目标时立刻碎冰，额外削减目标 18% 最大白色护体罡气（保底 90 点）。"
+    "desc": "金系法宝击中已冰封目标时立刻碎冰，直接削减目标 35% 最大白色护体罡气（保底 160 点）。"
   }
 }

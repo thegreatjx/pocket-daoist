@@ -333,82 +333,98 @@
           "tier": 1,
           "damage": 6,
           "cooldown": 1.24,
-          "range": 320,
+          "range": 380,
+          "proj_speed": 235,
+          "pierce": 3,
           "projectile_count": 3,
           "slow_pct": 0.30,
           "slow_dur": 2.4,
-          "level_summary": "低伤控场：扇形 3 道冰锥强力减速"
+          "level_summary": "低伤控场：3 枚玄冰雪花慢速旋转穿透，遇潮湿妖物立刻玄霜冰封"
         },
         {
           "tier": 2,
           "damage": 8,
           "cooldown": 1.18,
-          "range": 330,
+          "range": 386,
+          "proj_speed": 235,
+          "pierce": 3,
           "projectile_count": 3,
           "slow_pct": 0.34,
           "slow_dur": 2.6,
-          "level_summary": "寒意减速增强，持续延长"
+          "level_summary": "玄冰雪花寒意减速增强，遇潮湿妖物立刻玄霜冰封"
         },
         {
           "tier": 3,
           "damage": 10,
           "cooldown": 1.13,
-          "range": 342,
+          "range": 392,
+          "proj_speed": 235,
+          "pierce": 3,
           "projectile_count": 4,
           "slow_pct": 0.37,
           "slow_dur": 2.8,
-          "level_summary": "冰锥增至 4 道"
+          "level_summary": "玄冰雪花增至 4 枚，慢速旋转穿透"
         },
         {
           "tier": 4,
           "damage": 12,
           "cooldown": 1.08,
-          "range": 356,
+          "range": 400,
+          "proj_speed": 235,
+          "pierce": 3,
           "projectile_count": 4,
           "slow_pct": 0.40,
           "slow_dur": 3.0,
-          "level_summary": "射程扩大，强效迟滞冲锋怪"
+          "level_summary": "玄冰雪花飘飞射程扩大，强效迟滞冲锋怪"
         },
         {
           "tier": 5,
           "damage": 14,
           "cooldown": 1.03,
-          "range": 370,
+          "range": 408,
+          "proj_speed": 235,
+          "pierce": 4,
           "projectile_count": 5,
           "slow_pct": 0.44,
           "slow_dur": 3.2,
-          "level_summary": "冰锥增至 5 道"
+          "level_summary": "玄冰雪花增至 5 枚，穿透提升至 4"
         },
         {
           "tier": 6,
           "damage": 17,
           "cooldown": 0.98,
-          "range": 384,
+          "range": 416,
+          "proj_speed": 235,
+          "pierce": 4,
           "projectile_count": 6,
           "slow_pct": 0.48,
           "slow_dur": 3.4,
-          "level_summary": "冰锥增至 6 道，冷却缩短"
+          "level_summary": "玄冰雪花增至 6 枚，冷却缩短，遇潮湿立刻冰封"
         },
         {
           "tier": 7,
           "damage": 19,
           "cooldown": 0.94,
-          "range": 400,
+          "range": 422,
+          "proj_speed": 235,
+          "pierce": 4,
           "projectile_count": 6,
           "slow_pct": 0.51,
           "slow_dur": 3.6,
-          "level_summary": "寒霜封脉减速突破 50%"
+          "level_summary": "玄冰雪花寒霜封脉减速突破 50%"
         },
         {
           "tier": 8,
           "damage": 22,
           "cooldown": 0.89,
-          "range": 415,
+          "range": 430,
+          "proj_speed": 255,
+          "pierce": 5,
           "projectile_count": 7,
           "slow_pct": 0.54,
           "slow_dur": 3.9,
           "max_tier_perk": "bagua_frost_wheel",
-          "level_summary": "【质变】幽蓝极寒 7 锥 + 八卦冰轮"
+          "level_summary": "【质变】幽蓝极寒 7 枚玄冰雪花（5 穿透）+ 八卦冰轮"
         }
       ],
       "vfx_profile": {
