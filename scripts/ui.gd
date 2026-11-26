@@ -108,6 +108,7 @@ func _setup_top_left_hud() -> void:
 	_avatar_tex = TextureRect.new()
 	_avatar_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_avatar_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_avatar_tex.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_avatar_tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	avatar_frame.add_child(_avatar_tex)
 
@@ -370,9 +371,7 @@ func _sync_avatar(char_id: String) -> void:
 	if _avatar_tex == null or char_id == _avatar_char_id:
 		return
 	_avatar_char_id = char_id
-	var c := CharacterData.get_character(char_id)
-	var sp_path := str(c.get("sprite", ""))
-	_avatar_tex.texture = load(sp_path) as Texture2D if (sp_path != "" and ResourceLoader.exists(sp_path)) else null
+	_avatar_tex.texture = CharacterData.get_avatar_texture(char_id)
 
 func _sync_initial_player_hud() -> void:
 	if _top_left_plate != null and _loadout_box != null:

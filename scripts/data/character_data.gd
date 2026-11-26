@@ -1,11 +1,14 @@
 class_name CharacterData
 
 const DATA_PATH := "res://data/v2/characters_v2.json"
+const AVATAR_MAX_SIDE := 256
 
 static var _cache: Array[Dictionary] = []
+static var _avatar_cache: Dictionary = {}
 
 static func reload() -> void:
 	_cache.clear()
+	_avatar_cache.clear()
 	if FileAccess.file_exists(DATA_PATH):
 		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
 		if parsed is Dictionary:
@@ -63,6 +66,37 @@ static func get_character(char_id: String) -> Dictionary:
 		if str(c["id"]) == char_id:
 			return c
 	return all()[0]
+
+static func get_avatar_texture(char_id: String) -> Texture2D:
+	if _avatar_cache.has(char_id):
+		return _avatar_cache[char_id]
+	var c := get_character(char_id)
+	var sprite_path := str(c.get("sprite", ""))
+	var full_tex: Texture2D = null
+	if sprite_path != "" and ResourceLoader.exists(sprite_path):
+		full_tex = load(sprite_path) as Texture2D
+	if full_tex == null:
+		return null
+	var region: Array = c.get("avatar_region", [])
+	if region.size() < 4:
+		_avatar_cache[char_id] = full_tex
+		return full_tex
+	var full_img := full_tex.get_image()
+	if full_img == null:
+		_avatar_cache[char_id] = full_tex
+		return full_tex
+	var rx := clampi(int(region[0]), 0, maxi(0, full_img.get_width() - 1))
+	var ry := clampi(int(region[1]), 0, maxi(0, full_img.get_height() - 1))
+	var rw := clampi(int(region[2]), 1, full_img.get_width() - rx)
+	var rh := clampi(int(region[3]), 1, full_img.get_height() - ry)
+	var sub_img := full_img.get_region(Rect2i(rx, ry, rw, rh))
+	var longest := maxi(sub_img.get_width(), sub_img.get_height())
+	if longest > AVATAR_MAX_SIDE:
+		var k := float(AVATAR_MAX_SIDE) / float(longest)
+		sub_img.resize(maxi(1, int(round(rw * k))), maxi(1, int(round(rh * k))), Image.INTERPOLATE_LANCZOS)
+	var portrait := ImageTexture.create_from_image(sub_img)
+	_avatar_cache[char_id] = portrait
+	return portrait
 
 static func get_v2_start_weapon(char_id: String) -> String:
 	return str(get_character(char_id).get("v2_start_weapon", "wpn_jade_sword"))

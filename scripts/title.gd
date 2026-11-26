@@ -873,23 +873,7 @@ func _build_hero_showcase() -> void:
 		avatar_tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		avatar_tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
-		var sp_path := String(c.get("sprite", ""))
-		if sp_path != "" and ResourceLoader.exists(sp_path):
-			var full_tex := load(sp_path) as Texture2D
-			var reg_arr: Array = c.get("avatar_region", [164, 48, 200, 200])
-			if full_tex != null and reg_arr.size() >= 4:
-				var full_img := full_tex.get_image()
-				if full_img != null:
-					var rx := clampi(int(reg_arr[0]), 0, maxi(0, full_img.get_width() - 1))
-					var ry := clampi(int(reg_arr[1]), 0, maxi(0, full_img.get_height() - 1))
-					var rw := clampi(int(reg_arr[2]), 1, full_img.get_width() - rx)
-					var rh := clampi(int(reg_arr[3]), 1, full_img.get_height() - ry)
-					var sub_img := full_img.get_region(Rect2i(rx, ry, rw, rh))
-					avatar_tr.texture = ImageTexture.create_from_image(sub_img)
-				else:
-					avatar_tr.texture = full_tex
-			else:
-				avatar_tr.texture = full_tex
+		avatar_tr.texture = CharacterData.get_avatar_texture(str(c.get("id", "")))
 
 		var smat := ShaderMaterial.new()
 		smat.shader = CIRCLE_AVATAR_SHADER
