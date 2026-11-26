@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 14:45:57",
+    "generated_at": "2026-11-26 15:07:09",
     "active_media_count": 202,
-    "used_media_count": 196,
-    "orphan_media_count": 6,
+    "used_media_count": 195,
+    "orphan_media_count": 7,
     "legacy_count": 49,
-    "usage_rate_pct": 97.0,
+    "usage_rate_pct": 96.5,
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 3,
@@ -194,8 +194,8 @@
       "id": "ISS-009",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 6 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 6 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 7 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 7 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -1940,12 +1940,12 @@
       },
       {
         "id": "qiankun_bag",
-        "name": "乾坤袋",
+        "name": "聚灵罗盘",
         "unlocks_at_level": 1,
         "weight": 24,
         "value": 1.0,
-        "desc": "展开袋口，全图经验灵玉与散落灵石尽数入袋",
-        "icon": "res://assets/sprites/pickup_qiankun_bag.png"
+        "desc": "罗盘共鸣，全图经验灵玉与散落灵石尽数汇聚而来",
+        "icon": "res://assets/sprites/pickup_magnet.png"
       },
       {
         "id": "medium_gem",
@@ -6034,6 +6034,7 @@
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
+        "data/v2/pickups_v2.json",
         "scripts/world_pickup.gd"
       ],
       "status": "used",
@@ -6075,11 +6076,8 @@
       "height": 64,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [
-        "data/v2/pickups_v2.json",
-        "scripts/world_pickup.gd"
-      ],
-      "status": "used",
+      "used_by": [],
+      "status": "orphan",
       "cluster": "pickup"
     },
     {

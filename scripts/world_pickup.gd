@@ -3,7 +3,6 @@ class_name WorldPickup
 
 const TEX_PEACH: Texture2D = preload("res://assets/sprites/pickup_peach.png")
 const TEX_SPIRIT_POUCH: Texture2D = preload("res://assets/sprites/pickup_spirit_pouch.png")
-const TEX_QIANKUN_BAG: Texture2D = preload("res://assets/sprites/pickup_qiankun_bag.png")
 const TEX_COMPASS: Texture2D = preload("res://assets/sprites/pickup_magnet.png")
 const TEX_TAIXU_TALISMAN: Texture2D = preload("res://assets/sprites/pickup_taixu_talisman.png")
 const TEX_GEM: Texture2D = preload("res://assets/sprites/exp_gem_jade.png")
@@ -102,7 +101,12 @@ func pop_out(away_dir: Vector2 = Vector2.ZERO) -> void:
 	_pop_vel = dir * randf_range(95.0, 140.0)
 	_pop_h = 2.0
 	_pop_vz = 155.0
-	_pickup_delay = 0.45
+	_pickup_delay = 0.15
+
+func _dist_to_player_visual(p: Node2D) -> float:
+	var d_feet: float = global_position.distance_to(p.global_position + Vector2(0.0, 8.0))
+	var d_body: float = global_position.distance_to(p.global_position + Vector2(0.0, -18.0))
+	return minf(d_feet, d_body)
 
 func _physics_process(delta: float) -> void:
 	_anim_t += delta
@@ -124,27 +128,32 @@ func _physics_process(delta: float) -> void:
 		return
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and is_instance_valid(players[0]):
-		var p = players[0]
-		var dist := global_position.distance_to(p.global_position)
+		var p: Node2D = players[0]
+		var dist := _dist_to_player_visual(p)
 		if kind_auto_pulls(kind) or _magnet_attracting:
-			var pull_r := maxf(64.0, float(p.magnet_radius))
-			var fly_spd := 680.0 if _magnet_attracting else 580.0
+			var pull_r := maxf(76.0, float(p.magnet_radius))
+			var fly_spd := 720.0 if _magnet_attracting else 600.0
 			if _magnet_attracting or dist <= pull_r:
-				global_position = global_position.move_toward(p.global_position, fly_spd * delta)
-			if dist <= 28.0:
+				global_position = global_position.move_toward(p.global_position + Vector2(0.0, -8.0), fly_spd * delta)
+				dist = _dist_to_player_visual(p)
+			if dist <= 34.0:
 				_collect(p)
 				return
-		elif dist <= _contact_radius():
-			_collect(p)
-			return
+		else:
+			if dist <= 68.0:
+				global_position = global_position.move_toward(p.global_position + Vector2(0.0, -8.0), 460.0 * delta)
+				dist = _dist_to_player_visual(p)
+			if dist <= _contact_radius():
+				_collect(p)
+				return
 	queue_redraw()
 
 func _contact_radius() -> float:
 	match kind:
 		"qiankun_bag", "taixu_talisman", "thunder_seal":
-			return 26.0
+			return 42.0
 		_:
-			return 22.0
+			return 38.0
 
 func _collect(player: Node) -> void:
 	match kind:
@@ -154,14 +163,18 @@ func _collect(player: Node) -> void:
 			Sfx.play("level_up", -10.0, 1.35)
 			get_tree().call_group("ui", "show_banner", "拾得【仙林蟠桃】· 恢复 35 气血")
 		"spirit_stone":
-			if player.has_method("gain_exp"):
-				player.gain_exp(18.0)
+			var stone_val := maxi(1, gold_amount)
+			if "v2_combat" in player and player.v2_combat != null:
+				player.v2_combat.add_run_gold(stone_val)
 			Sfx.play("gem_pickup", -8.0, 1.32)
 		"spirit_pouch":
-			if player.has_method("gain_exp"):
-				player.gain_exp(45.0)
+			var raw_gold := maxi(5, gold_amount)
+			var gained := raw_gold
+			if "v2_combat" in player and player.v2_combat != null:
+				gained = int(player.v2_combat.add_run_gold(raw_gold))
 			Sfx.play_gem_pickup()
-			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 修为 +45")
+			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 局内灵石 +%d" % gained)
+			_popup_text(player, "灵石 +%d" % gained, Color(1.0, 0.86, 0.36))
 		"qiankun_bag":
 			_collect_qiankun_bag(player)
 		"taixu_talisman":

@@ -15,7 +15,12 @@ func _physics_process(delta: float) -> void:
 	_anim_t += delta
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and is_instance_valid(players[0]):
-		if global_position.distance_to(players[0].global_position) <= 36.0:
+		var p2: Node2D = players[0]
+		var dist := minf(
+			global_position.distance_to(p2.global_position + Vector2(0.0, 8.0)),
+			global_position.distance_to(p2.global_position + Vector2(0.0, -18.0))
+		)
+		if dist <= 52.0:
 			_collected = true
 			get_tree().call_group("game_manager", "on_chest_collected")
 			queue_free()

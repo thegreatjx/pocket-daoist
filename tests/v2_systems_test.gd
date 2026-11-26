@@ -1695,7 +1695,7 @@ func _test_batch9_pickup_and_freeze() -> void:
 	await get_tree().process_frame
 	_check(
 		"b9_icons_exist",
-		ResourceLoader.exists("res://assets/sprites/pickup_qiankun_bag.png") and ResourceLoader.exists("res://assets/sprites/pickup_taixu_talisman.png"),
+		ResourceLoader.exists("res://assets/sprites/pickup_magnet.png") and ResourceLoader.exists("res://assets/sprites/pickup_taixu_talisman.png"),
 		""
 	)
 	_check(
@@ -1709,7 +1709,7 @@ func _test_batch9_pickup_and_freeze() -> void:
 		""
 	)
 	var raw_data := FileAccess.get_file_as_string("res://data/v2/pickups_v2.json")
-	_check("b9_data_names", raw_data.contains("乾坤袋") and raw_data.contains("太虚定身符"), "")
+	_check("b9_data_names", raw_data.contains("聚灵罗盘") and raw_data.contains("太虚定身符"), "")
 
 	var p := (load("res://scenes/player.tscn") as PackedScene).instantiate() as Player
 	add_child(p)
@@ -1732,9 +1732,17 @@ func _test_batch9_pickup_and_freeze() -> void:
 	var peach := (load("res://scenes/world_pickup.tscn") as PackedScene).instantiate() as WorldPickup
 	add_child(peach)
 	peach.setup("peach")
-	peach.global_position = p.global_position + Vector2(18.0, 0.0)
+	peach.global_position = p.global_position + Vector2(0.0, -48.0)
 	peach._physics_process(0.016)
 	_check("b9_contact_pickup_works", peach.is_queued_for_deletion(), "")
+
+	var pouch := (load("res://scenes/world_pickup.tscn") as PackedScene).instantiate() as WorldPickup
+	add_child(pouch)
+	pouch.setup("spirit_pouch")
+	pouch.global_position = p.global_position + Vector2(18.0, 0.0)
+	var gold_before_pouch := p.v2_combat.run_gold
+	pouch._physics_process(0.016)
+	_check("b9_spirit_pouch_grants_run_gold", pouch.is_queued_for_deletion() and p.v2_combat.run_gold == gold_before_pouch + 5, "gold=%d->%d" % [gold_before_pouch, p.v2_combat.run_gold])
 
 	var magnet_gem := (load("res://scenes/exp_gem.tscn") as PackedScene).instantiate() as ExpGem
 	add_child(magnet_gem)

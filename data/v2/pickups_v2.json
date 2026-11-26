@@ -21,12 +21,12 @@
     },
     {
       "id": "qiankun_bag",
-      "name": "乾坤袋",
+      "name": "聚灵罗盘",
       "unlocks_at_level": 1,
       "weight": 24,
       "value": 1.0,
-      "desc": "展开袋口，全图经验灵玉与散落灵石尽数入袋",
-      "icon": "res://assets/sprites/pickup_qiankun_bag.png"
+      "desc": "罗盘共鸣，全图经验灵玉与散落灵石尽数汇聚而来",
+      "icon": "res://assets/sprites/pickup_magnet.png"
     },
     {
       "id": "medium_gem",

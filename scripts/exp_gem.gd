@@ -32,7 +32,7 @@ func pool_acquire() -> void:
 	lifetime = 45.0
 	_age = 0.0
 	_anim_t = randf() * TAU
-	_drop_delay = 0.18
+	_drop_delay = 0.10
 	_redraw_tick = randi() % 3
 	visible = true
 	modulate = Color.WHITE
@@ -82,10 +82,11 @@ func _physics_process(delta: float) -> void:
 		is_attracted = false
 
 	if is_attracted:
-		var dir = (target.global_position - global_position).normalized()
+		var aim_pos := target.global_position + Vector2(0.0, -8.0)
+		var dir = (aim_pos - global_position).normalized()
 		fly_speed += 880.0 * delta
 		global_position += dir * fly_speed * delta
-		if global_position.distance_squared_to(target.global_position) <= 324.0:
+		if _dist_sq_to_player_visual(target) <= 400.0:
 			_collect_by(target)
 			return
 		queue_redraw()
@@ -97,7 +98,7 @@ func _physics_process(delta: float) -> void:
 			if players.size() > 0:
 				_cached_player = players[0]
 		if _cached_player != null:
-			var dist_sq := global_position.distance_squared_to(_cached_player.global_position)
+			var dist_sq := _dist_sq_to_player_visual(_cached_player)
 			if dist_sq <= PICKUP_RADIUS_SQ:
 				_collect_by(_cached_player)
 				return
@@ -108,6 +109,11 @@ func _physics_process(delta: float) -> void:
 	_redraw_tick = (_redraw_tick + 1) % 3
 	if _redraw_tick == 0:
 		queue_redraw()
+
+func _dist_sq_to_player_visual(p: Node2D) -> float:
+	var d_feet := global_position.distance_squared_to(p.global_position + Vector2(0.0, 8.0))
+	var d_body := global_position.distance_squared_to(p.global_position + Vector2(0.0, -18.0))
+	return minf(d_feet, d_body)
 
 func _draw() -> void:
 	var bob := sin(_anim_t * 5.0) * 1.8
