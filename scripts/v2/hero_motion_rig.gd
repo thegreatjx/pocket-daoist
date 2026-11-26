@@ -25,6 +25,7 @@ var _anim_run: HeroFrameAnim = null
 var _anim_attack: HeroFrameAnim = null
 var _anim_state: String = "idle"
 var _attack_anim_timer: float = 0.0
+var _run_anim_rate: float = 1.0
 
 var _flash_timer: float = 0.0
 var _invuln_timer: float = 0.0
@@ -43,6 +44,7 @@ func setup(cfg: Dictionary) -> void:
 	_mount_type = str(cfg.get("mount_type", "none"))
 	var default_h := 86.0 if _motion_mode == "hover_ride" else 66.0
 	_draw_height = float(cfg.get("draw_height", default_h))
+	_run_anim_rate = clampf(float(cfg.get("anim_run_rate", 1.0)), 0.25, 4.0)
 	var acc = cfg.get("accent_color", Color(0.26, 0.92, 0.82))
 	if acc is Color:
 		_accent_color = acc
@@ -207,7 +209,7 @@ func update_motion(velocity: Vector2, delta: float, is_dashing: bool = false, ai
 		_anim_state = "idle"
 
 	if _anim_state == "run" and _anim_run != null:
-		var run_rate := clampf(speed / 245.0, 0.8, 1.5) * (1.45 if is_dashing else 1.0)
+		var run_rate := clampf(speed / 245.0, 0.8, 1.5) * _run_anim_rate * (1.45 if is_dashing else 1.0)
 		_anim_run.update(safe_delta * run_rate)
 	elif _anim_idle != null:
 		var anim_rate := 1.8 if is_dashing else (1.35 if speed > 14.0 else 1.0)

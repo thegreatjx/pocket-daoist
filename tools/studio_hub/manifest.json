@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 10:48:33",
+    "generated_at": "2026-11-26 10:55:46",
     "active_media_count": 230,
     "used_media_count": 176,
     "orphan_media_count": 54,
@@ -838,7 +838,8 @@
         "anim_idle_atlas": "res://assets/v2/hero/anim/hero_gourd_daoist_idle-atlas-00.png",
         "anim_idle_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_idle.json",
         "anim_run_atlas": "res://assets/v2/hero/anim/hero_gourd_daoist_run-atlas-00.png",
-        "anim_run_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_run.json"
+        "anim_run_meta": "res://assets/v2/hero/anim/hero_gourd_daoist_run.json",
+        "anim_run_rate": 1.52
       },
       {
         "id": "thunder_daoist",
