@@ -6,6 +6,9 @@
   python tools/hero_pipeline.py run    --id cloud_danxia --action idle --from-raw .tmp/hero/cloud_danxia/raw_idle
 
 产物：assets/v2/hero/anim/hero_<id>_<action>-atlas-00.png 与同名 .json
+
+所有影响产物的参数一律锁在下方 SPEC 里，不提供命令行覆盖；打包后自动按 SPEC 校验，
+不符即失败。要改规格只能改 SPEC 这一处，保证每次走的都是同一条流程。
 """
 import argparse
 import json
@@ -22,10 +25,32 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from process_ai_spritesheets import _cutout_cell_rgba
 
 SKILL = os.path.join(ROOT, ".agents", "skills", "video2dsprite", "scripts")
-CANVAS = (640, 832)
-MASTER_SIDE = 512
-BODY_FRACTION = 0.90
-FEET_Y = 484
+
+# 唯一的规格真相源：改这里才叫改流程，命令行不能覆盖。
+SPEC = {
+    "master_side": 512,
+    "body_fraction": 0.90,
+    "feet_y": 484,
+    "i2v_canvas": (640, 832),
+    "i2v_duration_sec": 2.0,
+    "i2v_frames": 49,
+    "i2v_steps": 4,
+    "matte_key": "auto",
+    "despill": "auto",
+    "erode": 0,
+    "allow_key_residue": False,
+    "atlas_fps": 24.0,
+    "atlas_schema": "3.0",
+    "atlas_body_height_px": 256,
+    "atlas_max_side": 320,
+    "atlas_loop": True,
+    "atlas_formats": "png",
+}
+
+CANVAS = SPEC["i2v_canvas"]
+MASTER_SIDE = SPEC["master_side"]
+BODY_FRACTION = SPEC["body_fraction"]
+FEET_Y = SPEC["feet_y"]
 
 
 def _py(*args: str, log) -> dict:
@@ -61,6 +86,32 @@ def build_master(still: str, out: str) -> str:
     return out
 
 
+def verify_against_spec(pkg: str, name: str, meta: dict) -> None:
+    """打包后按 SPEC 校验产物，不符则直接失败，防止规格静默漂移。"""
+    problems = []
+    if abs(float(meta.get("fps", 0.0)) - SPEC["atlas_fps"]) > 1e-6:
+        problems.append(f"fps={meta.get('fps')}，应为 {SPEC['atlas_fps']}")
+    if bool(meta.get("loop")) != SPEC["atlas_loop"]:
+        problems.append(f"loop={meta.get('loop')}，应为 {SPEC['atlas_loop']}")
+    if str(meta.get("schemaVersion")) != SPEC["atlas_schema"]:
+        problems.append(f"schemaVersion={meta.get('schemaVersion')}，应为 {SPEC['atlas_schema']}")
+    pages = (meta.get("fallback") or {}).get("pages") or []
+    if not pages:
+        problems.append("manifest 缺少 fallback.pages")
+    cell_size = (meta.get("fallback") or {}).get("cellSize") or [0, 0]
+    cell_w, cell_h = int(cell_size[0]), int(cell_size[1])
+    if cell_h < SPEC["atlas_body_height_px"]:
+        problems.append(f"单帧高 {cell_h} < 主体高度 {SPEC['atlas_body_height_px']}")
+    if max(cell_w, cell_h) > SPEC["atlas_max_side"]:
+        problems.append(f"单帧 {cell_w}x{cell_h} 超出 max-side {SPEC['atlas_max_side']}")
+    for page in pages:
+        atlas = os.path.join(pkg, str(page.get("file", "")))
+        if not os.path.exists(atlas):
+            problems.append(f"图集文件缺失：{page.get('file')}")
+    if problems:
+        raise SystemExit("hero_pipeline: 产出不符合 SPEC：\n  - " + "\n  - ".join(problems))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Hero still -> idle atlas pipeline.")
     ap.add_argument("command", choices=["master", "run"])
@@ -72,9 +123,6 @@ def main() -> None:
     ap.add_argument("--extra", default="", help="追加到 i2v 动作提示词的英文补充指令")
     ap.add_argument("--seed", type=int, default=-1)
     ap.add_argument("--from-raw", default="", help="跳过生视频，直接用已有的 Wan 原始帧目录")
-    ap.add_argument("--despill", default="auto", choices=["off", "edge", "all", "auto"])
-    ap.add_argument("--erode", type=int, default=0, help="抠像内缩像素，去掉彩色描边残留")
-    ap.add_argument("--allow-key-residue", action="store_true", help="自带发光特效的角色：放宽底色残留门禁并记录" )
     ap.add_argument("--server", default="http://127.0.0.1:8188")
     ap.add_argument("--out-dir", default=os.path.join("assets", "v2", "hero", "anim"))
     args = ap.parse_args()
@@ -102,7 +150,8 @@ def main() -> None:
         job = os.path.join(work, f"job_{args.action}")
         if not os.path.exists(os.path.join(job, "registration_job.json")):
             prep = ["--master", master, "--action", args.action,
-                    "--canvas", f"{CANVAS[0]},{CANVAS[1]}", "--duration", "2.0",
+                    "--canvas", f"{CANVAS[0]},{CANVAS[1]}",
+                    "--duration", str(SPEC["i2v_duration_sec"]),
                     "--output-dir", job]
             if args.subject:
                 prep += ["--subject", args.subject]
@@ -118,16 +167,17 @@ def main() -> None:
                    "--prompt-file", os.path.join(job, "prompt.txt"),
                    "--out-dir", raw,
                    "--width", str(CANVAS[0]), "--height", str(CANVAS[1]),
-                   "--length", "49", "--steps", "4"]
+                   "--length", str(SPEC["i2v_frames"]), "--steps", str(SPEC["i2v_steps"])]
             if args.seed >= 0:
                 wan += ["--seed", str(args.seed)]
             _py(*wan, log=log)
 
         clean = os.path.join(work, f"clean_{args.action}")
         shutil.rmtree(clean, ignore_errors=True)
-        clean_args = ["--raw-dir", raw, "--output-dir", clean, "--key", "auto", "--despill-mode", args.despill]
-        if args.erode:
-            clean_args += ["--erode", str(args.erode)]
+        clean_args = ["--raw-dir", raw, "--output-dir", clean, "--key", SPEC["matte_key"],
+                      "--despill-mode", SPEC["despill"]]
+        if SPEC["erode"]:
+            clean_args += ["--erode", str(SPEC["erode"])]
         _py(os.path.join(SKILL, "video2dsprite.py"), "clean", *clean_args, log=log)
 
         reg = os.path.join(work, f"reg_{args.action}")
@@ -143,9 +193,11 @@ def main() -> None:
                     "--clean-dir", os.path.join(reg, "frames"),
                     "--registration", os.path.join(reg, "registration.json"),
                     "--output-dir", pkg, "--name", name,
-                    "--fps", "24", "--loop", "--formats", "png",
-                    "--body-height-px", "256", "--crop-union"]
-        if args.allow_key_residue:
+                    "--fps", str(SPEC["atlas_fps"]), "--loop",
+                    "--formats", SPEC["atlas_formats"],
+                    "--body-height-px", str(SPEC["atlas_body_height_px"]),
+                    "--max-side", str(SPEC["atlas_max_side"]), "--crop-union"]
+        if SPEC["allow_key_residue"]:
             pkg_args.append("--allow-key-residue")
         _py(*pkg_args, log=log)
         os.makedirs(os.path.join(ROOT, args.out_dir), exist_ok=True)
@@ -156,11 +208,20 @@ def main() -> None:
         pkg = os.path.join(ROOT, args.out_dir)
 
     meta = json.load(open(os.path.join(pkg, f"{name}.json"), encoding="utf-8"))
-    export_fps = float(meta.get("fps", 0.0))
-    if export_fps != 24.0:
-        raise SystemExit(
-            "hero_pipeline: 导出帧率为 %s，必须 24 fps（hero_motion_rig 的步频锚点按 24 设计）。"
-            "检查 --fps / --selection 参数后重新打包。" % export_fps)
+    verify_against_spec(pkg, name, meta)
+    report = {
+        "spec": SPEC,
+        "manifest": {
+            "fps": meta.get("fps"),
+            "frameCount": meta.get("frameCount"),
+            "cell": meta.get("fallback", {}).get("cellSize"),
+            "loop": meta.get("loop"),
+            "schemaVersion": meta.get("schemaVersion"),
+        },
+        "identity": {"id": args.id, "action": args.action, "from_raw": bool(args.from_raw)},
+    }
+    with open(os.path.join(work, f"spec_{args.action}.json"), "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
     print(json.dumps({
         "atlas": os.path.join(pkg, meta["fallback"]["pages"][0]["file"]),
         "meta": os.path.join(pkg, f"{name}.json"),

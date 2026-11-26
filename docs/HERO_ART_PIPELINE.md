@@ -28,10 +28,23 @@
 | **S2 形象闸门** | 3 张候选 | 人工 + 86px 同屏对照图 | 选定 1 张 → `master.png` | **你点头才进 S3**，不许自动往下跑 |
 | **S3 生视频** | `master.png` | `prepare_i2v_input.py` → `tools/comfyui_wan_i2v.py` | `raw_idle/frame_*.png` 49 帧 | 无变脸、无转身、无镜头移动、绿底纯净 |
 | **S4 抠像对齐** | 原始帧 | `video2dsprite.py clean` → `register_clip.py apply` | `clean_*/` + `reg_*/frames` + `registration.json` | 边缘无绿边、脚底基准线稳定 |
-| **S5 打包入库** | 对齐帧 | `engine_export.py package` | `assets/v2/hero/anim/hero_<id>_idle-atlas-00.png` + `.json` | `verify` 通过；**fps 必须为 24（管线已自检拦截，手动导出必须显式传 `--fps 24`）**；`characters_v2.json` 登记路径；`studio_audit.py --strict` 无新增告警 |
+| **S5 打包入库** | 对齐帧 | `engine_export.py package` | `assets/v2/hero/anim/hero_<id>_idle-atlas-00.png` + `.json` | `verify` 通过；**产出必须符合 SPEC（管线自动校验 fps=24 / loop / 单帧高≥256 / ≤320 / schema 3.0，不符即失败）**；`characters_v2.json` 登记路径；`studio_audit.py --strict` 无新增告警 |
+
+### 固定规格（SPEC）
+
+`tools/hero_pipeline.py` 顶部的 `SPEC` 是唯一的规格真相源，命令行**不可覆盖**。改动它才叫改流程，并且会同时影响 master 尺寸、i2v 参数、抠像参数与 atlas 打包；打包后自动按它校验，不符立即失败。当前锁定值：
+
+| 段 | 参数 | 锁定值 |
+| :--- | :--- | :--- |
+| master | `master_side` / `body_fraction` / `feet_y` | `512` / `0.90` / `484` |
+| i2v | `i2v_canvas` / `i2v_duration_sec` / `i2v_frames` / `i2v_steps` | `640×832` / `2.0s` / `49` / `4` |
+| 抠像 | `matte_key` / `despill` / `erode` / `allow_key_residue` | `auto` / `auto` / `0` / `false` |
+| atlas | `atlas_fps` / `atlas_schema` / `atlas_body_height_px` / `atlas_max_side` / `atlas_loop` / `atlas_formats` | `24` / `3.0` / `256` / `320` / `true` / `png` |
+
+命令行只接受每次确实会变的输入：`--id`、`--action`、`--still`、`--subject`、`--extra`、`--seed`、`--from-raw`、`--workdir`、`--out-dir`、`--server`。
+每次运行会在 `.tmp/hero/<id>/spec_<action>.json` 写一份规格快照，便于事后核对产物是用什么参数跑出来的。
 
 ### 具体命令
-
 ```bash
 # S1 生图（每次 3 张，seed 递增）
 python tools/comfyui_gen_asset.py --style hero_humanoid \
