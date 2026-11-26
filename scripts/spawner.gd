@@ -23,6 +23,7 @@ var chapter_index: int = 0
 var chapter_duration: float = 480.0
 var chapter_boss_name: String = "苍鬃狼王"
 var chapter_palette: Dictionary = {}
+const ELITE_FIRST_SEC := 60.0
 var enemy_weights: Dictionary = {"wolf": 0.65, "ghost": 0.25, "skeleton": 0.10}
 var elite_interval: float = 95.0
 
@@ -55,6 +56,8 @@ var _wave_start_time: float = 0.0
 var _pending_telegraphs: int = 0
 var _pending_elite_telegraphs: int = 0
 var _rare_elite_cd: float = 0.0
+var _wave_elite_every_sec: float = 0.0
+var _elite_spawn_timer: float = ELITE_FIRST_SEC
 
 var _v2_loader: V2DataLoader = null
 var _director: V2SpawnDirector = V2SpawnDirector.new()
@@ -132,6 +135,15 @@ func _process(delta: float) -> void:
 						var arch: Dictionary = req["archetype"]
 						_spawn_from_archetype(arch)
 
+	if _wave_elite_every_sec > 0.0 and not _is_boss_spawned and _spawn_pause_timer <= 0.0:
+		_elite_spawn_timer -= delta
+		if _elite_spawn_timer <= 0.0:
+			_elite_spawn_timer = _wave_elite_every_sec
+			if _chapter_elapsed >= ELITE_FIRST_SEC and _count_active_elites() < _max_active_elites():
+				var elite_arch := _pick_pool_archetype()
+				if not elite_arch.is_empty():
+					_spawn_from_archetype(elite_arch, false, true)
+
 	if _extra_chest_elite_per_min and not _is_boss_spawned and _chapter_elapsed >= _next_stage_elite_time:
 		_next_stage_elite_time += 60.0
 		_spawn_enemy(Enemy.Type.ELITE, -1, true)
@@ -180,6 +192,7 @@ func _evaluate_wave_schedule() -> void:
 	_wave_exp_mult = float(active.get("exp_mult", 1.0)) * (1.0 + float(_endless_level) * 0.30)
 	_wave_exp_val = float(active.get("exp_val", 4.0 * _wave_exp_mult))
 	_wave_tier_variant = clampi(int(active.get("tier_variant", 1)), 1, 3)
+	_wave_elite_every_sec = maxf(0.0, float(active.get("elite_every_sec", 0.0)))
 	_wave_shop_after = bool(active.get("shop_after", true))
 	var raw_pool = active.get("pool", [])
 	_wave_pool_entries = raw_pool if raw_pool is Array else []
@@ -309,6 +322,8 @@ func apply_chapter(chapter: Dictionary) -> void:
 	_pending_telegraphs = 0
 	_pending_elite_telegraphs = 0
 	_rare_elite_cd = 0.0
+	_wave_elite_every_sec = 0.0
+	_elite_spawn_timer = ELITE_FIRST_SEC
 	_spawn_pause_timer = 0.0
 	_director.reset()
 	_next_elite_time = elapsed + elite_interval
@@ -330,6 +345,9 @@ func spawn_chapter_boss(chapter: Dictionary) -> Node2D:
 	return _spawn_boss(chapter)
 
 func spawn_boss_entry(entry: Dictionary) -> Node2D:
+	if bool(entry.get("mini", false)):
+		_spawn_mini_boss(float(entry.get("hp", 4600.0)), "【%s 现身 · 斩将夺箱！】" % String(entry.get("name", "小首领")))
+		return null
 	return _spawn_boss({
 		"boss_name": String(entry.get("name", "")),
 		"boss_type": String(entry.get("type", "wolf")),
@@ -499,18 +517,18 @@ func _spawn_squad_batch(reqs: Array[Dictionary], cap: int) -> void:
 		else:
 			_instantiate_enemy_at(pos, Enemy.Type.MINION, sp_id, arch)
 
-func _spawn_from_archetype(arch: Dictionary, force_telegraph: bool = false) -> void:
+func _spawn_from_archetype(arch: Dictionary, force_telegraph: bool = false, force_elite: bool = false) -> void:
 	var arena := _get_arena_rect()
 	var cam := _camera_world_rect()
 	var pillars := _get_pillars()
 	var behavior := String(arch.get("ai_behavior", "swarm_chaser"))
-	var can_promote_elite := _current_wave_num >= 3 and _rare_elite_cd <= 0.0 and _count_active_elites() < _max_active_elites()
+	var can_promote_elite := _wave_elite_every_sec <= 0.0 and _current_wave_num >= 3 and _rare_elite_cd <= 0.0 and _count_active_elites() < _max_active_elites()
 	var elite_roll := randf()
 	var elite_chance := float(arch.get("elite_chance", 0.10))
 	var is_rare_elite := can_promote_elite and elite_roll < elite_chance
 	if is_rare_elite:
 		_rare_elite_cd = 26.0
-	var e_type := Enemy.Type.ELITE if is_rare_elite else Enemy.Type.MINION
+	var e_type := Enemy.Type.ELITE if (is_rare_elite or force_elite) else Enemy.Type.MINION
 	var sp_id := int(arch.get("species", -1))
 	if sp_id < 0:
 		match behavior:
@@ -567,7 +585,7 @@ func _spawn_mini_boss(base_hp: float, msg: String, species_override: int = -1) -
 		get_tree().call_group("ui", "show_banner", msg)
 	var pick := _director.pick_spawn_point(_get_arena_rect(), _camera_world_rect(), player.global_position, _get_pillars(), true, 380.0)
 	var sp_id := species_override if species_override >= 0 else _pick_minion_species()
-	spawn_telegraphed_enemy(pick["pos"] as Vector2, Enemy.Type.ELITE, 1.25, sp_id, {"override_hp": base_hp})
+	spawn_telegraphed_enemy(pick["pos"] as Vector2, Enemy.Type.ELITE, 1.25, sp_id, {"override_hp": base_hp, "is_mini_boss": true})
 
 func _trigger_swarm(count: int, elites: int, msg: String) -> void:
 	Sfx.play_boss_or_fallback("swarm_horn", "thunder", -2.0, 0.92)
@@ -635,6 +653,7 @@ func _instantiate_enemy_at(
 			var bhp := float(eff_arch["override_hp"]) * _stage_hp_mult * (1.0 + float(_endless_level) * 0.5)
 			enemy.max_health = bhp
 			enemy.current_health = bhp
+			enemy.is_mini_boss = bool(eff_arch.get("is_mini_boss", false))
 			enemy.exp_gem_value = 45.0
 			enemy.exp_gem_count = 4
 			enemy.gold_value = 35
@@ -667,8 +686,30 @@ func _instantiate_enemy_at(
 			enemy.current_health = v2_hp
 			var dmg_mult := float(_get_elite_variant(sp_id).get("dmg_mult", 1.45)) if enemy.enemy_type == Enemy.Type.ELITE else 1.0
 			enemy.contact_damage = float(eff_arch.get("base_dmg", 8.0)) * _wave_dmg_scale * dmg_mult
+			if enemy.enemy_type == Enemy.Type.ELITE:
+				_apply_elite_affix(enemy)
 		elif eff_arch.has("move_speed") and enemy.enemy_type == Enemy.Type.MINION:
 			enemy.speed = float(eff_arch["move_speed"]) * _stage_enemy_speed_mult * _wave_speed_scale
+
+func _apply_elite_affix(enemy: Node) -> void:
+	if _v2_loader == null or _v2_loader.elite_affixes.is_empty():
+		return
+	var affix: Dictionary = _v2_loader.get_random_elite_affix()
+	if affix.is_empty():
+		return
+	enemy.elite_affix_id = String(affix.get("id", ""))
+	enemy.elite_aura_color = Color.from_string(String(affix.get("aura_color", "#FFFFFF")), Color(1.0, 1.0, 1.0))
+	var speed_mult := float(affix.get("speed_mult", 1.0))
+	if not is_equal_approx(speed_mult, 1.0):
+		enemy.speed *= speed_mult
+	var hp_mult := float(affix.get("hp_mult", 1.0))
+	if not is_equal_approx(hp_mult, 1.0):
+		enemy.max_health *= hp_mult
+		enemy.current_health = enemy.max_health
+	enemy.knockback_resistance = maxf(enemy.knockback_resistance, float(affix.get("kb_resist", 0.0)))
+	enemy.elite_blast_delay = float(affix.get("blast_delay", 0.0))
+	enemy.elite_blast_radius = float(affix.get("blast_radius", 0.0))
+	enemy.elite_blast_damage = float(affix.get("blast_damage", 0.0))
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:
 	var arena := _get_arena_rect().grow(-56.0)

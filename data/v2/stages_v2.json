@@ -10,7 +10,7 @@
       "elite_interval": 95.0,
       "boss_name": "苍鬃狼王",
       "boss_type": "wolf",
-      "boss_hp": 18000.0,
+      "boss_hp": 26000.0,
       "hp_mult": 1.0,
       "stone_mult": 1.0,
       "palette": {
@@ -56,7 +56,8 @@
               "weight": 0.28
             }
           ],
-          "events": []
+          "events": [],
+          "elite_every_sec": 0.0
         },
         {
           "wave": 2,
@@ -90,7 +91,8 @@
               "weight": 0.2
             }
           ],
-          "events": []
+          "events": [],
+          "elite_every_sec": 45.0
         },
         {
           "wave": 3,
@@ -127,7 +129,8 @@
               "count": 30,
               "msg": "【妖群合围 · 突围杀敌！】"
             }
-          ]
+          ],
+          "elite_every_sec": 45.0
         },
         {
           "wave": 4,
@@ -157,14 +160,8 @@
               "weight": 0.28
             }
           ],
-          "events": [
-            {
-              "time": 136.0,
-              "type": "mini_boss",
-              "hp": 3200.0,
-              "msg": "【巡山妖将现身 · 斩将夺箱！】"
-            }
-          ]
+          "events": [],
+          "elite_every_sec": 45.0
         },
         {
           "wave": 5,
@@ -198,7 +195,8 @@
               "weight": 0.2
             }
           ],
-          "events": []
+          "events": [],
+          "elite_every_sec": 45.0
         },
         {
           "wave": 6,
@@ -240,7 +238,8 @@
               "elites": 1,
               "msg": "【金蟾灵石潮 · 聚宝良机！】"
             }
-          ]
+          ],
+          "elite_every_sec": 30.0
         },
         {
           "wave": 7,
@@ -276,18 +275,13 @@
           ],
           "events": [
             {
-              "time": 298.0,
-              "type": "mini_boss",
-              "hp": 6800.0,
-              "msg": "【护法大妖降临 · 必掉天机宝箱！】"
-            },
-            {
               "time": 320.0,
               "type": "flank",
               "count": 18,
               "msg": "【两翼妖阵夹击！】"
             }
-          ]
+          ],
+          "elite_every_sec": 30.0
         },
         {
           "wave": 8,
@@ -341,7 +335,8 @@
               "weight": 0.1
             }
           ],
-          "events": []
+          "events": [],
+          "elite_every_sec": 30.0
         },
         {
           "wave": 9,
@@ -403,7 +398,8 @@
               "elites": 1,
               "msg": "【百妖狂潮 · 决战前奏！】"
             }
-          ]
+          ],
+          "elite_every_sec": 30.0
         },
         {
           "wave": 10,
@@ -412,7 +408,7 @@
           "start": 460.0,
           "end": 99999.0,
           "cap": 32,
-          "budget_per_sec": 2.0,
+          "budget_per_sec": 0.0,
           "hp_scale": 9.2,
           "dmg_scale": 2.1,
           "speed_scale": 1.12,
@@ -429,7 +425,8 @@
               "weight": 0.4
             }
           ],
-          "events": []
+          "events": [],
+          "elite_every_sec": 0.0
         }
       ],
       "floor_tile": "res://assets/v2/map_ch1/tile_grass_512.png"

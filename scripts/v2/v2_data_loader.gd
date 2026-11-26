@@ -27,6 +27,8 @@ var pickups: Array[Dictionary] = []
 var pickups_by_id: Dictionary = {}
 var achievements: Array[Dictionary] = []
 var achievements_by_id: Dictionary = {}
+var elite_affixes: Array[Dictionary] = []
+var elite_affixes_by_id: Dictionary = {}
 
 func load_all(base_dir: String = "res://data/v2") -> bool:
 	var w_data: Dictionary = _read_json(base_dir.path_join("weapons_v2.json"))
@@ -121,6 +123,17 @@ func load_all(base_dir: String = "res://data/v2") -> bool:
 				achievements.append(ac)
 				achievements_by_id[String(ac.get("id", ""))] = ac
 
+	elite_affixes.clear()
+	elite_affixes_by_id.clear()
+	var aff_path := base_dir.path_join("elite_affixes.json")
+	if FileAccess.file_exists(aff_path):
+		var aff_data: Dictionary = _read_json(aff_path)
+		for aff_raw in aff_data.get("affixes", []):
+			if aff_raw is Dictionary:
+				var aff := (aff_raw as Dictionary).duplicate(true)
+				elite_affixes.append(aff)
+				elite_affixes_by_id[String(aff.get("id", ""))] = aff
+
 	return true
 
 func get_unit_hp() -> float:
@@ -131,6 +144,16 @@ func get_base_enemy_speed() -> float:
 
 func get_base_player_speed() -> float:
 	return float(base_constants.get("player_speed", BASE_PLAYER_SPEED))
+
+func get_random_elite_affix() -> Dictionary:
+	if elite_affixes.is_empty():
+		return {}
+	return (elite_affixes[randi() % elite_affixes.size()] as Dictionary).duplicate(true)
+
+func get_elite_affix(affix_id: String) -> Dictionary:
+	if not elite_affixes_by_id.has(affix_id):
+		return {}
+	return (elite_affixes_by_id[affix_id] as Dictionary).duplicate(true)
 
 func get_stage(stage_id: int) -> Dictionary:
 	if not stages_by_id.has(stage_id):

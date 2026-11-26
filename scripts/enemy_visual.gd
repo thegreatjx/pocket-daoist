@@ -394,6 +394,18 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if rig == null:
 		return
+	var mini_boss := false
+	if _parent_body != null and "is_mini_boss" in _parent_body:
+		mini_boss = bool(_parent_body.get("is_mini_boss"))
+	if mini_boss and _parent_body != null:
+		var mb_total := float(_parent_body.get("max_health"))
+		var mb_now := float(_parent_body.get("current_health"))
+		if mb_total > 0.0:
+			var bar_w := 76.0
+			var bar_ratio := clampf(mb_now / mb_total, 0.0, 1.0)
+			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.05, 0.09, 0.07, 0.86))
+			draw_rect(Rect2(-bar_w * 0.5 + 1.0, -85.0, (bar_w - 2.0) * bar_ratio, 6.0), Color(0.88, 0.28, 0.20, 1.0))
+			draw_rect(Rect2(-bar_w * 0.5, -86.0, bar_w, 8.0), Color(0.92, 0.76, 0.34, 0.9), false, 1.0)
 	var pose := rig.get_pose()
 	var t := rig.anim_time
 	var off: Vector2 = pose["offset"]
@@ -402,6 +414,15 @@ func _draw() -> void:
 	var tint: Color = pose["dir_tint"]
 	var idx: int = int(pose["frame_idx"])
 	var sh_sc: float = float(pose["shadow_scale"])
+	if mini_boss:
+		sc *= 1.7
+	var affix_aura := Color(0.0, 0.0, 0.0, 0.0)
+	if _parent_body != null and "elite_aura_color" in _parent_body:
+		var raw_aura = _parent_body.get("elite_aura_color")
+		if raw_aura is Color:
+			affix_aura = raw_aura
+	if affix_aura.a > 0.0:
+		_draw_kenney_aura(Vector2(0.0, 16.0), 26.0, Color(affix_aura.r, affix_aura.g, affix_aura.b, 0.38 + 0.12 * sin(t * 4.2)), true)
 	if enemy_type < 2:
 		sc = Vector2(sc.x * last_charge_squash.x, sc.y * last_charge_squash.y)
 		if _is_charge_windup:

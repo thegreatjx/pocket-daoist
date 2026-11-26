@@ -32,6 +32,12 @@ var exp_gem_count: int = 1
 var exp_gem_value: float = 6.0
 var can_despawn: bool = true
 var is_boss: bool = false
+var is_mini_boss: bool = false
+var elite_affix_id: String = ""
+var elite_aura_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+var elite_blast_delay: float = 0.0
+var elite_blast_radius: float = 0.0
+var elite_blast_damage: float = 0.0
 
 var is_dead: bool = false
 var target: Node2D = null
@@ -143,8 +149,16 @@ func _reset_state() -> void:
 	exp_gem_value = 6.0
 	can_despawn = true
 	is_boss = false
+	is_mini_boss = false
+	elite_affix_id = ""
+	elite_aura_color = Color(0.0, 0.0, 0.0, 0.0)
+	elite_blast_delay = 0.0
+	elite_blast_radius = 0.0
+	elite_blast_damage = 0.0
 	if is_in_group("bosses"):
 		remove_from_group("bosses")
+	if is_in_group("elite_enemies"):
+		remove_from_group("elite_enemies")
 	separation_radius = 22.0
 	separation_force = 90.0
 
@@ -311,6 +325,8 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 			is_boss = false
 		Type.ELITE:
 			var elite_scale := 1.0 + elapsed_time / 300.0
+			if not is_in_group("elite_enemies"):
+				add_to_group("elite_enemies")
 			max_health = 720.0 * elite_scale
 			speed = 140.0
 			contact_damage = 18.0
@@ -1006,6 +1022,8 @@ func die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	if elite_blast_delay > 0.0 and elite_blast_radius > 0.0:
+		_spawn_elite_blast()
 	_hitstop_timer = 0.0
 	if visual_node != null:
 		visual_node.position = Vector2.ZERO
@@ -1064,7 +1082,7 @@ func die() -> void:
 	if enemy_type == Type.ELITE:
 		get_tree().call_group("game_manager", "on_elite_killed")
 
-	if is_boss:
+	if is_boss or is_mini_boss:
 		if TREASURE_CHEST_SCENE != null and get_parent() != null:
 			var chest = TREASURE_CHEST_SCENE.instantiate()
 			chest.global_position = global_position
@@ -1077,6 +1095,26 @@ func die() -> void:
 		_begin_death_anim()
 	else:
 		_release_to_pool()
+
+func _spawn_elite_blast() -> void:
+	var parent := get_parent()
+	if parent == null:
+		return
+	var delay := elite_blast_delay
+	var rad := elite_blast_radius
+	var dmg := elite_blast_damage
+	var pos := global_position
+	var tree := get_tree()
+	var tele := SpawnTelegraph.new()
+	tele.setup(pos, delay, rad, func(p: Vector2) -> void:
+		if tree == null:
+			return
+		for pl in tree.get_nodes_in_group("player"):
+			var node := pl as Node2D
+			if node != null and node.global_position.distance_to(p) <= rad:
+				node.call("take_damage", dmg)
+	)
+	parent.add_child(tele)
 
 func _begin_death_anim() -> void:
 	is_dying_anim = true
@@ -1153,6 +1191,8 @@ func _release_to_pool() -> void:
 		remove_from_group("enemies")
 	if is_in_group("bosses"):
 		remove_from_group("bosses")
+	if is_in_group("elite_enemies"):
+		remove_from_group("elite_enemies")
 	if visual_node != null:
 		visual_node.scale = Vector2.ONE
 		visual_node.rotation = 0.0

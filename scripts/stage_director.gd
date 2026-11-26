@@ -213,6 +213,7 @@ func _build_boss_plan() -> void:
 			"name": String(src.get("boss_name", "")),
 			"type": String(src.get("boss_type", "wolf")),
 			"hp": float(src.get("boss_hp", 4600.0)) * float(mults[clampi(k, 0, mults.size() - 1)]),
+			"mini": k < total - 1,
 			"final": k == total - 1,
 		})
 

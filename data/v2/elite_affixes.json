@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "note": "精英怪随机词缀：生成时从下表抽 1 条，叠加在物种精英（elite_variants）之上，随机更换脚底妖气光环颜色。",
+  "affixes": [
+    {
+      "id": "affix_swift",
+      "name": "御风",
+      "desc": "移速 +30%",
+      "aura_color": "#38E0C4",
+      "speed_mult": 1.3
+    },
+    {
+      "id": "affix_iron",
+      "name": "金刚",
+      "desc": "血量 ×1.5、免疫击退",
+      "aura_color": "#F5D042",
+      "hp_mult": 1.5,
+      "kb_resist": 1.0
+    },
+    {
+      "id": "affix_blast",
+      "name": "爆煞",
+      "desc": "死亡后 0.8 秒爆开一圈妖气",
+      "aura_color": "#F26835",
+      "blast_delay": 0.8,
+      "blast_radius": 118.0,
+      "blast_damage": 16.0
+    }
+  ]
+}

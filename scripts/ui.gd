@@ -959,7 +959,7 @@ class EdgeIndicator extends Control:
 		var tree := get_tree()
 		if tree == null:
 			return
-		var has_targets := (not tree.get_nodes_in_group("chests").is_empty()) or (not tree.get_nodes_in_group("bosses").is_empty())
+		var has_targets := (not tree.get_nodes_in_group("chests").is_empty()) or (not tree.get_nodes_in_group("bosses").is_empty()) or (not tree.get_nodes_in_group("elite_enemies").is_empty())
 		if has_targets or _had_markers:
 			queue_redraw()
 
@@ -999,6 +999,17 @@ class EdgeIndicator extends Control:
 			if not inner_rect.has_point(sp):
 				drew_any = true
 				_draw_edge_marker(vp_size, sp, "首领", Color(0.95, 0.34, 0.24, pulse), Color(0.28, 0.06, 0.05, 0.95))
+
+		for node in tree.get_nodes_in_group("elite_enemies"):
+			if not is_instance_valid(node) or not (node is Node2D):
+				continue
+			if bool(node.get("is_dead")) or bool(node.get("is_mini_boss")):
+				continue
+			var elite_node := node as Node2D
+			var elite_sp: Vector2 = canvas_xform * elite_node.global_position
+			if not inner_rect.has_point(elite_sp):
+				drew_any = true
+				_draw_edge_marker(vp_size, elite_sp, "精英", Color(0.82, 0.54, 0.98, pulse), Color(0.24, 0.10, 0.32, 0.95))
 		_had_markers = drew_any
 
 	func _draw_edge_marker(vp_size: Vector2, target_screen: Vector2, label_text: String, fill_col: Color, rim_col: Color) -> void:
