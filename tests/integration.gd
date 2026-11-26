@@ -29,6 +29,11 @@ func _ready() -> void:
 	_watchdog.start()
 	await _run()
 
+func _skip_heavy() -> bool:
+	if OS.get_environment("FAST_TEST") == "1":
+		return true
+	return (OS.get_cmdline_args() + OS.get_cmdline_user_args()).has("--fast")
+
 func _on_watchdog_timeout() -> void:
 	print("WATCHDOG_TIMEOUT after %.0fs, stuck at: %s" % [WATCHDOG_SECONDS, current_test])
 	print("RESULT passes=", passes, " fails=", fails + 1)
@@ -36,6 +41,8 @@ func _on_watchdog_timeout() -> void:
 	get_tree().quit(2)
 
 # 测试调度表：统一记录当前卡点，看门狗超时时能精确报出是哪个测试挂住
+const HEAVY_TESTS := ["test_smoke_long_run"]
+
 const TESTS := [
 	"test_autoloads",
 	"test_enemy_mask",
@@ -73,7 +80,11 @@ func _run() -> void:
 	await _frame()
 	var saved_char := Stats.selected_character_id
 	Stats.selected_character_id = "sword_immortal"
+	var skip_heavy := _skip_heavy()
 	for t in TESTS:
+		if skip_heavy and HEAVY_TESTS.has(t):
+			print("SKIP ", t)
+			continue
 		current_test = t
 		print("RUN  ", t)
 		# await 对普通函数立即返回，对协程等其完成，两种测试都能统一调度
@@ -903,24 +914,24 @@ func test_title_scene() -> void:
 	check("title_music", Music.current_track == "title", "track=%s" % Music.current_track)
 
 	# 战绩应显示
-	var best = t.get_node("Center/VBox/BestLabel")
+	var best = t.get_node("BottomLeftDock/BestPlate/BestLabel")
 	check("title_best_visible", best.visible, "best label hidden despite history")
 	check("title_best_text", best.text.contains("05:00"), "best text=%s" % best.text)
 
 	# 必需按钮存在
-	for btn_path in ["Center/VBox/StartButton", "Center/VBox/SettingsButton", "Center/VBox/QuitButton"]:
-		check("title_button_%s" % btn_path.split("/")[2], t.get_node_or_null(btn_path) != null, "missing %s" % btn_path)
+	for btn_path in ["LeftMenu/VBox/StartButton", "TopRightBar/SettingsButton", "TopRightBar/QuitButton"]:
+		check("title_button_%s" % btn_path.get_file(), t.get_node_or_null(btn_path) != null, "missing %s" % btn_path)
 
 	# 设置面板开关
-	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	t.get_node("TopRightBar/SettingsButton").emit_signal("pressed")
 	await _frame()
 	check("title_settings_opened", t.settings_panel != null and is_instance_valid(t.settings_panel), "settings panel not created")
-	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	t.get_node("TopRightBar/SettingsButton").emit_signal("pressed")
 	await _frame()
 	check("title_settings_toggled_off", t.settings_panel == null, "settings panel not closed by toggle")
 
 	# 设置面板本体：控件齐全，滑条与开关反映当前设置
-	t.get_node("Center/VBox/SettingsButton").emit_signal("pressed")
+	t.get_node("TopRightBar/SettingsButton").emit_signal("pressed")
 	await _frame()
 	var panel = t.settings_panel
 	check("panel_has_sliders", panel._sliders.size() == 3, "sliders=%d expect 3" % panel._sliders.size())
@@ -1012,8 +1023,10 @@ func test_character_rig() -> void:
 	var p_atk := rig.update(0.04, Vector2.ZERO, 250.0, false)
 	check("rig_attack_lunge_right", float(p_atk["facing_sign"]) > 0.0, "attack right should face right")
 
-	var gunner_cfg := CharacterData.get_character("jinyiwei_gunner")
-	check("gunner_char_registered", str(gunner_cfg.get("id", "")) == "jinyiwei_gunner" and str(gunner_cfg.get("start_weapon", "")) == "shenji_musket", "gunner character config missing")
+	var gourd_cfg := CharacterData.get_character("gourd_daoist")
+	check("gourd_char_registered", str(gourd_cfg.get("id", "")) == "gourd_daoist" and str(gourd_cfg.get("v2_start_weapon", "")) == "wpn_fire_gourd", "gourd_daoist character config missing")
+	var thunder_cfg := CharacterData.get_character("thunder_daoist")
+	check("thunder_char_registered", str(thunder_cfg.get("id", "")) == "thunder_daoist" and str(thunder_cfg.get("v2_start_weapon", "")) == "wpn_thunder_talisman", "thunder_daoist character config missing")
 	var musket_cfg := WeaponCatalog.get_weapon("shenji_musket")
 	check("musket_weapon_registered", str(musket_cfg.get("evo_name", "")) == "锦衣神机·天火流星", "shenji_musket catalog entry missing")
 

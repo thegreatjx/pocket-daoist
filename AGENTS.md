@@ -22,16 +22,21 @@
 - 新增流程分支时先加状态值再写逻辑；改动已有流程时若发现隐式状态，先收敛成显式状态，再改功能，不顺手留“以后再理”的补丁。
 
 ## 5. 改完必巡检与测试
-- 修改 `data/v2/*.json`、`assets/`、`scripts/story.gd` 或 UI 脚本后，执行：
+- 日常改动后跑分层快速检查（按实际改动自动选择环节，通常 6 秒内，只输出失败项与一行摘要）：
   ```powershell
-  python tools/studio_audit.py
-  python tools/studio_audit.py --strict
+  python tools/quick_check.py
   ```
-- 修改游戏逻辑或场景后，执行既有 Godot 测试确认无回归：
+- 交付、出包或需要发版前跑全量（含 60 秒长跑 smoke）：
+  ```powershell
+  python tools/quick_check.py --full
+  ```
+- 分层规则：`data/` 与 `assets/` 改动跑资产巡检（0.5s）；任何 `.gd`/`.tscn`/`.gdshader` 改动跑核心系统测试（5s）；流程、场景、自动加载或核心玩法脚本改动再加跑流程集成（15s，自动跳过长跑 smoke）。
+- 需要手工单跑某一层时：
   ```powershell
   godot --headless --path . res://tests/v2_systems_test.tscn
-  .\run.ps1 -Test -Fast
+  godot --headless --path . res://tests/integration.tscn --fast
   ```
+- 巡检已知基线：`arcana_v2.json` 有 3 条 arcana 引用了尚未实现的反应 ID，`quick_check.py` 把它们记为已知告警，只有新告警才判失败。
 
 ## 6. 每次改动自动提交（Git Commit）
 - 每次任务改动完成并通过第 5 节巡检与测试后，自动执行 `git add` 与 `git commit`，不再等待额外口头催促。
