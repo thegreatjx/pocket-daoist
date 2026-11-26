@@ -80,7 +80,13 @@ def stage_audit():
     if code != 0 or fresh:
         return False, secs, fresh or [text.strip()[-300:]]
     note = "已知历史告警 %d 条" % len(errors) if errors else "无告警"
-    return True, secs, [note]
+    mcode, mout, merr, msecs = run(
+        [sys.executable, "tools/build_monster_video_sheets.py", "--verify"], 120)
+    mtext = (mout + merr).strip()
+    if mcode != 0:
+        fails = [line.strip() for line in mtext.splitlines() if line.startswith("[FAIL]")]
+        return False, secs + msecs, fails[:10] or [mtext[-300:]]
+    return True, secs + msecs, [note, "怪物图集规格 OK"]
 
 
 def stage_v2():

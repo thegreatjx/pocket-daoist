@@ -1,3 +1,5 @@
+import argparse
+import json
 import os
 import sys
 
@@ -230,9 +232,85 @@ def contact_sheet(items: list[tuple[str, Image.Image]], out_path: str) -> None:
     sheet.save(out_path)
 
 
-if __name__ == "__main__":
+EDGE_ALPHA = (10, 80)
+SEMI_LIMIT = 0.10
+GREEN_EDGE_LIMIT = 0.15
+BOTTOM_BAND = 0.015
+
+
+def _frame_problems(frame: Image.Image, label: str) -> list[str]:
+    out = []
+    a = np.array(frame.getchannel("A")).astype(np.float32)
+    rgb = np.array(frame.convert("RGB")).astype(np.int16)
+    h, w = a.shape
+    solid = a > 8
+    if solid.sum() < 0.01 * h * w:
+        return [f"{label}: 空白帧"]
+    ys, xs = np.where(solid)
+    y0, y1 = int(ys.min()), int(ys.max())
+    x0, x1 = int(xs.min()), int(xs.max())
+    band = max(2, int(round(h * BOTTOM_BAND)))
+    if (a[h - band:] > 8).any():
+        out.append(f"{label}: 底部 {band}px 有残留像素（多半是标签文字）")
+    crop = a[y0:y1 + 1, x0:x1 + 1]
+    semi = float(((crop > EDGE_ALPHA[0]) & (crop < EDGE_ALPHA[1])).mean())
+    if semi > SEMI_LIMIT:
+        out.append(f"{label}: 低透明碎片 {semi:.1%} > {SEMI_LIMIT:.0%}")
+    edge = (a > EDGE_ALPHA[0]) & (a < EDGE_ALPHA[1])
+    if edge.any():
+        key = np.array([51.0, 168.0, 76.0])
+        near_key = np.linalg.norm(rgb - key, axis=2) < 60.0
+        g_dom = (rgb[:, :, 1] - np.maximum(rgb[:, :, 0], rgb[:, :, 2])) > 20
+        ratio = float((edge & g_dom & near_key).sum()) / float(edge.sum())
+        if ratio > GREEN_EDGE_LIMIT:
+            out.append(f"{label}: 绿边 {ratio:.1%} > {GREEN_EDGE_LIMIT:.0%}")
+    return out
+
+
+def verify() -> int:
+    problems: list[str] = []
+    data_path = os.path.join(PROJECT_ROOT, "data", "v2", "enemies_waves_v2.json")
+    data_txt = open(data_path, encoding="utf-8").read() if os.path.exists(data_path) else ""
+    visual_path = os.path.join(PROJECT_ROOT, "scripts", "enemy_visual.gd")
+    visual_txt = open(visual_path, encoding="utf-8").read() if os.path.exists(visual_path) else ""
+    for m in MONSTERS:
+        tall = FRAME_TALL[m["tier"]]
+        sheet_path = os.path.join(SPRITES_DIR, f"anim_{m['id']}_run.png")
+        still_path = os.path.join(SPRITES_DIR, f"enemy_{m['id']}.png")
+        sheet_name = f"anim_{m['id']}_run.png"
+        still_name = f"enemy_{m['id']}.png"
+        if not os.path.exists(sheet_path):
+            problems.append(f"{m['id']}: 缺少 {sheet_name}")
+            continue
+        sheet = Image.open(sheet_path).convert("RGBA")
+        if sheet.size != (tall * FRAME_COUNT, tall):
+            problems.append(f"{m['id']}: 图集尺寸 {sheet.size}，应为 {(tall * FRAME_COUNT, tall)}")
+            continue
+        for i in range(FRAME_COUNT):
+            frame = sheet.crop((i * tall, 0, (i + 1) * tall, tall))
+            problems += _frame_problems(frame, f"{m['id']}#{i}")
+        if not os.path.exists(still_path):
+            problems.append(f"{m['id']}: 缺少 {still_name}")
+        else:
+            still = Image.open(still_path).convert("RGBA")
+            if still.size != (256, 256):
+                problems.append(f"{m['id']}: 立绘尺寸 {still.size}，应为 (256, 256)")
+            problems += _frame_problems(still, f"{m['id']}@still")
+        if sheet_name not in data_txt:
+            problems.append(f"{m['id']}: {sheet_name} 未登记到 enemies_waves_v2.json")
+        if still_name not in data_txt:
+            problems.append(f"{m['id']}: {still_name} 未登记到 enemies_waves_v2.json")
+        if sheet_name not in visual_txt:
+            problems.append(f"{m['id']}: enemy_visual.gd 未 preload {sheet_name}")
+    for p in problems:
+        print("[FAIL]", p)
+    print(f"MONSTER_VERIFY {'OK' if not problems else 'FAILED'} problems={len(problems)}")
+    return 0 if not problems else 1
+
+
+def build() -> int:
     concept = build_concept()
-    video = build_video_frames()
+    build_video_frames()
     contact_sheet([(m["name"], concept[m["id"]]) for m in MONSTERS], os.path.join(WORK_DIR, "contact_concept.png"))
     cell = 200
     sheet_all = Image.new("RGB", (FRAME_COUNT * cell, len(MONSTERS) * cell), (28, 28, 28))
@@ -242,8 +320,23 @@ if __name__ == "__main__":
         for i in range(FRAME_COUNT):
             tile = Image.new("RGBA", (cell, cell), (42, 42, 42, 255))
             frame = sheet.crop((i * tall, 0, (i + 1) * tall, tall))
-            fitted = frame.resize((int(tall * cell / tall), cell), Image.Resampling.LANCZOS)
-            tile.alpha_composite(fitted)
+            tile.alpha_composite(frame.resize((cell, cell), Image.Resampling.LANCZOS))
             sheet_all.paste(tile.convert("RGB"), (i * cell, row * cell))
     sheet_all.save(os.path.join(WORK_DIR, "contact_video.png"))
-    print("ok", WORK_DIR)
+    print("BUILD OK", WORK_DIR)
+    return verify()
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="概念图拆立绘 + 绿幕视频拆帧为怪物动画图集")
+    ap.add_argument("--verify", action="store_true", help="只校验已落库图集，不重新生成")
+    ap.add_argument("--concept", default=RAW_CONCEPT)
+    ap.add_argument("--video", default=RAW_VIDEO)
+    args = ap.parse_args()
+    globals()["RAW_CONCEPT"] = args.concept
+    globals()["RAW_VIDEO"] = args.video
+    return verify() if args.verify else build()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

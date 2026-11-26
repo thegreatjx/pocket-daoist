@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 13:33:25",
+    "generated_at": "2026-11-26 13:42:52",
     "active_media_count": 202,
-    "used_media_count": 192,
-    "orphan_media_count": 10,
+    "used_media_count": 196,
+    "orphan_media_count": 6,
     "legacy_count": 49,
-    "usage_rate_pct": 95.0,
+    "usage_rate_pct": 97.0,
     "error_count": 3,
     "gap_count": 4,
     "warning_count": 3,
@@ -203,8 +203,8 @@
       "id": "ISS-009",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 10 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 10 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6), enemy(4)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 6 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 6 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -2296,6 +2296,8 @@
         "id": "enemy_zhusha_zhiren",
         "name": "朱砂纸人",
         "species": 7,
+        "sprite": "res://assets/sprites/enemy_zhusha_zhiren.png",
+        "sheet": "res://assets/sprites/anim_zhusha_zhiren_run.png",
         "ai_behavior": "swarm_chaser",
         "chase_mode": "direct",
         "hp_units": 0.9,
@@ -2318,6 +2320,8 @@
         "id": "enemy_chihuo_danling",
         "name": "炽火丹灵",
         "species": 8,
+        "sprite": "res://assets/sprites/enemy_chihuo_danling.png",
+        "sheet": "res://assets/sprites/anim_chihuo_danling_run.png",
         "ai_behavior": "splitter_bomber",
         "chase_mode": "direct",
         "hp_units": 1.15,
@@ -2346,6 +2350,8 @@
         "id": "enemy_wudu_zhangchan",
         "name": "五毒蟾蜍",
         "species": 9,
+        "sprite": "res://assets/sprites/enemy_wudu_zhangchan.png",
+        "sheet": "res://assets/sprites/anim_wudu_zhangchan_run.png",
         "ai_behavior": "kiter_shooter",
         "chase_mode": "strafe_kiter",
         "hp_units": 2.4,
@@ -2379,6 +2385,8 @@
         "id": "enemy_canjian_jiankui",
         "name": "残剑剑傀",
         "species": 10,
+        "sprite": "res://assets/sprites/enemy_canjian_jiankui.png",
+        "sheet": "res://assets/sprites/anim_canjian_jiankui_run.png",
         "ai_behavior": "charger_telegraph",
         "chase_mode": "direct",
         "hp_units": 2.6,
@@ -4898,6 +4906,7 @@
         "rows": 1
       },
       "used_by": [
+        "data/v2/enemies_waves_v2.json",
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
@@ -4921,6 +4930,7 @@
         "rows": 1
       },
       "used_by": [
+        "data/v2/enemies_waves_v2.json",
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
@@ -5501,6 +5511,7 @@
         "rows": 1
       },
       "used_by": [
+        "data/v2/enemies_waves_v2.json",
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
@@ -5572,6 +5583,7 @@
         "rows": 1
       },
       "used_by": [
+        "data/v2/enemies_waves_v2.json",
         "scripts/enemy_visual.gd"
       ],
       "status": "used",
@@ -5611,8 +5623,10 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -5629,8 +5643,10 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -5854,8 +5870,10 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {
@@ -5914,8 +5932,10 @@
       "height": 256,
       "duration_sec": null,
       "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
+      "used_by": [
+        "data/v2/enemies_waves_v2.json"
+      ],
+      "status": "used",
       "cluster": "enemy"
     },
     {

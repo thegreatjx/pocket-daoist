@@ -47,6 +47,7 @@ python tools/quick_check.py --full # 交付前全量（含 60 秒 smoke）
 - [`docs/游戏设计规划.md`](docs/游戏设计规划.md) — 玩法设计定稿
 - [`docs/ART_STYLE_BIBLE.md`](docs/ART_STYLE_BIBLE.md) — 美术风格圣经，画任何新素材前的红线
 - [`docs/HERO_ART_PIPELINE.md`](docs/HERO_ART_PIPELINE.md) — 主角立绘 → 动画图集的生成与验收流程
+- [`docs/MONSTER_ART_PIPELINE.md`](docs/MONSTER_ART_PIPELINE.md) — 怪物概念图拆立绘、绿幕视频拆帧、图集校验与接入流程
 - [`docs/AI_ASSET_GUIDE.md`](docs/AI_ASSET_GUIDE.md) — 由 `python tools/studio_audit.py` 自动生成的资产台账
 
 **历史归档（描述的是早期规划，与当前实现不一致）**
