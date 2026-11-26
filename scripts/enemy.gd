@@ -918,6 +918,8 @@ func _on_shield_broken() -> void:
 	_stun_timer = maxf(_stun_timer, 0.55)
 	interrupt_charge_windup()
 	apply_vulnerability(1.25, 3.0)
+	if get_parent() != null:
+		V2VfxFactory.spawn_impact_ring(get_parent(), global_position, 145.0 if is_boss else 92.0, Color(0.92, 0.98, 1.0, 0.95), 0.28, 0.70)
 	if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:
 		target.v2_combat._spawn_text_popup(global_position + Vector2(0.0, -34.0), "破罡！", Color(0.95, 0.98, 1.0))
 		target.v2_combat.play_v2_cue("sfx_react_shatter", "reaction", 1.12)
@@ -1271,6 +1273,8 @@ func _enter_boss_phase2() -> void:
 		if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:
 			target.v2_combat._spawn_text_popup(global_position + Vector2(0.0, -56.0), "护体罡气重聚！", Color(0.95, 0.98, 1.0))
 			target.v2_combat.play_v2_cue("sfx_boss_roar", "boss", 1.05)
+		if get_parent() != null:
+			V2VfxFactory.spawn_impact_ring(get_parent(), global_position, 180.0, Color(0.88, 0.97, 1.0, 0.92), 0.34, 0.65)
 	Sfx.play_boss_or_fallback("boss_roar", "thunder", -1.0, 0.78)
 	get_tree().call_group("ui", "show_banner", "【首领狂暴 · 妖气暴走！】")
 	if get_parent() != null:

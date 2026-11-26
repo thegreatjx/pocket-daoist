@@ -153,21 +153,34 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 		"react_shatter":
 			duration = 0.42
 			z_index = 6
-			for idx in range(2):
-				var slash_tex := V2VfxFactory.TEX_SLASH_02 if idx == 0 else V2VfxFactory.TEX_SCRATCH_01
-				var cut := V2VfxFactory.make_shader_sprite(slash_tex, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-					"primary_color": Color(0.40, 0.91, 0.98, 0.95),
-					"edge_color": Color(0.95, 0.99, 1.0, 1.0),
-					"use_texture_mask": 1.0,
-					"intensity": 1.55,
-				}, r * 2.1)
-				cut.rotation = (-0.65 if idx == 0 else 0.65) + randf_range(-0.2, 0.2)
-				add_child(cut)
-				_anim_sprites.append({"node": cut, "mode": "slash", "s0": cut.scale * 0.78, "s1": cut.scale * 1.12, "spin": 0.0})
+			var shatter_ring := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_IMPACT_RING, {
+				"radius": 0.10,
+				"thickness": 0.14,
+				"softness": 0.08,
+				"squash": 0.72,
+				"fade": 1.0,
+				"tint": Color(0.55, 0.92, 1.0, 0.92),
+			}, r * 2.2)
+			add_child(shatter_ring)
+			_anim_sprites.append({"node": shatter_ring, "mode": "impact_ring", "s0": shatter_ring.scale, "s1": shatter_ring.scale, "spin": 0.0})
 
-			var burst_star := V2VfxFactory.make_sprite(V2VfxFactory.TEX_STAR_09, r * 1.5, Color(0.75, 0.96, 1.0, 0.85), true)
+			for idx in range(2):
+				var cut := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_CROSS_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, r * 1.9, Color(0.68, 0.96, 1.0, 0.96), true)
+				cut.rotation = (-0.65 if idx == 0 else 0.65) + randf_range(-0.18, 0.18)
+				add_child(cut)
+				_anim_sprites.append({"node": cut, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.96, "s0": cut.scale * 0.85, "s1": cut.scale * 1.15, "spin": 0.0})
+
+			var burst_star := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_SPARK_STAR, {
+				"points": 4,
+				"sharpness": 22.0,
+				"spin": 0.4,
+				"progress": 0.0,
+				"secondary": 0.50,
+				"tint": Color(0.55, 0.92, 1.0, 0.95),
+				"core_tint": Color(0.96, 1.0, 1.0, 1.0),
+			}, r * 1.55)
 			add_child(burst_star)
-			_anim_sprites.append({"node": burst_star, "mode": "flash", "s0": burst_star.scale * 0.4, "s1": burst_star.scale * 1.2, "spin": 3.0})
+			_anim_sprites.append({"node": burst_star, "mode": "spark_star", "s0": burst_star.scale, "s1": burst_star.scale * 1.12, "spin": 1.2})
 
 			add_child(V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_STAR_08, {
 				"amount": 14, "lifetime": 0.36, "vel_min": 95.0, "vel_max": r * 2.8,
@@ -178,15 +191,10 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 		"react_lightning_blade":
 			duration = 0.44
 			z_index = 6
-			var arc_slash := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SLASH_03, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-				"primary_color": Color(0.65, 0.55, 0.98, 0.95),
-				"edge_color": Color(1.0, 0.94, 0.62, 1.0),
-				"use_texture_mask": 1.0,
-				"intensity": 1.65,
-			}, 170.0)
+			var arc_slash := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_ARC_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 165.0, Color(0.78, 0.72, 1.0, 0.96), true)
 			arc_slash.rotation = randf_range(-PI, PI)
 			add_child(arc_slash)
-			_anim_sprites.append({"node": arc_slash, "mode": "slash", "s0": arc_slash.scale * 0.8, "s1": arc_slash.scale * 1.18, "spin": 1.2})
+			_anim_sprites.append({"node": arc_slash, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.96, "s0": arc_slash.scale * 0.84, "s1": arc_slash.scale * 1.18, "spin": 0.8})
 
 			var cross_bolt := _build_radial_arc(95.0, arc_slash.rotation + PI * 0.5, rx_col, Color(1.0, 0.94, 0.62, 1.0), 18.0)
 			add_child(cross_bolt)
@@ -256,17 +264,10 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 			_anim_sprites.append({"node": acid, "mode": "burn", "s0": acid.scale * 0.7, "s1": acid.scale * 1.15, "spin": 1.2})
 
 			for idx in range(2):
-				var tex := V2VfxFactory.TEX_SLASH_01 if idx == 0 else V2VfxFactory.TEX_SLASH_04
-				var slash := V2VfxFactory.make_shader_sprite(tex, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-					"primary_color": Color(0.08, 0.84, 0.56, 0.95),
-					"edge_color": Color(0.85, 1.0, 0.90, 1.0),
-					"ink_strength": 0.65,
-					"use_texture_mask": 1.0,
-					"intensity": 1.65,
-				}, 150.0 * sc_mult)
+				var slash := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_CROSS_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 145.0 * sc_mult, Color(0.28, 0.96, 0.68, 0.96), true)
 				slash.rotation = -0.78 if idx == 0 else 0.78
 				add_child(slash)
-				_anim_sprites.append({"node": slash, "mode": "slash", "s0": slash.scale * 0.75, "s1": slash.scale * 1.2, "spin": 0.0})
+				_anim_sprites.append({"node": slash, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.96, "s0": slash.scale * 0.8, "s1": slash.scale * 1.18, "spin": 0.0})
 
 			add_child(V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_SPARK_02, {
 				"amount": 14 if executed else 9, "lifetime": 0.38, "vel_min": 65.0, "vel_max": 175.0 * sc_mult,
@@ -457,15 +458,10 @@ func setup_reaction(rx_id: String, center: Vector2, aoe_r: float, rx_col: Color,
 			tide_wave.global_position = center
 			add_child(tide_wave)
 			_anim_sprites.append({"node": tide_wave, "mode": "wave", "s0": tide_wave.scale * 0.72, "s1": tide_wave.scale * 1.15, "spin": 1.5})
-			var cut := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SLASH_02, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-				"primary_color": Color(0.10, 0.86, 0.94, 0.95),
-				"edge_color": Color(0.98, 0.96, 0.80, 1.0),
-				"use_texture_mask": 1.0,
-				"intensity": 1.55,
-			}, r * 1.95)
+			var cut := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_ARC_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, r * 1.85, Color(0.32, 0.94, 0.98, 0.96), true)
 			cut.rotation = randf_range(-PI, PI)
 			add_child(cut)
-			_anim_sprites.append({"node": cut, "mode": "slash", "s0": cut.scale * 0.76, "s1": cut.scale * 1.15, "spin": 0.0})
+			_anim_sprites.append({"node": cut, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.96, "s0": cut.scale * 0.82, "s1": cut.scale * 1.16, "spin": 0.0})
 
 		_:
 			setup_weapon_burst("pulse", center, Vector2.RIGHT, r, rx_col, extra)
@@ -479,20 +475,22 @@ func setup_weapon_burst(kind: String, pos: Vector2, dir: Vector2, radius: float,
 			duration = 0.30
 			z_index = 6
 			var gold := Color(1.0, 0.88, 0.38, 1.0)
-			var flash := V2VfxFactory.make_sprite(V2VfxFactory.TEX_FLARE_01, r * 2.1, Color(gold.r, gold.g, gold.b, 0.85), true)
+			var flash := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_LIGHT_01, V2VfxFactory.SHADER_SPARK_STAR, {
+				"points": 4,
+				"sharpness": 24.0,
+				"spin": d.angle(),
+				"progress": 0.0,
+				"secondary": 0.45,
+				"tint": Color(gold.r, gold.g, gold.b, 0.94),
+				"core_tint": Color(1.0, 0.98, 0.92, 1.0),
+			}, r * 1.95)
 			add_child(flash)
-			_anim_sprites.append({"node": flash, "mode": "flash", "s0": flash.scale * 0.45, "s1": flash.scale * 1.2, "spin": 2.4})
+			_anim_sprites.append({"node": flash, "mode": "spark_star", "s0": flash.scale, "s1": flash.scale * 1.12, "spin": 1.8})
 			for i in range(2):
-				var cross := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SLASH_02, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-					"primary_color": Color(col.r, col.g, col.b, 0.95),
-					"edge_color": Color(1.0, 1.0, 0.94, 1.0),
-					"ink_strength": 0.55,
-					"use_texture_mask": 1.0,
-					"intensity": 1.85,
-				}, 108.0)
+				var cross := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_CROSS_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 112.0, Color(col.r, col.g, col.b, 0.96), true)
 				cross.rotation = d.angle() + (PI * 0.5 if i == 1 else 0.0)
 				add_child(cross)
-				_anim_sprites.append({"node": cross, "mode": "slash", "s0": cross.scale * 0.62, "s1": cross.scale * 1.35, "spin": 0.0})
+				_anim_sprites.append({"node": cross, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.96, "s0": cross.scale * 0.78, "s1": cross.scale * 1.22, "spin": 0.0})
 			add_child(V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_SPARK_04, {
 				"amount": 12, "lifetime": 0.26, "one_shot": true, "explosiveness": 0.95,
 				"vel_min": 90.0, "vel_max": 210.0, "scale_min": 0.03, "scale_max": 0.07,
@@ -505,17 +503,12 @@ func setup_weapon_burst(kind: String, pos: Vector2, dir: Vector2, radius: float,
 			}))
 
 		"sword_hit":
-			duration = 0.24
+			duration = 0.22
 			z_index = 6
-			var glint := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SLASH_01, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-				"primary_color": Color(col.r, col.g, col.b, 0.92),
-				"edge_color": Color(0.95, 1.0, 1.0, 1.0),
-				"use_texture_mask": 1.0,
-				"intensity": 1.5,
-			}, 74.0)
+			var glint := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_ARC_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 78.0, Color(col.r, col.g, col.b, 0.95), true)
 			glint.rotation = d.angle() + randf_range(-0.35, 0.35)
 			add_child(glint)
-			_anim_sprites.append({"node": glint, "mode": "slash", "s0": glint.scale * 0.75, "s1": glint.scale * 1.15, "spin": 0.0})
+			_anim_sprites.append({"node": glint, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.95, "s0": glint.scale * 0.82, "s1": glint.scale * 1.12, "spin": 0.0})
 			add_child(V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_SPARK_04, {
 				"amount": 6, "lifetime": 0.22, "direction": -d, "spread": 95.0,
 				"vel_min": 60.0, "vel_max": 140.0, "scale_min": 0.03, "scale_max": 0.06,
@@ -523,18 +516,16 @@ func setup_weapon_burst(kind: String, pos: Vector2, dir: Vector2, radius: float,
 			}))
 
 		"sword_double_slash":
-			duration = 0.28
+			duration = 0.26
 			z_index = 6
-			var sweep := V2VfxFactory.make_shader_sprite(V2VfxFactory.TEX_SLASH_03, V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, {
-				"primary_color": Color(col.r, col.g, col.b, 0.90),
-				"edge_color": Color(0.95, 1.0, 0.98, 1.0),
-				"ink_strength": 0.55,
-				"use_texture_mask": 1.0,
-				"intensity": 1.45,
-			}, 115.0)
+			var sweep := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_ARC_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 118.0, Color(col.r, col.g, col.b, 0.94), true)
 			sweep.rotation = d.angle()
 			add_child(sweep)
-			_anim_sprites.append({"node": sweep, "mode": "slash", "s0": sweep.scale * 0.78, "s1": sweep.scale * 1.15, "spin": 0.6})
+			_anim_sprites.append({"node": sweep, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.94, "s0": sweep.scale * 0.84, "s1": sweep.scale * 1.16, "spin": 0.5})
+			var thrust := V2VfxFactory.make_strip_sprite(V2VfxFactory.TEX_SLASH_THRUST_STRIP, V2VfxFactory.SLASH_STRIP_FRAMES, 108.0, Color(0.92, 1.0, 0.98, 0.88), true)
+			thrust.rotation = d.angle()
+			add_child(thrust)
+			_anim_sprites.append({"node": thrust, "mode": "flipbook", "frames": V2VfxFactory.SLASH_STRIP_FRAMES, "alpha": 0.88, "s0": thrust.scale * 0.85, "s1": thrust.scale * 1.14, "spin": 0.0})
 
 		"fire_impact":
 			duration = 0.28
@@ -812,6 +803,17 @@ func _physics_process(delta: float) -> void:
 				sp.modulate.a = (1.0 - t) * 0.9
 			"fire_ring":
 				if mat != null:
+					mat.set_shader_parameter("fade", fade)
+			"flipbook":
+				var fc := maxi(1, int(item.get("frames", 6)))
+				sp.frame = clampi(int(floor(t * float(fc))), 0, fc - 1)
+				sp.modulate.a = float(item.get("alpha", 0.95)) * (1.0 - maxf(0.0, t - 0.68) / 0.32)
+			"spark_star":
+				if mat != null:
+					mat.set_shader_parameter("progress", t)
+			"impact_ring":
+				if mat != null:
+					mat.set_shader_parameter("radius", lerpf(0.10, 0.92, 1.0 - pow(1.0 - t, 2.0)))
 					mat.set_shader_parameter("fade", fade)
 
 	for item in _anim_lines:

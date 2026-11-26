@@ -9,6 +9,13 @@ const SHADER_BOSS_SHOCKWAVE: Shader = preload("res://shaders/boss_shockwave_ring
 const SHADER_FIRE_FLAME_2D: Shader = preload("res://shaders/fire_flame_2d.gdshader")
 const SHADER_GROUND_SCORCH: Shader = preload("res://shaders/ground_scorch.gdshader")
 const SHADER_FLAME_TONGUE: Shader = preload("res://shaders/flame_tongue.gdshader")
+const SHADER_SPARK_STAR: Shader = preload("res://shaders/spark_star.gdshader")
+const SHADER_IMPACT_RING: Shader = preload("res://shaders/impact_ring.gdshader")
+
+const TEX_SLASH_ARC_STRIP: Texture2D = preload("res://assets/sprites/fx_slash_arc_strip.png")
+const TEX_SLASH_CROSS_STRIP: Texture2D = preload("res://assets/sprites/fx_slash_cross_strip.png")
+const TEX_SLASH_THRUST_STRIP: Texture2D = preload("res://assets/sprites/fx_slash_thrust_strip.png")
+const SLASH_STRIP_FRAMES := 6
 
 const TEX_FIRE_01: Texture2D = preload("res://addons/kenney_particle_pack/fire_01.png")
 const TEX_FIRE_02: Texture2D = preload("res://addons/kenney_particle_pack/fire_02.png")
@@ -137,6 +144,49 @@ static func make_shader_sprite(tex: Texture2D, shader: Shader, params: Dictionar
 		var sc := diameter_px / max_dim
 		sp.scale = Vector2(sc, sc)
 	return sp
+
+static func make_strip_sprite(tex: Texture2D, hframes_cnt: int, diameter_px: float, tint: Color = Color.WHITE, additive: bool = true) -> Sprite2D:
+	var sp := Sprite2D.new()
+	sp.texture = tex
+	sp.hframes = maxi(1, hframes_cnt)
+	sp.frame = 0
+	sp.modulate = tint
+	if tex != null:
+		var sz := tex.get_size()
+		var cell_w := sz.x / float(sp.hframes)
+		var max_dim := maxf(1.0, maxf(cell_w, sz.y))
+		var sc := diameter_px / max_dim
+		sp.scale = Vector2(sc, sc)
+	if additive:
+		sp.material = make_additive_mat()
+	return sp
+
+static func spawn_impact_ring(parent: Node, world_pos: Vector2, diameter_px: float, tint: Color, dur: float = 0.24, squash: float = 0.72) -> void:
+	if parent == null or not is_instance_valid(parent) or not can_spawn_transient(parent):
+		return
+	var root := Node2D.new()
+	root.global_position = world_pos
+	root.z_index = 6
+	root.add_to_group("v2_transient_vfx")
+	parent.add_child(root)
+
+	var ring := make_shader_sprite(TEX_LIGHT_01, SHADER_IMPACT_RING, {
+		"radius": 0.10,
+		"thickness": 0.13,
+		"softness": 0.08,
+		"squash": squash,
+		"fade": 1.0,
+		"tint": tint,
+	}, diameter_px)
+	root.add_child(ring)
+	var rmat := ring.material as ShaderMaterial
+	var tw := root.create_tween()
+	tw.tween_method(func(v: float) -> void:
+		if rmat != null:
+			rmat.set_shader_parameter("radius", lerpf(0.10, 0.92, 1.0 - pow(1.0 - v, 2.0)))
+			rmat.set_shader_parameter("fade", 1.0 - v * v)
+	, 0.0, 1.0, maxf(0.08, dur))
+	tw.tween_callback(root.queue_free)
 
 static func make_shader_line(shader: Shader, width: float, params: Dictionary, width_curve: Curve = null) -> Line2D:
 	var line := Line2D.new()
@@ -276,8 +326,20 @@ static func spawn_hit_spark(parent: Node, world_pos: Vector2, element: String = 
 
 	var flash_tex := TEX_SLASH_02 if (is_crit or element == "metal") else elem_glyph_texture(element)
 	var dia := 52.0 if is_crit else 34.0
-	var sp := make_sprite(flash_tex, dia, Color(base_c.r, base_c.g, base_c.b, 0.92), true)
-	sp.rotation = randf() * TAU
+	var sp: Sprite2D = null
+	if is_crit:
+		sp = make_shader_sprite(TEX_LIGHT_01, SHADER_SPARK_STAR, {
+			"points": 4,
+			"sharpness": 24.0,
+			"spin": randf() * TAU,
+			"progress": 0.0,
+			"secondary": 0.45,
+			"tint": Color(base_c.r, base_c.g, base_c.b, 0.96),
+			"core_tint": Color(1.0, 0.98, 0.90, 1.0),
+		}, 62.0)
+	else:
+		sp = make_sprite(flash_tex, dia, Color(base_c.r, base_c.g, base_c.b, 0.92), true)
+		sp.rotation = randf() * TAU
 	root.add_child(sp)
 
 	var gp := make_gpu_particles(TEX_SPARK_01, {
@@ -296,8 +358,14 @@ static func spawn_hit_spark(parent: Node, world_pos: Vector2, element: String = 
 
 	var tw := root.create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(sp, "scale", sp.scale * (1.55 if is_crit else 1.35), 0.14).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(sp, "modulate:a", 0.0, 0.15)
+	if is_crit and sp.material is ShaderMaterial:
+		var smat := sp.material as ShaderMaterial
+		tw.tween_method(func(v: float) -> void:
+			smat.set_shader_parameter("progress", v)
+		, 0.0, 1.0, 0.18)
+	else:
+		tw.tween_property(sp, "scale", sp.scale * 1.35, 0.14).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(sp, "modulate:a", 0.0, 0.15)
 	tw.chain().tween_interval(0.14)
 	tw.chain().tween_callback(root.queue_free)
 
@@ -506,12 +574,25 @@ static func spawn_boss_shockwave(parent: Node, world_pos: Vector2, radius: float
 	})
 	root.add_child(sparks)
 
+	var lead_ring := make_shader_sprite(TEX_LIGHT_01, SHADER_IMPACT_RING, {
+		"radius": 0.12,
+		"thickness": 0.12,
+		"softness": 0.07,
+		"squash": 0.65,
+		"fade": 1.0,
+		"tint": Color(accent_col.r, accent_col.g, accent_col.b, 0.95),
+	}, dia * 1.05)
+	root.add_child(lead_ring)
+
 	var mat := ring.material as ShaderMaterial
+	var lmat := lead_ring.material as ShaderMaterial
 	var tw := root.create_tween()
 	tw.set_parallel(true)
 	tw.tween_method(func(v: float) -> void:
 		mat.set_shader_parameter("progress", v)
 		mat.set_shader_parameter("fade", 1.0 - v * v)
+		lmat.set_shader_parameter("radius", lerpf(0.12, 0.94, 1.0 - pow(1.0 - v, 2.0)))
+		lmat.set_shader_parameter("fade", 1.0 - v * v)
 	, 0.05, 1.0, dur * 0.88)
 	tw.tween_property(core_sp, "scale", core_sp.scale * 1.6, dur * 0.55)
 	tw.tween_property(core_sp, "modulate:a", 0.0, dur * 0.60)

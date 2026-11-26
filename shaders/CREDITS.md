@@ -6,7 +6,15 @@
   - Godot Package: `https://github.com/Calinou/kenney-particle-pack`
   - License: Creative Commons Zero v1.0 Universal (CC0 1.0) — Public Domain (`addons/kenney_particle_pack/LICENSE.txt`)
 
+- **Weapon Slash Effect Sprite Strips** — `assets/sprites/fx_slash_arc_strip.png`, `assets/sprites/fx_slash_cross_strip.png`, `assets/sprites/fx_slash_thrust_strip.png`
+  - Author: Cethiel (`https://opengameart.org/content/weapon-slash-effect`)
+  - License: Creative Commons Zero v1.0 Universal (CC0 1.0) — Public Domain
+  - Modification: Repacked into 6-frame horizontal strips (`900x150`, `150x150` per frame) and desaturated to neutral luminance-white RGBA for runtime element tinting.
+
 ## Godot 4 CanvasItem Shaders (`shaders/`)
+- **`spark_star.gdshader`** & **`impact_ring.gdshader`**
+  - Source: `tavryxlabs-lab/kapowfx-starter` (`https://github.com/tavryxlabs-lab/kapowfx-starter`)
+  - License: MIT License (`Copyright (c) tavryxlabs-lab`)
 - **`burn_dissolve.gdshader`**
   - Adapted from GDQuest `dissolve2D.gdshader` (`https://github.com/gdquest-demos/godot-shaders`, MIT License) with procedural FBM swirl noise and configurable ground-layer alpha ceiling for Godot 4 `gl_compatibility`.
 - **`electric_arc.gdshader`**
