@@ -680,7 +680,7 @@
       "icon": "res://assets/v2/weapons/wpn_jade_vase.png",
       "attack_pattern": "water_dew_splash",
       "base_cost": 19,
-      "sfx_cue": "sfx_ice_chime",
+      "sfx_cue": "sfx_water_ripple",
       "tiers": [
         {
           "tier": 1,

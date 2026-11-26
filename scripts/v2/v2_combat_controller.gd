@@ -22,10 +22,11 @@ const DEFAULT_REALM_UNLOCKS := [
 const CUE_FALLBACK_PATHS := {
 	"sfx_sword_whoosh": "res://assets/audio/sword_cast.wav",
 	"sfx_fusion_sword_array": "res://assets/audio/sword_cast.wav",
-	"sfx_fire_lob": "res://assets/audio/cannon_blast.wav",
+	"sfx_fire_lob": "res://assets/audio/fire_gourd_burn.wav",
 	"sfx_thunder_snap": "res://assets/audio/thunder_arc_snap.wav",
 	"sfx_fusion_thunder_ice": "res://assets/audio/thunder.wav",
 	"sfx_ice_chime": "res://assets/audio/sword_hit.wav",
+	"sfx_water_ripple": "res://assets/audio/water_ripple_splash.wav",
 	"sfx_hit": "res://assets/audio/sword_hit.wav",
 	"sfx_venom_hiss": "res://assets/audio/jar_break.wav",
 	"sfx_bell_gong": "res://assets/audio/cannon_blast.wav",
@@ -839,13 +840,15 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 					})
 
 		"water_dew_splash":
+			var w_tier := maxi(1, int(stats.get("tier", 1)))
 			var w_hex := max_col_hex if (is_max_tier and not max_col_hex.is_empty()) else String(profile.get("wave_color", "#22D3EE"))
 			var col := Color.from_string(w_hex, Color(0.13, 0.83, 0.93))
 			col.a = float(profile.get("wave_alpha", 0.48))
-			_spawn_pulse_visual(origin, 38.0 * area_m, col, "water_mirror", area_m)
+			var launch_r := (22.0 + float(w_tier - 1) * 2.8) * area_m
+			_spawn_pulse_visual(origin, launch_r, col, "water_mirror", area_m)
 			var fx := V2AttackFx.new()
 			parent_world.add_child(fx)
-			fx.setup_water_splash(self, origin, target_pos, base_dmg, float(stats.get("aoe_radius", 76.0)) * area_m, float(stats.get("slow_pct", 0.28)), float(stats.get("slow_dur", 2.2)), elem, col, perk == "sweet_dew_tide", awakened_fx)
+			fx.setup_water_splash(self, origin, target_pos, base_dmg, float(stats.get("aoe_radius", 76.0)) * area_m, float(stats.get("slow_pct", 0.28)), float(stats.get("slow_dur", 2.2)), elem, col, perk == "sweet_dew_tide", awakened_fx, w_tier)
 
 		"homing_soul_seal_spirits":
 			var sp_hex := max_col_hex if (is_max_tier and not max_col_hex.is_empty()) else String(profile.get("spirit_color", "#34D399"))

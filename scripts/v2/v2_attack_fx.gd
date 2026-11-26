@@ -6,6 +6,8 @@ enum Mode { BOOMERANG, BURN_LOB, CHAIN_BOLT, ICE_SHARD, PULSE_RING, FUSION_DOMAI
 const TEX_JADE_SWORD: Texture2D = preload("res://assets/v2/weapons/wpn_jade_sword.png")
 const TEX_THUNDER_ARC_STRIP: Texture2D = preload("res://assets/sprites/fx_thunder_arc_strip.png")
 const THUNDER_ARC_FRAMES := 8
+const TEX_WATER_RIPPLE_STRIP: Texture2D = preload("res://assets/sprites/fx_water_ripple_strip.png")
+const WATER_RIPPLE_FRAMES := 12
 const ALPHA_SCALE_THRESHOLD := 1.30
 const ALPHA_SCALE_MIN_FACTOR := 0.48
 const AWAKENED_TIER := 8
@@ -150,6 +152,8 @@ var _domain_flash_timer: float = 0.0
 var _mist_sprite: Sprite2D = null
 var _water_double_tide: bool = false
 var _water_second_done: bool = false
+var _water_tier: int = 1
+var _water_ripple_sprites: Array[Dictionary] = []
 
 func setup_boomerang(
 	ctrl: Node,
@@ -2149,7 +2153,8 @@ func setup_water_splash(
 	elem: String,
 	wave_col: Color,
 	double_tide: bool = false,
-	awakened_flag: bool = false
+	awakened_flag: bool = false,
+	tier_lv: int = 1
 ) -> void:
 	mode = Mode.WATER_SPLASH
 	controller = ctrl
@@ -2164,33 +2169,37 @@ func setup_water_splash(
 	color = wave_col
 	_water_double_tide = double_tide
 	_water_second_done = false
+	_water_tier = AWAKENED_TIER if awakened_flag else maxi(1, tier_lv)
+	_water_ripple_sprites.clear()
 	fly_dur = 0.24
 	z_index = 4
 
-	_trail_line = V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, 14.0, {
-		"primary_color": Color(0.22, 0.86, 0.98, 0.78),
+	var tier_u := clampf(float(_water_tier - 1) / float(AWAKENED_TIER - 1), 0.0, 1.0)
+	var trail_w := lerpf(8.0, 15.0, tier_u)
+	_trail_line = V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, trail_w, {
+		"primary_color": Color(0.22, 0.86, 0.98, 0.72),
 		"edge_color": Color(0.90, 0.99, 1.0, 1.0),
-		"intensity": 1.35,
+		"intensity": lerpf(1.05, 1.45, tier_u),
 		"use_texture_mask": 0.0,
 	}, V2VfxFactory.make_taper_curve(0.06, 1.0))
 	_trail_line.top_level = true
 	_trail_line.z_index = 3
 	add_child(_trail_line)
 
-	_glow_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_LIGHT_01, 38.0, Color(0.45, 0.95, 1.0, 0.88), true)
+	_glow_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_LIGHT_01, lerpf(24.0, 40.0, tier_u), Color(0.45, 0.95, 1.0, lerpf(0.68, 0.90, tier_u)), true)
 	add_child(_glow_sprite)
-	_main_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_TWIRL_02, 32.0, Color(0.24, 0.88, 0.98, 0.95), true)
+	_main_sprite = V2VfxFactory.make_sprite(V2VfxFactory.TEX_TWIRL_02, lerpf(21.0, 34.0, tier_u), Color(0.24, 0.88, 0.98, 0.95), true)
 	add_child(_main_sprite)
 	_trail_particles = V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_STAR_06, {
-		"amount": 9,
-		"lifetime": 0.24,
+		"amount": roundi(lerpf(4.0, 11.0, tier_u)),
+		"lifetime": 0.22,
 		"one_shot": false,
 		"local_coords": false,
-		"vel_min": 14.0,
-		"vel_max": 42.0,
-		"scale_min": 0.025,
-		"scale_max": 0.055,
-		"color_start": Color(0.68, 0.97, 1.0, 0.90),
+		"vel_min": 12.0,
+		"vel_max": lerpf(28.0, 48.0, tier_u),
+		"scale_min": 0.020,
+		"scale_max": lerpf(0.036, 0.060, tier_u),
+		"color_start": Color(0.68, 0.97, 1.0, 0.88),
 		"color_end": Color(0.16, 0.76, 0.96, 0.0),
 	})
 	add_child(_trail_particles)
@@ -2204,9 +2213,9 @@ func setup_water_splash(
 		_trail_particles.amount = awakened_particle_amount(14)
 		for i in range(3):
 			var crest := V2VfxFactory.make_shader_line(V2VfxFactory.SHADER_SWORD_GLINT_TRAIL, 22.0 - float(i) * 4.0, {
-				"primary_color": Color(0.30, 0.90, 1.0, 0.95),
-				"edge_color": Color(0.86, 1.0, 1.0, 1.0),
-				"intensity": 1.6,
+				"primary_color": Color(0.28, 0.92, 0.96, 0.95),
+				"edge_color": Color(1.0, 0.92, 0.56, 1.0),
+				"intensity": 1.65,
 				"use_texture_mask": 0.0,
 			}, V2VfxFactory.make_taper_curve(0.04, 1.0))
 			var pts := PackedVector2Array()
@@ -2242,8 +2251,8 @@ func _enter_water_impact() -> void:
 		"scale_min": 0.06,
 		"scale_max": 0.14,
 		"additive": false,
-		"color_start": Color(0.82, 0.98, 1.0, 0.55),
-		"color_end": Color(0.36, 0.80, 0.96, 0.0),
+		"color_start": Color(0.78, 0.99, 0.96, 0.52),
+		"color_end": Color(0.28, 0.80, 0.92, 0.0),
 	})
 	add_child(foam)
 	var spray := V2VfxFactory.make_gpu_particles(V2VfxFactory.TEX_STAR_06, {
@@ -2256,8 +2265,8 @@ func _enter_water_impact() -> void:
 		"vel_max": radius * 2.2,
 		"scale_min": 0.03,
 		"scale_max": 0.075,
-		"color_start": Color(0.86, 0.99, 1.0, 0.95),
-		"color_end": Color(0.30, 0.80, 0.98, 0.0),
+		"color_start": Color(0.96, 0.98, 0.72, 0.95),
+		"color_end": Color(0.30, 0.86, 0.98, 0.0),
 	})
 	add_child(spray)
 
@@ -2267,6 +2276,61 @@ func _enter_water_impact() -> void:
 			get_parent().add_child(ripple)
 			ripple.setup_pulse_ring(global_position, radius * (0.62 + 0.52 * float(i)), color, 0.46 + 0.10 * float(i), true, "water_mirror", area_scale, true)
 	awaken_layers += 2
+
+func _spawn_video_water_ripples(wave_r: float) -> void:
+	if TEX_WATER_RIPPLE_STRIP == null:
+		return
+	var base_sx := (wave_r * 2.15) / 244.0
+	var base_sy := base_sx * 1.15
+	var layer_specs: Array[Dictionary] = []
+	if awakened:
+		layer_specs = [
+			{"delay": 0.0, "dur": 0.48, "mult": 1.02, "tint": Color(0.32, 0.96, 0.95, 0.92), "add": false},
+			{"delay": 0.0, "dur": 0.48, "mult": 1.00, "tint": Color(1.0, 0.90, 0.44, 0.84), "add": true},
+			{"delay": 0.07, "dur": 0.50, "mult": 1.16, "tint": Color(0.68, 0.99, 0.96, 0.78), "add": true},
+			{"delay": 0.14, "dur": 0.52, "mult": 1.28, "tint": Color(1.0, 0.86, 0.42, 0.62), "add": true},
+		]
+	elif _water_tier <= 2:
+		layer_specs = [
+			{"delay": 0.0, "dur": 0.36, "mult": 1.00, "tint": Color(0.62, 0.95, 1.0, 0.86), "add": false},
+		]
+	elif _water_tier <= 5:
+		layer_specs = [
+			{"delay": 0.0, "dur": 0.42, "mult": 1.00, "tint": Color(0.55, 0.94, 1.0, 0.88), "add": false},
+			{"delay": 0.08, "dur": 0.44, "mult": 1.08, "tint": Color(0.72, 0.98, 1.0, 0.56), "add": true},
+		]
+	else:
+		layer_specs = [
+			{"delay": 0.0, "dur": 0.46, "mult": 1.02, "tint": Color(0.48, 0.94, 1.0, 0.90), "add": false},
+			{"delay": 0.06, "dur": 0.46, "mult": 1.04, "tint": Color(0.74, 0.99, 1.0, 0.66), "add": true},
+			{"delay": 0.12, "dur": 0.48, "mult": 1.16, "tint": Color(0.60, 0.95, 1.0, 0.52), "add": false},
+		]
+
+	var add_mat: CanvasItemMaterial = null
+	for spec in layer_specs:
+		var sp := Sprite2D.new()
+		sp.texture = TEX_WATER_RIPPLE_STRIP
+		sp.hframes = WATER_RIPPLE_FRAMES
+		sp.frame = 0
+		sp.z_index = -3
+		var mult := float(spec.get("mult", 1.0))
+		sp.scale = Vector2(base_sx * mult, base_sy * mult)
+		var tint := spec.get("tint", Color.WHITE) as Color
+		var delay := float(spec.get("delay", 0.0))
+		sp.visible = delay <= 0.0
+		sp.modulate = Color(tint.r, tint.g, tint.b, tint.a if delay <= 0.0 else 0.0)
+		if bool(spec.get("add", false)):
+			if add_mat == null:
+				add_mat = CanvasItemMaterial.new()
+				add_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+			sp.material = add_mat
+		add_child(sp)
+		_water_ripple_sprites.append({
+			"sprite": sp,
+			"t": -delay,
+			"dur": float(spec.get("dur", 0.42)),
+			"base_alpha": tint.a,
+		})
 
 func _step_water_splash(delta: float) -> void:
 	if controller == null or not is_instance_valid(controller):
@@ -2303,13 +2367,35 @@ func _step_water_splash(delta: float) -> void:
 	if awakened:
 		_step_awakened_water(delta)
 
+	var ripples_active := false
+	for item in _water_ripple_sprites:
+		var sp := item.get("sprite") as Sprite2D
+		if sp == null or not is_instance_valid(sp):
+			continue
+		var lt := float(item.get("t", 0.0)) + delta
+		item["t"] = lt
+		var dur := maxf(0.05, float(item.get("dur", 0.42)))
+		if lt < 0.0:
+			sp.visible = false
+			ripples_active = true
+		elif lt < dur:
+			sp.visible = true
+			var p := clampf(lt / dur, 0.0, 1.0)
+			sp.frame = clampi(int(floor(p * float(WATER_RIPPLE_FRAMES))), 0, WATER_RIPPLE_FRAMES - 1)
+			var base_a := float(item.get("base_alpha", 0.85))
+			sp.modulate.a = base_a * clampf(p / 0.10, 0.0, 1.0) * (1.0 - smoothstep(0.68, 1.0, p))
+			ripples_active = true
+		else:
+			sp.visible = false
+
 	if _water_double_tide and not _water_second_done and elapsed >= 0.18:
 		_water_second_done = true
-		_detonate_water_wave(radius * 1.25, damage * 0.55)
+		_detonate_water_wave(radius * 1.28, damage * 0.55)
 		if "player" in controller and controller.player != null and is_instance_valid(controller.player) and controller.player.has_method("heal"):
 			controller.player.heal(2.0)
 
-	if elapsed >= (0.92 if awakened else (0.38 if _water_double_tide else 0.22)):
+	var min_life := 0.96 if awakened else (0.54 if (_water_tier >= 3 or _water_double_tide) else 0.38)
+	if (elapsed >= min_life and not ripples_active) or elapsed >= 1.35:
 		queue_free()
 
 func _step_awakened_water(delta: float) -> void:
@@ -2325,11 +2411,12 @@ func _step_awakened_water(delta: float) -> void:
 		crest.rotation += delta * 0.35
 
 func _detonate_water_wave(wave_r: float, wave_dmg: float) -> void:
-	if get_parent() != null:
+	_spawn_video_water_ripples(wave_r)
+	if (_water_tier >= 3 or awakened) and get_parent() != null and V2VfxFactory.can_spawn_transient(get_parent()):
 		var wave_fx := V2AttackFx.new()
 		get_parent().add_child(wave_fx)
 		var w_area_m := float(controller.call("get_area_mult")) if (controller != null and is_instance_valid(controller) and controller.has_method("get_area_mult")) else area_scale
-		wave_fx.setup_pulse_ring(global_position, wave_r, color, 0.38, true, "water_mirror", w_area_m, awakened)
+		wave_fx.setup_pulse_ring(global_position, wave_r, color, 0.40, true, "water_mirror", w_area_m, awakened)
 	var r2 := wave_r * wave_r
 	for raw_e in CombatGrid.query(global_position, wave_r):
 		var e := raw_e as Enemy

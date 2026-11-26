@@ -54,6 +54,51 @@ static func make_card_style(bg: Color, border: Color, border_w: int = 2, radius:
 	st.shadow_offset = Vector2(0, 3)
 	return st
 
+static func make_pill_style(bg: Color, border: Color, border_w: int = 1, radius: int = 12, pad_h: int = 10, pad_v: int = 3) -> StyleBoxFlat:
+	var st := StyleBoxFlat.new()
+	st.bg_color = bg
+	st.border_color = border
+	st.set_border_width_all(border_w)
+	st.set_corner_radius_all(radius)
+	st.content_margin_left = pad_h
+	st.content_margin_right = pad_h
+	st.content_margin_top = pad_v
+	st.content_margin_bottom = pad_v
+	return st
+
+static func style_selectable_card(btn: Button, selected: bool, accent: Color = COL_GOLD_BRIGHT) -> void:
+	if btn == null:
+		return
+	var normal := StyleBoxFlat.new()
+	if selected:
+		normal.bg_color = Color(0.09, 0.24, 0.21, 0.96)
+		normal.border_color = accent
+		normal.set_border_width_all(2)
+		normal.shadow_color = Color(accent.r, accent.g, accent.b, 0.26)
+		normal.shadow_size = 12
+		normal.shadow_offset = Vector2(0, 4)
+	else:
+		normal.bg_color = Color(0.05, 0.13, 0.12, 0.84)
+		normal.border_color = Color(COL_GOLD.r, COL_GOLD.g, COL_GOLD.b, 0.36)
+		normal.set_border_width_all(1)
+		normal.shadow_color = Color(0.02, 0.06, 0.05, 0.35)
+		normal.shadow_size = 6
+		normal.shadow_offset = Vector2(0, 2)
+	normal.set_corner_radius_all(12)
+	normal.set_content_margin_all(10)
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.11, 0.28, 0.24, 0.96) if selected else Color(0.08, 0.19, 0.17, 0.92)
+	hover.border_color = accent if selected else COL_GOLD
+
+	var pressed := hover.duplicate() as StyleBoxFlat
+	pressed.bg_color = hover.bg_color.darkened(0.08)
+
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("focus", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+
 static func style_button(btn: Button, variant: String = "primary") -> void:
 	if btn == null:
 		return
@@ -121,17 +166,143 @@ static func style_progress_bar(bar: ProgressBar, bg_color: Color, fill_color: Co
 	fill.set_corner_radius_all(maxi(1, radius - 1))
 	bar.add_theme_stylebox_override("fill", fill)
 
+static func style_scroll_container(sc: ScrollContainer) -> void:
+	if sc == null:
+		return
+	var vbar := sc.get_v_scroll_bar()
+	if vbar == null:
+		return
+	var track_st := StyleBoxFlat.new()
+	track_st.bg_color = Color(0.78, 0.80, 0.75, 0.28)
+	track_st.set_corner_radius_all(3)
+	track_st.content_margin_left = 3
+	track_st.content_margin_right = 3
+	vbar.add_theme_stylebox_override("scroll", track_st)
+
+	var grab_st := StyleBoxFlat.new()
+	grab_st.bg_color = Color(0.24, 0.46, 0.40, 0.48)
+	grab_st.set_corner_radius_all(3)
+	vbar.add_theme_stylebox_override("grabber", grab_st)
+
+	var grab_hv := grab_st.duplicate() as StyleBoxFlat
+	grab_hv.bg_color = Color(0.16, 0.44, 0.36, 0.74)
+	vbar.add_theme_stylebox_override("grabber_highlight", grab_hv)
+	vbar.add_theme_stylebox_override("grabber_pressed", grab_hv)
+
+static func make_scroll_body(scroll: ScrollContainer, separation: int = 10, right_pad: int = 10, vert_pad: int = 4) -> VBoxContainer:
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_right", right_pad)
+	margin.add_theme_constant_override("margin_top", vert_pad)
+	margin.add_theme_constant_override("margin_bottom", vert_pad)
+	scroll.add_child(margin)
+	var vb := VBoxContainer.new()
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vb.add_theme_constant_override("separation", separation)
+	margin.add_child(vb)
+	return vb
+
 static func apply_text_outline(lbl: Label, size: int = 4, col: Color = COL_OUTLINE) -> void:
 	if lbl == null:
 		return
 	lbl.add_theme_color_override("font_outline_color", col)
 	lbl.add_theme_constant_override("outline_size", size)
 
+static func apply_soft_shadow(lbl: Label, offset: Vector2 = Vector2(1, 3), col: Color = Color(0.03, 0.09, 0.07, 0.62)) -> void:
+	if lbl == null:
+		return
+	lbl.add_theme_constant_override("outline_size", 0)
+	lbl.add_theme_color_override("font_shadow_color", col)
+	lbl.add_theme_constant_override("shadow_offset_x", int(roundf(offset.x)))
+	lbl.add_theme_constant_override("shadow_offset_y", int(roundf(offset.y)))
+	lbl.add_theme_constant_override("shadow_outline_size", 3)
+
+static func make_translucent_scroll_plate(bg: Color = Color(0.05, 0.14, 0.12, 0.72), border: Color = Color(COL_GOLD.r, COL_GOLD.g, COL_GOLD.b, 0.78), radius: int = 10, pad_h: int = 14, pad_v: int = 10) -> StyleBoxFlat:
+	var st := StyleBoxFlat.new()
+	st.bg_color = bg
+	st.border_color = border
+	st.set_border_width_all(1)
+	st.set_corner_radius_all(radius)
+	st.content_margin_left = pad_h
+	st.content_margin_right = pad_h
+	st.content_margin_top = pad_v
+	st.content_margin_bottom = pad_v
+	st.shadow_color = Color(0.02, 0.06, 0.05, 0.32)
+	st.shadow_size = 10
+	st.shadow_offset = Vector2(0, 4)
+	return st
+
+static func make_seal_stamp_style() -> StyleBoxFlat:
+	var st := StyleBoxFlat.new()
+	st.bg_color = Color(0.72, 0.19, 0.13, 0.94)
+	st.border_color = Color(0.95, 0.80, 0.48, 0.88)
+	st.set_border_width_all(1)
+	st.set_corner_radius_all(4)
+	st.content_margin_left = 5
+	st.content_margin_right = 5
+	st.content_margin_top = 4
+	st.content_margin_bottom = 4
+	st.shadow_color = Color(0.05, 0.02, 0.02, 0.35)
+	st.shadow_size = 4
+	st.shadow_offset = Vector2(1, 2)
+	return st
+
+static func make_keycap_style() -> StyleBoxFlat:
+	var st := StyleBoxFlat.new()
+	st.bg_color = Color(0.07, 0.17, 0.15, 0.84)
+	st.border_color = Color(COL_GOLD.r, COL_GOLD.g, COL_GOLD.b, 0.56)
+	st.set_border_width_all(1)
+	st.border_width_bottom = 2
+	st.set_corner_radius_all(4)
+	st.content_margin_left = 6
+	st.content_margin_right = 6
+	st.content_margin_top = 1
+	st.content_margin_bottom = 2
+	return st
+
+static func style_circle_icon_button(btn: Button, accent: Color = COL_GOLD) -> void:
+	if btn == null:
+		return
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.05, 0.15, 0.13, 0.68)
+	normal.border_color = Color(accent.r, accent.g, accent.b, 0.52)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(22)
+	normal.shadow_color = Color(0.02, 0.06, 0.05, 0.28)
+	normal.shadow_size = 6
+	normal.shadow_offset = Vector2(0, 2)
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.09, 0.24, 0.21, 0.88)
+	hover.border_color = COL_GOLD_BRIGHT
+	hover.set_border_width_all(2)
+
+	var pressed := hover.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.04, 0.12, 0.10, 0.92)
+
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("focus", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+
+static func style_avatar_medallion(btn: Button, selected: bool, accent: Color = COL_GOLD_BRIGHT) -> void:
+	if btn == null:
+		return
+	var empty := StyleBoxEmpty.new()
+	btn.add_theme_stylebox_override("normal", empty)
+	btn.add_theme_stylebox_override("hover", empty)
+	btn.add_theme_stylebox_override("focus", empty)
+	btn.add_theme_stylebox_override("pressed", empty)
+	btn.modulate = Color.WHITE if selected else Color(0.88, 0.92, 0.90, 0.86)
+	btn.set_meta("selected", selected)
+	btn.set_meta("accent", accent)
+
 static func attach_ornaments(parent: Control, col: Color = COL_GOLD, arm: float = 12.0, inset: float = 5.0) -> void:
 	if parent == null:
 		return
 	var existing := parent.get_node_or_null("XianxiaOrnaments")
 	if existing != null:
+		parent.remove_child(existing)
 		existing.queue_free()
 	var orn := CornerOrnament.new()
 	orn.name = "XianxiaOrnaments"
@@ -141,18 +312,36 @@ static func attach_ornaments(parent: Control, col: Color = COL_GOLD, arm: float 
 	orn.clip_contents = false
 	orn.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	orn.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orn.z_index = 2
 	parent.add_child(orn)
 
 class CornerOrnament extends Control:
 	var accent_color: Color = COL_GOLD
 	var arm_length: float = 12.0
 	var inset: float = 5.0
+	var _move_pending: bool = false
 
 	func _ready() -> void:
 		var p := get_parent() as Control
-		if p != null and not p.resized.is_connected(queue_redraw):
-			p.resized.connect(queue_redraw)
+		if p != null:
+			if not p.resized.is_connected(queue_redraw):
+				p.resized.connect(queue_redraw)
+			if not p.child_order_changed.is_connected(_schedule_ensure_last):
+				p.child_order_changed.connect(_schedule_ensure_last)
+			_schedule_ensure_last()
+
+	func _schedule_ensure_last() -> void:
+		if not _move_pending:
+			_move_pending = true
+			_ensure_last.call_deferred()
+
+	func _ensure_last() -> void:
+		_move_pending = false
+		var p := get_parent()
+		if p == null or not is_inside_tree() or is_queued_for_deletion() or p.is_queued_for_deletion():
+			return
+		var last_idx := p.get_child_count() - 1
+		if get_index() != last_idx:
+			p.move_child(self, last_idx)
 
 	func _draw() -> void:
 		var p := get_parent() as Control

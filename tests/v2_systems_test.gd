@@ -1417,12 +1417,14 @@ func _test_ch1_map_assets() -> void:
 func _test_t5_batch2a_characters() -> void:
 	CharacterData.reload()
 	var chars := CharacterData.all()
-	_check("t5_2a_char_count_8", chars.size() >= 8, "got %d" % chars.size())
+	_check("t5_2a_char_count_4", chars.size() == 4, "got %d" % chars.size())
 	_check("t5_2a_affinity_sword_metal", CharacterData.get_element_affinity("sword_immortal") == "metal", "")
-	_check("t5_2a_affinity_fox_thunder", CharacterData.get_element_affinity("fox_dango") == "thunder", "")
-	_check("t5_2a_default_unlocked", CharacterData.is_unlocked("sword_immortal", Stats), "")
+	_check("t5_2a_affinity_gourd_fire", CharacterData.get_element_affinity("gourd_daoist") == "fire", "")
+	_check("t5_2a_affinity_thunder_thunder", CharacterData.get_element_affinity("thunder_daoist") == "thunder", "")
+	_check("t5_2a_affinity_cloud_water", CharacterData.get_element_affinity("cloud_danxia") == "water", "")
+	_check("t5_2a_default_unlocked", CharacterData.is_unlocked("sword_immortal", Stats) and CharacterData.is_unlocked("gourd_daoist", Stats) and CharacterData.is_unlocked("thunder_daoist", Stats) and CharacterData.is_unlocked("cloud_danxia", Stats), "")
 	var loader := V2DataLoader.new()
-	_check("t5_2a_loader_characters", loader.load_all("res://data/v2") and loader.characters.size() >= 8, "")
+	_check("t5_2a_loader_characters", loader.load_all("res://data/v2") and loader.characters.size() == 4, "")
 	loader.free()
 
 func _test_t5_batch2b_sect_14_and_recycle() -> void:
