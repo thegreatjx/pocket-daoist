@@ -93,7 +93,10 @@ func _physics_process(delta: float) -> void:
 	if _freeze_timer > 0.0:
 		_freeze_timer = maxf(0.0, _freeze_timer - delta)
 		if _freeze_timer <= 0.0:
+			var saved_dmg := _freeze_trigger_dmg
+			_freeze_trigger_dmg = 0.0
 			_clear_freeze_visual()
+			_on_freeze_expired_shatter(saved_dmg)
 	if _slow_timer > 0.0:
 		_slow_timer -= delta
 		if _slow_timer <= 0.0:

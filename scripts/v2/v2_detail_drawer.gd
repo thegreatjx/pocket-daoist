@@ -975,6 +975,9 @@ static func format_reaction_effect(rx: Dictionary) -> String:
 	var freeze_d := float(rx.get("freeze_dur", 0.0))
 	if freeze_d > 0.0:
 		parts.append("冰封%.1fs" % freeze_d)
+	var exp_sh_pct := float(rx.get("expire_shatter_shield_max_pct", 0.0))
+	if exp_sh_pct > 0.0:
+		parts.append("破冰削%d%%白盾" % roundi(exp_sh_pct * 100.0))
 	var sh_pct := float(rx.get("shield_max_pct", 0.0))
 	if sh_pct > 0.0:
 		parts.append("削%d%%白盾" % roundi(sh_pct * 100.0))

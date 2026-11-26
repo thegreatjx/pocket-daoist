@@ -12,7 +12,10 @@ const TREASURE_CHEST_SCENE: PackedScene = preload("res://scenes/treasure_chest.t
 const FREEZE_MARKER_SCRIPT: Script = preload("res://scripts/freeze_marker.gd")
 const OFFSCREEN_CULL_MARGIN := 160.0
 const DEATH_ANIM_DURATION := 0.38
-const FREEZE_VULN_MULT := 1.15
+const EXPIRE_SHATTER_VULN_MULT := 1.20
+const EXPIRE_SHATTER_VULN_DUR := 3.0
+const EXPIRE_SHATTER_SHIELD_PCT := 0.15
+const EXPIRE_SHATTER_SHIELD_MIN := 80.0
 const BOSS_FREEZE_MAX_SEC := 1.5
 const BOSS_FREEZE_SLOW_RATIO := 0.6
 
@@ -50,6 +53,7 @@ var _slow_ratio: float = 0.0
 var _slow_timer: float = 0.0
 var _stun_timer: float = 0.0
 var _freeze_timer: float = 0.0
+var _freeze_trigger_dmg: float = 0.0
 var _hitstop_timer: float = 0.0
 var _freeze_marker: Node2D = null
 var _spawn_elapsed: float = 0.0
@@ -180,6 +184,7 @@ func _reset_state() -> void:
 	_stun_timer = 0.0
 	_clear_freeze_visual(false, true)
 	_freeze_timer = 0.0
+	_freeze_trigger_dmg = 0.0
 	_hitstop_timer = 0.0
 	if visual_node != null:
 		visual_node.position = Vector2.ZERO
@@ -565,7 +570,10 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		_knockback = Vector2.ZERO
 		if _freeze_timer <= 0.0:
+			var saved_dmg := _freeze_trigger_dmg
+			_freeze_trigger_dmg = 0.0
 			_clear_freeze_visual(false)
+			_on_freeze_expired_shatter(saved_dmg)
 		return
 
 	if _hitstop_timer > 0.0:
@@ -825,7 +833,7 @@ func apply_stun(duration: float) -> void:
 	velocity = Vector2.ZERO
 	modulate = Color(1.4, 1.3, 0.7, 1.0)
 
-func apply_freeze(duration: float) -> void:
+func apply_freeze(duration: float, trigger_dmg: float = 0.0) -> void:
 	if is_dead or duration <= 0.0:
 		return
 	var freeze_sec := duration
@@ -834,6 +842,8 @@ func apply_freeze(duration: float) -> void:
 		_slow_ratio = maxf(_slow_ratio, BOSS_FREEZE_SLOW_RATIO)
 		_slow_timer = maxf(_slow_timer, maxf(0.0, duration - freeze_sec))
 	_freeze_timer = maxf(_freeze_timer, freeze_sec)
+	if trigger_dmg > 0.0:
+		_freeze_trigger_dmg = maxf(_freeze_trigger_dmg, trigger_dmg)
 	velocity = Vector2.ZERO
 	_knockback = Vector2.ZERO
 	if enemy_type == Type.ELITE and _elite_state == 2:
@@ -847,7 +857,17 @@ func is_frozen() -> bool:
 func unfreeze(heavy: bool = false) -> void:
 	if _freeze_timer > 0.0:
 		_freeze_timer = 0.0
+		_freeze_trigger_dmg = 0.0
 		_clear_freeze_visual(heavy)
+
+func _on_freeze_expired_shatter(saved_dmg: float) -> void:
+	if is_dead:
+		return
+	if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null and target.v2_combat.has_method("on_enemy_freeze_expired"):
+		target.v2_combat.on_enemy_freeze_expired(self, saved_dmg)
+		return
+	apply_vulnerability(EXPIRE_SHATTER_VULN_MULT, EXPIRE_SHATTER_VULN_DUR)
+	apply_shield_chunk_damage(EXPIRE_SHATTER_SHIELD_PCT, EXPIRE_SHATTER_SHIELD_MIN)
 
 func _show_freeze_marker() -> void:
 	if _freeze_marker != null and is_instance_valid(_freeze_marker) and not _freeze_marker.is_queued_for_deletion():
@@ -1191,6 +1211,7 @@ func _begin_death_anim() -> void:
 	set_active_element("", 0.0)
 	if _freeze_timer > 0.0 or _freeze_marker != null:
 		_freeze_timer = 0.0
+		_freeze_trigger_dmg = 0.0
 		_clear_freeze_visual(false)
 	if visual_node != null:
 		visual_node.set_process(false)

@@ -14,9 +14,11 @@ const VENOM_SPIRIT_SCRIPT := preload("res://scripts/v2/venom_spirit.gd")
 
 const DEFAULT_REALM_UNLOCKS := [
 	{"slots": 1, "level": 1, "realm": "练气"},
-	{"slots": 2, "level": 5, "realm": "筑基"},
-	{"slots": 3, "level": 11, "realm": "金丹"},
-	{"slots": 4, "level": 18, "realm": "元婴", "alt_elite_kills": 2},
+	{"slots": 2, "level": 3, "realm": "筑基"},
+	{"slots": 3, "level": 6, "realm": "金丹"},
+	{"slots": 4, "level": 10, "realm": "元婴"},
+	{"slots": 5, "level": 14, "realm": "化神"},
+	{"slots": 6, "level": 18, "realm": "渡劫", "alt_elite_kills": 3},
 ]
 
 const CUE_FALLBACK_PATHS := {
@@ -146,17 +148,19 @@ func get_realm_info_for_level(lv: int) -> Dictionary:
 func get_max_weapon_slots() -> int:
 	if loader != null and loader.max_weapon_slots > 0:
 		return loader.max_weapon_slots
-	return 4
+	return 6
 
 func calc_unlocked_slots(player_level: int, elite_kills: int = -1) -> int:
 	var max_s := get_max_weapon_slots()
 	var level_slots := 1
-	for entry in get_realm_table():
-		if int(entry.get("level", 1)) <= player_level:
-			level_slots = maxi(level_slots, int(entry.get("slots", 1)))
 	var ek := elite_kills if elite_kills >= 0 else elite_kills_for_slots
-	if ek >= 2:
-		return mini(max_s, maxi(level_slots, max_s))
+	for entry in get_realm_table():
+		var s := int(entry.get("slots", 1))
+		if int(entry.get("level", 1)) <= player_level:
+			level_slots = maxi(level_slots, s)
+		var alt_ek := int(entry.get("alt_elite_kills", 0))
+		if alt_ek > 0 and ek >= alt_ek:
+			level_slots = maxi(level_slots, s)
 	return mini(max_s, level_slots)
 
 func get_unlocked_slots() -> int:
@@ -344,6 +348,8 @@ func get_weapon_offer_weight(weapon_id: String) -> float:
 		var elem := String(loader.weapons_by_id[weapon_id].get("element", ""))
 		if not elem.is_empty() and elem != "none" and not get_owned_elements().has(elem):
 			w *= 1.35
+		if not get_weapon_reaction_synergies(weapon_id).is_empty():
+			w *= 1.65
 	return maxf(1.0, w)
 
 static func item_has_tradeoff(item_def: Dictionary) -> bool:
@@ -1167,7 +1173,7 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 				else:
 					var f_dur := float(spec.get("elite_freeze_dur", 0.5)) if is_target_elite else float(spec.get("freeze_dur", 1.2))
 					if target.has_method("apply_freeze"):
-						target.apply_freeze(f_dur)
+						target.apply_freeze(f_dur, trigger_dmg)
 
 		"react_shatter":
 			if target != null and is_instance_valid(target) and not bool(target.get("is_dead")):
@@ -1175,6 +1181,10 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 					target.unfreeze(true)
 				if target.has_method("apply_shield_chunk_damage"):
 					target.apply_shield_chunk_damage(float(rx.get("shield_max_pct", 0.35)), float(rx.get("shield_flat_min", 160.0)))
+				var sh_vuln_m: float = float(spec.get("vuln_mult", 1.20))
+				var sh_vuln_d: float = float(spec.get("vuln_dur", 3.0))
+				if sh_vuln_m > 1.0 and target.has_method("apply_vulnerability"):
+					target.apply_vulnerability(sh_vuln_m, sh_vuln_d)
 			var eff_aoe := maxf(60.0, aoe_r)
 			for e in CombatGrid.query(hit_pos, eff_aoe):
 				if e != null and is_instance_valid(e) and not bool(e.get("is_dead")) and hit_pos.distance_squared_to((e as Node2D).global_position) <= eff_aoe * eff_aoe:
@@ -1219,6 +1229,41 @@ func _execute_reaction_effect(rx: Dictionary, target: Node2D, hit_pos: Vector2, 
 						float(spec.get("death_max_hp_pct", 0.22)),
 						cap
 					)
+
+func on_enemy_freeze_expired(enemy: Node2D, trigger_dmg: float) -> void:
+	if enemy == null or not is_instance_valid(enemy) or bool(enemy.get("is_dead")):
+		return
+	var spec: Dictionary = loader.reactions_by_id.get("react_freeze", {}) if loader != null else {}
+	var vuln_m: float = float(spec.get("vuln_mult", 1.20))
+	var vuln_d: float = float(spec.get("vuln_dur", 3.0))
+	if vuln_m > 1.0 and enemy.has_method("apply_vulnerability"):
+		enemy.apply_vulnerability(vuln_m, vuln_d)
+	var sh_pct: float = float(spec.get("expire_shatter_shield_max_pct", 0.15))
+	var sh_min: float = float(spec.get("expire_shatter_shield_flat_min", 80.0))
+	if enemy.has_method("apply_shield_chunk_damage"):
+		enemy.apply_shield_chunk_damage(sh_pct, sh_min)
+	play_v2_cue("sfx_react_shatter", "reaction", randf_range(0.95, 1.05))
+	if trigger_dmg <= 0.0:
+		return
+	var mastery_cap: float = float(loader.reaction_config.get("mastery_cap", 1.0)) if loader != null else 1.0
+	var total_mastery: float = clampf(get_mastery_bonus() + float(item_mods.get("reaction_damage_pct", 0.0)), 0.0, mastery_cap)
+	var dmg_mult: float = float(spec.get("expire_shatter_damage_mult", 0.20))
+	var shatter_dmg: float = maxf(1.0, trigger_dmg * dmg_mult * (1.0 + total_mastery))
+	var is_target_boss: bool = bool(enemy.get("is_boss")) or bool(enemy.get("is_mini_boss"))
+	if is_target_boss and loader != null:
+		shatter_dmg = maxf(1.0, shatter_dmg * float(loader.reaction_config.get("boss_damage_scale", 0.60)))
+	var aoe_r: float = float(spec.get("expire_shatter_aoe_radius", 80.0)) * (1.0 + float(item_mods.get("reaction_radius_pct", 0.0)))
+	var rx_col := Color.from_string("#9AE6FF", Color.WHITE)
+	var pos := enemy.global_position
+	if _reaction_pop_budget > 0:
+		_reaction_pop_budget -= 1
+		_spawn_text_popup(pos + Vector2(0.0, -24.0), "破冰", rx_col)
+	_spawn_reaction_visual("react_shatter", pos, maxf(48.0, aoe_r), rx_col)
+	var eff_aoe := maxf(50.0, aoe_r)
+	for e in CombatGrid.query(pos, eff_aoe):
+		if e != null and is_instance_valid(e) and not bool(e.get("is_dead")) and pos.distance_squared_to((e as Node2D).global_position) <= eff_aoe * eff_aoe:
+			if e.has_method("take_damage_v2"):
+				e.take_damage_v2(shatter_dmg, false, false, "", rx_col, false)
 
 func _step_pending_shock_waves(delta: float) -> void:
 	if _pending_shock_waves.is_empty():

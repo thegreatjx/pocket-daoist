@@ -42,17 +42,23 @@
       "triggers": [
         ["ice", "water"]
       ],
-      "formula_cn": "冰 + 水（再吃金→破冰）",
+      "formula_cn": "冰 + 水（到期破冰 / 吃金速破）",
       "role_tag": "硬控破盾",
       "damage_mult": 0.15,
       "freeze_dur": 1.2,
       "elite_freeze_dur": 0.5,
       "boss_slow_pct": 0.3,
       "boss_slow_dur": 1.5,
+      "vuln_mult": 1.2,
+      "vuln_dur": 3.0,
+      "expire_shatter_damage_mult": 0.20,
+      "expire_shatter_aoe_radius": 80,
+      "expire_shatter_shield_max_pct": 0.15,
+      "expire_shatter_shield_flat_min": 80.0,
       "shatter_by": ["metal"],
       "vfx_color": "#38BDF8",
       "sfx_cue": "sfx_react_freeze",
-      "desc": "泼水成冰：冰封普通妖物 1.2s（精英 0.5s，首领改为 30% 减速 1.5s）。被金系命中会立刻触发【破冰裂罡】重创白色护体罡气！"
+      "desc": "泼水成冰：冰封普通妖物 1.2s（精英 0.5s，首领改为 30% 减速 1.5s）。冰封到期自动【破冰】造成范围碎冰伤、削减 15% 白盾并施加 20% 易伤 3.0s；期间被金系命中会立即提前触发【破冰裂罡】并重创白盾。"
     },
     {
       "id": "react_steam",
@@ -90,7 +96,7 @@
       "shield_damage_mult": 1.4,
       "vfx_color": "#FB923C",
       "sfx_cue": "sfx_react_forge",
-      "desc": "丹火灼铁：软化目标护体 4.0s，使其所受伤害提升 25%（全场唯一易伤，只刷新不叠加），并对白色护体罡气造成 1.4 倍熔解伤害。"
+      "desc": "丹火灼铁：软化目标护体 4.0s，使其所受伤害提升 25%（易伤取高刷新、不叠乘），并对白色护体罡气造成 1.4 倍熔解伤害。"
     },
     {
       "id": "react_detonate",
@@ -124,8 +130,10 @@
     "aoe_radius": 90,
     "shield_max_pct": 0.35,
     "shield_flat_min": 160.0,
+    "vuln_mult": 1.2,
+    "vuln_dur": 3.0,
     "vfx_color": "#9AE6FF",
     "sfx_cue": "sfx_react_shatter",
-    "desc": "金系法宝击中已冰封目标时立刻碎冰，直接削减目标 35% 最大白色护体罡气（保底 160 点）。"
+    "desc": "金系法宝击中已冰封目标时立即提前碎冰，施加 20% 易伤 3.0s，并直接削减目标 35% 最大白色护体罡气（保底 160 点）。"
   }
 }

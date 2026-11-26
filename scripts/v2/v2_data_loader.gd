@@ -7,10 +7,11 @@ const BASE_UNIT_HP := 16.0
 
 var weapons_by_id: Dictionary = {}
 var fusion_recipes: Array = []
-var max_weapon_slots: int = 4
+var max_weapon_slots: int = 6
 var max_weapon_level: int = 8
 var realm_slot_unlocks: Array = []
 var reactions_by_key: Dictionary = {}
+var reactions_by_id: Dictionary = {}
 var reactions_list: Array[Dictionary] = []
 var shatter_reaction: Dictionary = {}
 var reaction_config: Dictionary = {}
@@ -46,11 +47,12 @@ func load_all(base_dir: String = "res://data/v2") -> bool:
 	for w in w_data.get("weapons", []):
 		weapons_by_id[String(w["id"])] = w
 	fusion_recipes = w_data.get("fusion_recipes", [])
-	max_weapon_slots = int(w_data.get("max_weapon_slots", 4))
+	max_weapon_slots = int(w_data.get("max_weapon_slots", 6))
 	max_weapon_level = int(w_data.get("max_weapon_level", 8))
 	realm_slot_unlocks = w_data.get("realm_slot_unlocks", [])
 
 	reactions_by_key.clear()
+	reactions_by_id.clear()
 	reactions_list.clear()
 	shatter_reaction.clear()
 	reaction_config = r_data
@@ -59,6 +61,9 @@ func load_all(base_dir: String = "res://data/v2") -> bool:
 			continue
 		var r: Dictionary = r_raw
 		reactions_list.append(r)
+		var rid := String(r.get("id", ""))
+		if not rid.is_empty():
+			reactions_by_id[rid] = r
 		var trig_list: Array = r.get("triggers", [])
 		if trig_list.is_empty():
 			var fallback_pair: Array = r.get("pair", [])
