@@ -846,7 +846,7 @@ def build_progression_stages(
                     "id": eid,
                     "name": arch.get("name", eid),
                     "species": sp,
-                    "sprite": species_sheets.get(sp, ""),
+                    "sprite": arch.get("sheet") or arch.get("sprite") or species_sheets.get(sp, ""),
                 }
             )
         linked_achs = [
@@ -983,7 +983,7 @@ def build_manifest(root: pathlib.Path) -> dict[str, Any]:
         "arcanas": data["arcana_v2"].get("arcanas", []),
         "pickups": data["pickups_v2"].get("pickups", []),
         "archetypes": [
-            {**a, "resolved_sprite": species_sheets.get(int(a.get("species", 0)), "")}
+            {**a, "resolved_sprite": a.get("sheet") or a.get("sprite") or species_sheets.get(int(a.get("species", 0)), "")}
             for a in data["enemies_waves_v2"].get("archetypes", [])
         ],
         "elites": list(data["enemies_waves_v2"].get("elite_variants", {}).values()),

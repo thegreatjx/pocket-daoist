@@ -308,9 +308,9 @@ func setup_type(t: Type, elapsed_time: float, sp: int = 0) -> void:
 	element_multipliers.clear()
 	tier_variant = 1
 	match sp:
-		3:
+		3, 16, 17, 21:
 			chase_mode = "hop"
-		5:
+		5, 14, 19, 20:
 			chase_mode = "snake"
 		_:
 			chase_mode = "direct"
@@ -1089,12 +1089,18 @@ func die() -> void:
 	Sfx.play_varied("enemy_die", -6.0)
 	if not is_visual_culled and get_parent() != null:
 		var death_col := Color(0.98, 0.56, 0.24, 1.0) if (is_boss or enemy_type == Type.ELITE) else Color(0.45, 0.92, 0.82, 1.0)
-		if species == 6:
+		if species == 6 or species == 13 or species == 19:
 			death_col = Color(1.0, 0.44, 0.18, 1.0)
-		elif species == 4 or species == 5:
+		elif species == 4 or species == 5 or species == 17:
 			death_col = Color(0.36, 0.92, 0.56, 1.0)
-		elif species == 0:
+		elif species == 0 or species == 21:
 			death_col = Color(0.94, 0.36, 0.72, 1.0)
+		elif species == 15 or species == 16:
+			death_col = Color(0.28, 0.90, 0.78, 1.0)
+		elif species == 14 or species == 20:
+			death_col = Color(0.76, 0.32, 0.62, 1.0)
+		elif species == 18 or species == 22:
+			death_col = Color(0.92, 0.74, 0.30, 1.0)
 		V2VfxFactory.spawn_enemy_death_vfx(get_parent(), global_position, death_col, enemy_type == Type.ELITE, is_boss)
 
 	if target != null and is_instance_valid(target) and "v2_combat" in target and target.v2_combat != null:

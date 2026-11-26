@@ -48,11 +48,11 @@
               "weight": 0.42
             },
             {
-              "id": "enemy_skitter_shenjing",
+              "id": "enemy_lingzhi_gujing",
               "weight": 0.3
             },
             {
-              "id": "enemy_hopper_jiangshi",
+              "id": "enemy_bichi_zhongsi",
               "weight": 0.28
             }
           ],
@@ -93,6 +93,10 @@
             {
               "id": "enemy_zhusha_zhiren",
               "weight": 0.1
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.1
             }
           ],
           "events": [],
@@ -132,6 +136,14 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.12
             }
           ],
           "events": [
@@ -209,6 +221,14 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.12
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.1
             }
           ],
           "events": [],
@@ -252,6 +272,14 @@
             {
               "id": "enemy_wudu_zhangchan",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.12
             }
           ],
           "events": [
@@ -381,6 +409,22 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.06
             }
           ],
           "events": [],
@@ -451,6 +495,22 @@
             },
             {
               "id": "enemy_canjian_jiankui",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.04
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
               "weight": 0.04
             }
           ],
@@ -523,7 +583,11 @@
         "stele_wave_interval": 3,
         "hp_ramp_per_min": 0.0,
         "extra_chest_elite_per_min": false,
-        "pool_bias": {}
+        "pool_bias": {
+          "enemy_bichi_zhongsi": 1.45,
+          "enemy_lingzhi_gujing": 1.45,
+          "enemy_xueyi_yefu": 1.25
+        }
       },
       "waves": [
         {
@@ -542,15 +606,15 @@
           "shop_after": true,
           "pool": [
             {
-              "id": "enemy_swarm_imp",
-              "weight": 0.42
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.38
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.34
             },
             {
               "id": "enemy_skitter_shenjing",
-              "weight": 0.3
-            },
-            {
-              "id": "enemy_hopper_jiangshi",
               "weight": 0.28
             }
           ],
@@ -591,6 +655,18 @@
             {
               "id": "enemy_zhusha_zhiren",
               "weight": 0.1
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.14
             }
           ],
           "events": [],
@@ -630,6 +706,18 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.16
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.14
             }
           ],
           "events": [
@@ -668,6 +756,14 @@
             {
               "id": "enemy_kiter_fox",
               "weight": 0.28
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.12
             }
           ],
           "events": [],
@@ -707,6 +803,22 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.12
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.1
             }
           ],
           "events": [],
@@ -750,6 +862,26 @@
             {
               "id": "enemy_wudu_zhangchan",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.08
             }
           ],
           "events": [
@@ -801,6 +933,18 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.12
             }
           ],
           "events": [
@@ -879,6 +1023,38 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.06
             }
           ],
           "events": [],
@@ -950,6 +1126,30 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.04
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.05
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.05
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.05
+            },
+            {
+              "id": "enemy_lingzhi_gujing",
+              "weight": 0.06
             }
           ],
           "events": [
@@ -985,6 +1185,10 @@
             {
               "id": "enemy_skitter_shenjing",
               "weight": 0.4
+            },
+            {
+              "id": "enemy_bichi_zhongsi",
+              "weight": 0.25
             }
           ],
           "events": [],
@@ -1022,6 +1226,10 @@
         "hp_ramp_per_min": 0.0,
         "extra_chest_elite_per_min": false,
         "pool_bias": {
+          "enemy_fenyu_sanya": 1.45,
+          "enemy_chihuan_wugong": 1.4,
+          "enemy_linjia_chuanshan": 1.35,
+          "enemy_tongke_xiejiang": 1.3,
           "enemy_charger_huodou": 1.4,
           "enemy_chihuo_danling": 1.5,
           "enemy_bulwark_golem": 1.2
@@ -1044,16 +1252,16 @@
           "shop_after": true,
           "pool": [
             {
-              "id": "enemy_swarm_imp",
-              "weight": 0.42
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.4
             },
             {
-              "id": "enemy_skitter_shenjing",
-              "weight": 0.3
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.34
             },
             {
-              "id": "enemy_hopper_jiangshi",
-              "weight": 0.28
+              "id": "enemy_chihuo_danling",
+              "weight": 0.26
             }
           ],
           "events": [],
@@ -1093,6 +1301,14 @@
             {
               "id": "enemy_zhusha_zhiren",
               "weight": 0.1
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.18
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.14
             }
           ],
           "events": [],
@@ -1132,6 +1348,14 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.16
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.14
             }
           ],
           "events": [
@@ -1170,6 +1394,14 @@
             {
               "id": "enemy_kiter_fox",
               "weight": 0.28
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.18
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.16
             }
           ],
           "events": [],
@@ -1208,6 +1440,18 @@
             },
             {
               "id": "enemy_canjian_jiankui",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_chihuan_wugong",
               "weight": 0.12
             }
           ],
@@ -1252,6 +1496,22 @@
             {
               "id": "enemy_wudu_zhangchan",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.1
             }
           ],
           "events": [
@@ -1303,6 +1563,14 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.16
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.16
             }
           ],
           "events": [
@@ -1381,6 +1649,26 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.05
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.08
             }
           ],
           "events": [],
@@ -1452,6 +1740,22 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.04
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_linjia_chuanshan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.06
             }
           ],
           "events": [
@@ -1487,6 +1791,14 @@
             {
               "id": "enemy_skitter_shenjing",
               "weight": 0.4
+            },
+            {
+              "id": "enemy_fenyu_sanya",
+              "weight": 0.3
+            },
+            {
+              "id": "enemy_chihuan_wugong",
+              "weight": 0.25
             }
           ],
           "events": [],
@@ -1524,6 +1836,11 @@
         "hp_ramp_per_min": 0.0,
         "extra_chest_elite_per_min": false,
         "pool_bias": {
+          "enemy_qingyan_denglong": 1.4,
+          "enemy_duyan_tangsan": 1.35,
+          "enemy_kulou_dizhu": 1.4,
+          "enemy_xueyi_yefu": 1.3,
+          "enemy_tongke_xiejiang": 1.25,
           "enemy_canjian_jiankui": 1.5,
           "enemy_hopper_jiangshi": 1.3,
           "enemy_kiter_fox": 1.25
@@ -1546,15 +1863,15 @@
           "shop_after": true,
           "pool": [
             {
-              "id": "enemy_swarm_imp",
-              "weight": 0.42
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.38
             },
             {
-              "id": "enemy_skitter_shenjing",
-              "weight": 0.3
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.34
             },
             {
-              "id": "enemy_hopper_jiangshi",
+              "id": "enemy_xueyi_yefu",
               "weight": 0.28
             }
           ],
@@ -1595,6 +1912,18 @@
             {
               "id": "enemy_zhusha_zhiren",
               "weight": 0.1
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.12
             }
           ],
           "events": [],
@@ -1634,6 +1963,22 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.1
             }
           ],
           "events": [
@@ -1672,6 +2017,10 @@
             {
               "id": "enemy_kiter_fox",
               "weight": 0.28
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.18
             }
           ],
           "events": [],
@@ -1711,6 +2060,18 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.12
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.12
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.12
             }
           ],
           "events": [],
@@ -1748,12 +2109,20 @@
               "weight": 0.18
             },
             {
-              "id": "enemy_chihuo_danling",
+              "id": "enemy_wudu_zhangchan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_xueyi_yefu",
               "weight": 0.1
             },
             {
-              "id": "enemy_wudu_zhangchan",
-              "weight": 0.06
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.1
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.1
             }
           ],
           "events": [
@@ -1805,6 +2174,14 @@
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.08
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.14
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.16
             }
           ],
           "events": [
@@ -1873,16 +2250,32 @@
               "weight": 0.06
             },
             {
-              "id": "enemy_chihuo_danling",
-              "weight": 0.06
-            },
-            {
               "id": "enemy_wudu_zhangchan",
               "weight": 0.06
             },
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.06
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.08
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.09
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.08
             }
           ],
           "events": [],
@@ -1944,16 +2337,32 @@
               "weight": 0.04
             },
             {
-              "id": "enemy_chihuo_danling",
-              "weight": 0.04
-            },
-            {
               "id": "enemy_wudu_zhangchan",
               "weight": 0.04
             },
             {
               "id": "enemy_canjian_jiankui",
               "weight": 0.04
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_duyan_tangsan",
+              "weight": 0.06
+            },
+            {
+              "id": "enemy_kulou_dizhu",
+              "weight": 0.07
+            },
+            {
+              "id": "enemy_tongke_xiejiang",
+              "weight": 0.06
             }
           ],
           "events": [
@@ -1989,6 +2398,14 @@
             {
               "id": "enemy_skitter_shenjing",
               "weight": 0.4
+            },
+            {
+              "id": "enemy_xueyi_yefu",
+              "weight": 0.25
+            },
+            {
+              "id": "enemy_qingyan_denglong",
+              "weight": 0.25
             }
           ],
           "events": [],

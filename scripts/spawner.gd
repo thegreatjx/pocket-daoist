@@ -787,6 +787,16 @@ func _scale_to_chapter(enemy: Node) -> void:
 		10: base_hp = 48.0
 		11: base_hp = 150.0
 		12: base_hp = 220.0
+		13: base_hp = 17.0
+		14: base_hp = 13.0
+		15: base_hp = 19.0
+		16: base_hp = 23.0
+		17: base_hp = 14.0
+		18: base_hp = 67.0
+		19: base_hp = 30.0
+		20: base_hp = 25.0
+		21: base_hp = 15.0
+		22: base_hp = 99.0
 	var time_ramp := 1.0 + _stage_hp_ramp_per_min * (_chapter_elapsed / 60.0)
 	var hp := base_hp * _stage_hp_mult * _wave_hp_scale * time_ramp
 	if enemy.enemy_type == Enemy.Type.ELITE:
@@ -861,6 +871,8 @@ func _get_elite_variant(sp_id: int) -> Dictionary:
 			var ev_map: Variant = (parsed as Dictionary).get("elite_variants", {})
 			if ev_map is Dictionary:
 				_elite_variants_cache = ev_map as Dictionary
-	var key := str(clampi(sp_id, 0, 6))
+	var key := str(sp_id)
+	if not _elite_variants_cache.has(key):
+		key = str(clampi(sp_id, 0, 6))
 	var v: Variant = _elite_variants_cache.get(key, {})
 	return v as Dictionary if v is Dictionary else {}

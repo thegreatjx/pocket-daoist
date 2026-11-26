@@ -35,6 +35,28 @@ const TEX_BAGUA_DANLU_SHEET: Texture2D = preload("res://assets/sprites/anim_bagu
 const TEX_TONGJIA_SHIWANG_SHEET: Texture2D = preload("res://assets/sprites/anim_tongjia_shiwang_run.png")
 const TEX_HUAPI_HUANDAO_SHEET: Texture2D = preload("res://assets/sprites/anim_huapi_huandao_run.png")
 const TEX_WANJIAN_MOZUN_SHEET: Texture2D = preload("res://assets/sprites/anim_wanjian_mozun_run.png")
+const SHADER_STILL_MOTION: Shader = preload("res://shaders/enemy_still_motion.gdshader")
+const TEX_FENYU_SANYA_STILL: Texture2D = preload("res://assets/sprites/enemy_fenyu_sanya.png")
+const TEX_XUEYI_YEFU_STILL: Texture2D = preload("res://assets/sprites/enemy_xueyi_yefu.png")
+const TEX_QINGYAN_DENGLONG_STILL: Texture2D = preload("res://assets/sprites/enemy_qingyan_denglong.png")
+const TEX_DUYAN_TANGSAN_STILL: Texture2D = preload("res://assets/sprites/enemy_duyan_tangsan.png")
+const TEX_BICHI_ZHONGSI_STILL: Texture2D = preload("res://assets/sprites/enemy_bichi_zhongsi.png")
+const TEX_LINJIA_CHUANSHAN_STILL: Texture2D = preload("res://assets/sprites/enemy_linjia_chuanshan.png")
+const TEX_CHIHUAN_WUGONG_STILL: Texture2D = preload("res://assets/sprites/enemy_chihuan_wugong.png")
+const TEX_KULOU_DIZHU_STILL: Texture2D = preload("res://assets/sprites/enemy_kulou_dizhu.png")
+const TEX_LINGZHI_GUJING_STILL: Texture2D = preload("res://assets/sprites/enemy_lingzhi_gujing.png")
+const TEX_TONGKE_XIEJIANG_STILL: Texture2D = preload("res://assets/sprites/enemy_tongke_xiejiang.png")
+
+enum StillMotion {
+	NONE = 0,
+	WING_FLAP = 1,
+	GHOST_FLOAT = 2,
+	HOP_BOUNCE = 3,
+	BURROW_SURGE = 4,
+	SLITHER_WAVE = 5,
+	SCUTTLE_STOMP = 6,
+	JELLY_WOBBLE = 7,
+}
 
 const RUN_FRAMES := 8
 const SHANXIAO_FRAMES := 5
@@ -52,8 +74,200 @@ const SIZE_MINI_BOSS := 120.0       # 小 Boss = 小怪 ~2.0x
 const SIZE_HUMANOID_BOSS := 136.0   # 人形大 Boss = 主角 ~1.7x（靠法阵/气场显霸气）
 const SIZE_BEAST_BOSS := 175.0      # 巨兽大 Boss（苍鬃狼王）= 小怪 ~2.8x / 主角 ~2.1x
 
+const STILL_SPECIES := {
+	13: {
+		"tex": TEX_FENYU_SANYA_STILL,
+		"motion": StillMotion.WING_FLAP,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_TANK,
+		"hover_y": -10.0,
+		"hover_amp": 3.2,
+		"hover_freq": 6.5,
+		"skew_amp": 0.025,
+		"skew_freq": 6.5,
+		"aura_col": Color(1.0, 0.45, 0.16, 0.34),
+		"elite_col": Color(1.0, 0.46, 0.18, 0.36),
+		"rig": {
+			"gait_mode": "float", "run_frames": 1, "idle_frames": 1, "run_fps": 10.0,
+			"bob_amp": 2.2, "idle_breath_amp": 0.02, "waddle_rad": 0.0, "tilt_max_rad": 0.08,
+			"up_down_tilt_rad": 0.03, "squash_amp": 0.035, "hit_pop_scale": 0.22, "dust_enabled": false,
+		},
+	},
+	14: {
+		"tex": TEX_XUEYI_YEFU_STILL,
+		"motion": StillMotion.WING_FLAP,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_BASE,
+		"hover_y": -11.0,
+		"hover_amp": 3.6,
+		"hover_freq": 7.5,
+		"skew_amp": 0.03,
+		"skew_freq": 7.5,
+		"aura_col": Color(0.75, 0.18, 0.36, 0.24),
+		"elite_col": Color(0.86, 0.24, 0.42, 0.36),
+		"rig": {
+			"gait_mode": "float", "run_frames": 1, "idle_frames": 1, "run_fps": 11.0,
+			"bob_amp": 2.6, "idle_breath_amp": 0.02, "waddle_rad": 0.0, "tilt_max_rad": 0.10,
+			"up_down_tilt_rad": 0.03, "squash_amp": 0.04, "hit_pop_scale": 0.24, "dust_enabled": false,
+		},
+	},
+	15: {
+		"tex": TEX_QINGYAN_DENGLONG_STILL,
+		"motion": StillMotion.GHOST_FLOAT,
+		"native_facing": 1.0,
+		"size": SIZE_MINION_BASE,
+		"hover_y": -9.0,
+		"hover_amp": 4.2,
+		"hover_freq": 4.6,
+		"skew_amp": 0.04,
+		"skew_freq": 4.6,
+		"aura_col": Color(0.22, 0.90, 0.72, 0.34),
+		"elite_col": Color(0.26, 0.94, 0.76, 0.38),
+		"rig": {
+			"gait_mode": "float", "run_frames": 1, "idle_frames": 1, "run_fps": 8.0,
+			"bob_amp": 0.0, "idle_breath_amp": 0.02, "waddle_rad": 0.0, "tilt_max_rad": 0.07,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.02, "hit_pop_scale": 0.24, "dust_enabled": false,
+		},
+	},
+	16: {
+		"tex": TEX_DUYAN_TANGSAN_STILL,
+		"motion": StillMotion.HOP_BOUNCE,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_BASE,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.045,
+		"skew_freq": 7.5,
+		"aura_col": Color(0.28, 0.86, 0.82, 0.24),
+		"elite_col": Color(0.32, 0.90, 0.86, 0.36),
+		"rig": {
+			"gait_mode": "biped", "run_frames": 1, "idle_frames": 1, "run_fps": 10.0,
+			"bob_amp": 5.5, "idle_breath_amp": 0.02, "waddle_rad": 0.05, "tilt_max_rad": 0.08,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.08, "hit_pop_scale": 0.24, "dust_enabled": true,
+			"dust_radius": 3.8, "dust_color": Color(0.68, 0.88, 0.86, 0.42),
+		},
+	},
+	17: {
+		"tex": TEX_BICHI_ZHONGSI_STILL,
+		"motion": StillMotion.HOP_BOUNCE,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_FAST,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.04,
+		"skew_freq": 9.0,
+		"aura_col": Color(0.0, 0.0, 0.0, 0.0),
+		"elite_col": Color(0.45, 0.92, 0.48, 0.36),
+		"rig": {
+			"gait_mode": "quadruped", "run_frames": 1, "idle_frames": 1, "run_fps": 12.0,
+			"bob_amp": 5.2, "idle_breath_amp": 0.02, "waddle_rad": 0.04, "tilt_max_rad": 0.09,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.085, "hit_pop_scale": 0.24, "dust_enabled": true,
+			"dust_radius": 3.4, "dust_color": Color(0.72, 0.90, 0.62, 0.42),
+		},
+	},
+	18: {
+		"tex": TEX_LINJIA_CHUANSHAN_STILL,
+		"motion": StillMotion.BURROW_SURGE,
+		"native_facing": 1.0,
+		"size": SIZE_MINION_TANK,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.018,
+		"skew_freq": 10.0,
+		"aura_col": Color(0.0, 0.0, 0.0, 0.0),
+		"elite_col": Color(0.92, 0.72, 0.32, 0.36),
+		"rig": {
+			"gait_mode": "quadruped", "run_frames": 1, "idle_frames": 1, "run_fps": 9.0,
+			"bob_amp": 1.4, "idle_breath_amp": 0.015, "waddle_rad": 0.025, "tilt_max_rad": 0.04,
+			"up_down_tilt_rad": 0.015, "squash_amp": 0.045, "hit_pop_scale": 0.16, "dust_enabled": true,
+			"dust_radius": 5.2, "dust_color": Color(0.76, 0.64, 0.46, 0.48),
+		},
+	},
+	19: {
+		"tex": TEX_CHIHUAN_WUGONG_STILL,
+		"motion": StillMotion.SLITHER_WAVE,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_BASE,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.05,
+		"skew_freq": 8.0,
+		"aura_col": Color(0.96, 0.44, 0.18, 0.24),
+		"elite_col": Color(0.98, 0.46, 0.20, 0.36),
+		"rig": {
+			"gait_mode": "quadruped", "run_frames": 1, "idle_frames": 1, "run_fps": 11.0,
+			"bob_amp": 1.6, "idle_breath_amp": 0.02, "waddle_rad": 0.045, "tilt_max_rad": 0.06,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.04, "hit_pop_scale": 0.20, "dust_enabled": true,
+			"dust_radius": 3.8, "dust_color": Color(0.90, 0.48, 0.28, 0.42),
+		},
+	},
+	20: {
+		"tex": TEX_KULOU_DIZHU_STILL,
+		"motion": StillMotion.SCUTTLE_STOMP,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_BASE,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.035,
+		"skew_freq": 10.0,
+		"aura_col": Color(0.0, 0.0, 0.0, 0.0),
+		"elite_col": Color(0.72, 0.40, 0.90, 0.36),
+		"rig": {
+			"gait_mode": "quadruped", "run_frames": 1, "idle_frames": 1, "run_fps": 12.0,
+			"bob_amp": 2.4, "idle_breath_amp": 0.02, "waddle_rad": 0.05, "tilt_max_rad": 0.07,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.055, "hit_pop_scale": 0.22, "dust_enabled": true,
+			"dust_radius": 3.8, "dust_color": Color(0.68, 0.54, 0.80, 0.40),
+		},
+	},
+	21: {
+		"tex": TEX_LINGZHI_GUJING_STILL,
+		"motion": StillMotion.JELLY_WOBBLE,
+		"native_facing": -1.0,
+		"size": SIZE_MINION_FAST,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.055,
+		"skew_freq": 7.0,
+		"aura_col": Color(0.0, 0.0, 0.0, 0.0),
+		"elite_col": Color(0.96, 0.54, 0.68, 0.36),
+		"rig": {
+			"gait_mode": "biped", "run_frames": 1, "idle_frames": 1, "run_fps": 10.0,
+			"bob_amp": 4.4, "idle_breath_amp": 0.03, "waddle_rad": 0.05, "tilt_max_rad": 0.07,
+			"up_down_tilt_rad": 0.02, "squash_amp": 0.095, "hit_pop_scale": 0.28, "dust_enabled": true,
+			"dust_radius": 3.2, "dust_color": Color(0.95, 0.78, 0.82, 0.40),
+		},
+	},
+	22: {
+		"tex": TEX_TONGKE_XIEJIANG_STILL,
+		"motion": StillMotion.SCUTTLE_STOMP,
+		"native_facing": 1.0,
+		"size": SIZE_MINION_TANK,
+		"hover_y": 0.0,
+		"hover_amp": 0.0,
+		"hover_freq": 0.0,
+		"skew_amp": 0.02,
+		"skew_freq": 7.5,
+		"aura_col": Color(0.0, 0.0, 0.0, 0.0),
+		"elite_col": Color(0.90, 0.74, 0.32, 0.36),
+		"rig": {
+			"gait_mode": "quadruped", "run_frames": 1, "idle_frames": 1, "run_fps": 9.0,
+			"bob_amp": 1.8, "idle_breath_amp": 0.015, "waddle_rad": 0.04, "tilt_max_rad": 0.05,
+			"up_down_tilt_rad": 0.015, "squash_amp": 0.04, "hit_pop_scale": 0.16, "dust_enabled": true,
+			"dust_radius": 5.2, "dust_color": Color(0.86, 0.74, 0.42, 0.45),
+		},
+	},
+}
+
 static func get_target_draw_size(e_type: int, sp: int, is_mini: bool, is_humanoid_boss: bool = false) -> float:
 	if e_type == 0:
+		if STILL_SPECIES.has(sp):
+			return float((STILL_SPECIES[sp] as Dictionary).get("size", SIZE_MINION_BASE))
 		match sp:
 			0, 1, 5:
 				return SIZE_MINION_FAST
@@ -76,6 +290,9 @@ var _boss_enraged: bool = false
 var _active_elem: String = ""
 var last_charge_squash: Vector2 = Vector2.ONE
 var _is_charge_windup: bool = false
+var _still_sprite: Sprite2D = null
+var _still_fx_overlay: Node2D = null
+var _still_mat: ShaderMaterial = null
 
 static func sample_charge_prep_squash(elapsed: float, duration: float = CHARGE_PREP_DURATION) -> Vector2:
 	var u := clampf(elapsed / maxf(0.001, duration), 0.0, 1.0)
@@ -101,8 +318,60 @@ func _ready() -> void:
 	if get_parent() is CharacterBody2D:
 		_parent_body = get_parent() as CharacterBody2D
 	_rebuild_rig()
+	_sync_still_nodes_visibility()
+
+func _is_still_active() -> bool:
+	return enemy_type <= 1 and STILL_SPECIES.has(species)
+
+func _ensure_still_nodes() -> void:
+	if _still_sprite == null:
+		_still_sprite = Sprite2D.new()
+		_still_sprite.name = "StillSprite"
+		_still_sprite.centered = false
+		_still_sprite.offset = Vector2(-128.0, -245.0)
+		_still_mat = ShaderMaterial.new()
+		_still_mat.shader = SHADER_STILL_MOTION
+		_still_sprite.material = _still_mat
+		add_child(_still_sprite)
+	if _still_fx_overlay == null:
+		_still_fx_overlay = Node2D.new()
+		_still_fx_overlay.name = "StillFxOverlay"
+		_still_fx_overlay.draw.connect(_on_still_fx_overlay_draw)
+		add_child(_still_fx_overlay)
+
+func _sync_still_nodes_visibility() -> void:
+	var active := _is_still_active()
+	if active:
+		_ensure_still_nodes()
+		var cfg: Dictionary = STILL_SPECIES[species]
+		_still_sprite.texture = cfg.get("tex") as Texture2D
+		_still_sprite.visible = true
+		_still_fx_overlay.visible = true
+		if _still_mat != null:
+			_still_mat.set_shader_parameter("motion_mode", int(cfg.get("motion", 0)))
+			_still_mat.set_shader_parameter("amp_scale", 1.0)
+	else:
+		if _still_sprite != null:
+			_still_sprite.visible = false
+		if _still_fx_overlay != null:
+			_still_fx_overlay.visible = false
+
+func _on_still_fx_overlay_draw() -> void:
+	if not _is_still_active() or _still_fx_overlay == null or rig == null:
+		return
+	var mini_boss := _parent_body != null and "is_mini_boss" in _parent_body and bool(_parent_body.get("is_mini_boss"))
+	var draw_sz := get_target_draw_size(enemy_type, species, mini_boss, false)
+	_draw_status_overlays(_still_fx_overlay, draw_sz)
 
 func _rebuild_rig() -> void:
+	if enemy_type <= 1 and STILL_SPECIES.has(species):
+		var cfg_rig: Dictionary = ((STILL_SPECIES[species] as Dictionary).get("rig", {}) as Dictionary).duplicate()
+		if enemy_type == 1:
+			cfg_rig["hit_pop_scale"] = 0.18
+			cfg_rig["lunge_dist"] = 12.0
+			cfg_rig["dust_radius"] = 6.0
+		rig = CharacterRig.new(cfg_rig)
+		return
 	if enemy_type == 0:
 		match species:
 			1:
@@ -430,6 +699,7 @@ func set_type(type_val: int, sp_val: int = 0) -> void:
 	last_charge_squash = Vector2.ONE
 	_is_charge_windup = false
 	_rebuild_rig()
+	_sync_still_nodes_visibility()
 	queue_redraw()
 
 func set_tier_variant(variant: int) -> void:
@@ -506,7 +776,59 @@ func _process(delta: float) -> void:
 	if not frozen_now:
 		rig.update(delta, vel, max_spd, dashing)
 		_update_charge_squash()
+	if _is_still_active():
+		_update_still_sprite(frozen_now)
 	queue_redraw()
+
+func _update_still_sprite(frozen_now: bool) -> void:
+	_sync_still_nodes_visibility()
+	if _still_sprite == null or rig == null:
+		return
+	var cfg: Dictionary = STILL_SPECIES[species]
+	var pose := rig.get_pose()
+	var t := rig.anim_time
+	var off: Vector2 = pose["offset"]
+	var sc: Vector2 = pose["scale"]
+	var rot: float = float(pose["rotation"])
+	var tint: Color = pose["dir_tint"]
+	var mini_boss := _parent_body != null and "is_mini_boss" in _parent_body and bool(_parent_body.get("is_mini_boss"))
+	var draw_sz := get_target_draw_size(enemy_type, species, mini_boss, false)
+
+	sc = Vector2(sc.x * last_charge_squash.x, sc.y * last_charge_squash.y)
+	if _is_charge_windup:
+		tint = Color(1.25, 0.88, 0.80, 1.0)
+	if frozen_now:
+		tint *= Color(0.72, 0.94, 1.12, 1.0)
+	if enemy_type == 0:
+		if tier_variant == 2:
+			sc *= 1.08
+			tint *= Color(0.94, 1.04, 1.12, 1.0)
+		elif tier_variant >= 3:
+			sc *= 1.14
+			tint *= Color(1.14, 0.90, 0.86, 1.0)
+
+	var native_facing := float(cfg.get("native_facing", 1.0))
+	var base_y := 22.0 if enemy_type == 1 else 18.0
+	var hover_y := float(cfg.get("hover_y", 0.0))
+	var hover_amp := float(cfg.get("hover_amp", 0.0))
+	var hover_freq := float(cfg.get("hover_freq", 0.0))
+	if hover_amp > 0.0 and hover_freq > 0.0:
+		hover_y += sin(t * hover_freq) * hover_amp
+
+	var fit := draw_sz / 256.0
+	_still_sprite.position = Vector2(roundf(off.x), roundf(base_y + hover_y + off.y))
+	_still_sprite.rotation = rot
+	_still_sprite.scale = Vector2(sc.x * native_facing * fit, sc.y * fit)
+	var skew_amp := float(cfg.get("skew_amp", 0.0))
+	var skew_freq := float(cfg.get("skew_freq", 0.0))
+	_still_sprite.skew = sin(t * skew_freq) * skew_amp * lerpf(0.45, 1.15, clampf(rig.speed_ratio, 0.0, 1.2)) if (skew_amp > 0.0 and skew_freq > 0.0) else 0.0
+	_still_sprite.modulate = tint
+
+	if _still_mat != null:
+		_still_mat.set_shader_parameter("anim_time", t)
+		_still_mat.set_shader_parameter("move_speed", rig.speed_ratio)
+	if _still_fx_overlay != null:
+		_still_fx_overlay.queue_redraw()
 
 func _draw() -> void:
 	if rig == null:
@@ -557,6 +879,17 @@ func _draw() -> void:
 		tint *= Color(0.72, 0.94, 1.12, 1.0)
 
 	if enemy_type == 0:
+		if STILL_SPECIES.has(species):
+			var cfg: Dictionary = STILL_SPECIES[species]
+			var is_air := float(cfg.get("hover_y", 0.0)) < 0.0
+			_draw_shadow((13.5 if is_air else 16.0) * sh_sc, 18.0)
+			if tier_variant >= 3:
+				_draw_kenney_aura(Vector2(0.0, 17.0), 26.0, Color(0.96, 0.36, 0.30, 0.42), false)
+			var aura_c: Color = cfg.get("aura_col", Color(0.0, 0.0, 0.0, 0.0))
+			if aura_c.a > 0.0:
+				_draw_kenney_aura(Vector2(0.0, 18.0), 25.0, Color(aura_c.r, aura_c.g, aura_c.b, aura_c.a + 0.08 * sin(t * 5.2)), false)
+			rig.draw_dust(self, Vector2(0.0, 17.0))
+			return
 		if tier_variant == 2:
 			sc *= 1.08
 			tint *= Color(0.94, 1.04, 1.12, 1.0)
@@ -659,6 +992,14 @@ func _draw() -> void:
 		_draw_shadow(28.0 * sh_sc, 22.0)
 		rig.draw_dust(self, Vector2(0.0, 21.0))
 		var aura_a := 0.30 + 0.12 * sin(t * 5.0)
+		if STILL_SPECIES.has(species):
+			var cfg_el: Dictionary = STILL_SPECIES[species]
+			var el_c: Color = cfg_el.get("elite_col", Color(0.96, 0.62, 0.22, 0.36))
+			draw_set_transform(Vector2(0.0, 22.0), 0.0, Vector2(1.0, 0.45))
+			draw_arc(Vector2.ZERO, 34.0, 0.0, TAU, 24, Color(el_c.r, el_c.g, el_c.b, aura_a), 3.0)
+			draw_arc(Vector2.ZERO, 40.0 + sin(t * 4.0) * 1.5, 0.0, TAU, 24, Color(1.0, 0.86, 0.34, aura_a * 0.65), 1.6)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			return
 		var elite_col := Color(0.98, 0.48, 0.22, aura_a)
 		var elite_tex: Texture2D = TEX_ELITE_FOX
 		var elite_sheet: Texture2D = TEX_ELITE_FOX_SHEET
@@ -815,6 +1156,13 @@ func _draw() -> void:
 			draw_texture_rect_region(TEX_WOLF_SHEET, b_rect, src, boss_tint)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
+	if not _is_still_active():
+		_draw_status_overlays(self, draw_sz)
+
+func _draw_status_overlays(canvas: CanvasItem, draw_sz: float) -> void:
+	if rig == null:
+		return
+	var t := rig.anim_time
 	if _parent_body != null and not _parent_body.is_dead and _parent_body.has_method("is_burning") and _parent_body.is_burning():
 		var burn_sc := 1.85 if enemy_type == 2 else (1.30 if enemy_type == 1 else 1.0)
 		var base_y := 18.0 if enemy_type == 2 else (10.0 if enemy_type == 1 else 6.0)
@@ -824,24 +1172,24 @@ func _draw() -> void:
 			var fw := 18.0 * burn_sc
 			var by := base_y - fh * 0.65 - absf(sin(t * 12.0 + float(bi))) * 4.0 * burn_sc
 			var f_tex := V2VfxFactory.TEX_FLAME_01 if bi != 1 else V2VfxFactory.TEX_FLAME_05
-			draw_texture_rect(f_tex, Rect2(bx - fw * 0.5, by - fh * 0.5, fw, fh), false, Color(1.0, 0.44 + 0.14 * float(bi % 2), 0.10, 0.72))
-			draw_texture_rect(V2VfxFactory.TEX_FIRE_01, Rect2(bx - fw * 0.32, by - fh * 0.25, fw * 0.64, fh * 0.64), false, Color(1.0, 0.92, 0.58, 0.66))
+			canvas.draw_texture_rect(f_tex, Rect2(bx - fw * 0.5, by - fh * 0.5, fw, fh), false, Color(1.0, 0.44 + 0.14 * float(bi % 2), 0.10, 0.72))
+			canvas.draw_texture_rect(V2VfxFactory.TEX_FIRE_01, Rect2(bx - fw * 0.32, by - fh * 0.25, fw * 0.64, fh * 0.64), false, Color(1.0, 0.92, 0.58, 0.66))
 
 	if not _active_elem.is_empty():
 		var ec := _elem_color(_active_elem)
 		var pip_y := -66.0 if enemy_type == 2 else (-44.0 if enemy_type == 1 else -34.0)
 		var pip_pos := Vector2(0.0, pip_y)
-		draw_circle(pip_pos, 8.0, Color(0.05, 0.08, 0.09, 0.88))
-		draw_arc(pip_pos, 8.0, 0.0, TAU, 16, Color(ec.r, ec.g, ec.b, 0.90), 1.4)
+		canvas.draw_circle(pip_pos, 8.0, Color(0.05, 0.08, 0.09, 0.88))
+		canvas.draw_arc(pip_pos, 8.0, 0.0, TAU, 16, Color(ec.r, ec.g, ec.b, 0.90), 1.4)
 		var glyph := V2VfxFactory.elem_glyph_texture(_active_elem)
 		if glyph != null:
-			draw_texture_rect(glyph, Rect2(pip_pos - Vector2(6.5, 6.5), Vector2(13.0, 13.0)), false, ec)
+			canvas.draw_texture_rect(glyph, Rect2(pip_pos - Vector2(6.5, 6.5), Vector2(13.0, 13.0)), false, ec)
 		else:
-			draw_circle(pip_pos, 4.2, ec)
+			canvas.draw_circle(pip_pos, 4.2, ec)
 
-	_draw_element_status_badges(draw_sz)
+	_draw_element_status_badges(canvas, draw_sz)
 
-func _draw_element_status_badges(draw_sz: float) -> void:
+func _draw_element_status_badges(canvas: CanvasItem, draw_sz: float) -> void:
 	if _parent_body == null or bool(_parent_body.get("is_dead")):
 		return
 	var t: float = float(Time.get_ticks_msec()) * 0.001
@@ -850,14 +1198,14 @@ func _draw_element_status_badges(draw_sz: float) -> void:
 
 	# 1) 潮湿（5 秒水印记）：脚底淡蓝水波 + 两侧飘浮 2 颗晶莹水滴
 	if _active_elem == "water":
-		draw_set_transform(Vector2(0.0, half_h * 0.35), 0.0, Vector2(1.0, 0.36))
-		draw_arc(Vector2.ZERO, half_w * 1.05, 0.0, TAU, 18, Color(0.26, 0.84, 0.98, 0.45), 1.8)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		canvas.draw_set_transform(Vector2(0.0, half_h * 0.35), 0.0, Vector2(1.0, 0.36))
+		canvas.draw_arc(Vector2.ZERO, half_w * 1.05, 0.0, TAU, 18, Color(0.26, 0.84, 0.98, 0.45), 1.8)
+		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		for i in range(2):
 			var side: float = -1.0 if i == 0 else 1.0
 			var drop_y: float = -half_h * 0.45 + fmod(t * 26.0 + float(i) * 14.0, 26.0)
 			var drop_p := Vector2(side * (half_w * 0.95), drop_y)
-			draw_colored_polygon(PackedVector2Array([
+			canvas.draw_colored_polygon(PackedVector2Array([
 				drop_p + Vector2(0.0, -5.0),
 				drop_p + Vector2(3.5, 1.5),
 				drop_p + Vector2(0.0, 4.5),
@@ -869,7 +1217,7 @@ func _draw_element_status_badges(draw_sz: float) -> void:
 		for i in range(2):
 			var phase: float = fmod(t * 2.2 + float(i) * 0.5, 1.0)
 			var p := Vector2((-8.0 if i == 0 else 9.0) + sin(t * 8.0 + float(i)) * 3.0, -half_h * 0.25 - phase * 22.0)
-			draw_circle(p, lerpf(3.2, 1.2, phase), Color(1.0, 0.56, 0.16, (1.0 - phase) * 0.92))
+			canvas.draw_circle(p, lerpf(3.2, 1.2, phase), Color(1.0, 0.56, 0.16, (1.0 - phase) * 0.92))
 
 	# 3) 雷印记 / 麻痹抽搐：身上闪细碎紫白电丝
 	var stunned: bool = "_stun_timer" in _parent_body and float(_parent_body.get("_stun_timer")) > 0.0
@@ -880,18 +1228,18 @@ func _draw_element_status_badges(draw_sz: float) -> void:
 		var p1 := p0 + Vector2(8.0, 10.0)
 		var p2 := p1 + Vector2(-7.0, 9.0)
 		var p3 := p2 + Vector2(9.0, 11.0)
-		draw_polyline(PackedVector2Array([p0, p1, p2, p3]), Color(0.76, 0.68, 1.0, 0.92), 2.0)
+		canvas.draw_polyline(PackedVector2Array([p0, p1, p2, p3]), Color(0.76, 0.68, 1.0, 0.92), 2.0)
 
 	# 4) 熔金（4 秒唯一易伤）：橙金熔甲光环
 	if "damage_taken_mult" in _parent_body and float(_parent_body.get("damage_taken_mult")) > 1.05:
 		var pulse: float = 0.55 + 0.35 * sin(t * 10.0)
-		draw_arc(Vector2(0.0, -half_h * 0.25), half_w * 1.15, 0.0, TAU, 20, Color(1.0, 0.62, 0.20, pulse * 0.65), 2.2)
+		canvas.draw_arc(Vector2(0.0, -half_h * 0.25), half_w * 1.15, 0.0, TAU, 20, Color(1.0, 0.62, 0.20, pulse * 0.65), 2.2)
 
 	# 5) 焚煞印记（待尸爆）：胸口暗红脉动火核
 	if "_detonate_mark_timer" in _parent_body and float(_parent_body.get("_detonate_mark_timer")) > 0.0:
 		var pulse_r: float = 5.5 + 2.5 * sin(t * 14.0)
-		draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r, Color(0.98, 0.28, 0.10, 0.72))
-		draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r * 0.45, Color(1.0, 0.88, 0.45, 0.92))
+		canvas.draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r, Color(0.98, 0.28, 0.10, 0.72))
+		canvas.draw_circle(Vector2(0.0, -half_h * 0.3), pulse_r * 0.45, Color(1.0, 0.88, 0.45, 0.92))
 
 func _elem_color(elem: String) -> Color:
 	match elem:
