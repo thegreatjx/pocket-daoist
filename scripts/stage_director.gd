@@ -203,19 +203,51 @@ func _build_boss_plan() -> void:
 	var pcts: Array = cfg.get("schedule_pct", [0.55, 0.72, 0.88, 1.0])
 	var mults: Array = cfg.get("hp_mult", [0.42, 0.52, 0.62, 1.0])
 	var total := pcts.size()
+	var rotation := _boss_rotation()
+	var run_index := int(Stats.total_runs)
 	for k in range(total):
 		var src_index := chapter_index
 		if k < total - 1:
 			src_index = (chapter_index + k + 1) % chapters.size()
 		var src: Dictionary = chapters[src_index]
-		_boss_plan.append({
+		var entry := {
 			"at": duration * float(pcts[k]),
 			"name": String(src.get("boss_name", "")),
 			"type": String(src.get("boss_type", "wolf")),
 			"hp": float(src.get("boss_hp", 4600.0)) * float(mults[clampi(k, 0, mults.size() - 1)]),
 			"mini": k < total - 1,
 			"final": k == total - 1,
+		}
+		if k == total - 1 and not rotation.is_empty():
+			var pick: Dictionary = rotation[run_index % rotation.size()]
+			entry["name"] = String(pick.get("name", entry["name"]))
+			entry["type"] = String(pick.get("type", entry["type"]))
+			entry["hp"] = float(pick.get("hp", entry["hp"]))
+		_boss_plan.append(entry)
+
+func _boss_rotation() -> Array:
+	var out: Array = []
+	var path := "res://data/v2/enemies_waves_v2.json"
+	if not FileAccess.file_exists(path):
+		return out
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not (parsed is Dictionary):
+		return out
+	var chapter := current_chapter()
+	if not chapter.is_empty():
+		out.append({
+			"name": String(chapter.get("boss_name", "")),
+			"type": String(chapter.get("boss_type", "wolf")),
+			"hp": float(chapter.get("boss_hp", 18000.0)),
 		})
+	for b in (parsed as Dictionary).get("boss_variants", []):
+		if b is Dictionary:
+			out.append({
+				"name": String((b as Dictionary).get("name", "")),
+				"type": String((b as Dictionary).get("type", "wolf")),
+				"hp": float((b as Dictionary).get("hp", 18000.0)),
+			})
+	return out
 
 func _load_boss_schedule() -> Dictionary:
 	if not _boss_schedule_cfg.is_empty():

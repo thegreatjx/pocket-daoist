@@ -584,7 +584,7 @@ func _draw() -> void:
 					var zz_idx := idx % RUN_FRAMES
 					var src := Rect2(float(zz_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_ZHUSHA_ZIREN_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_texture_rect_region(TEX_ZHUSHA_ZIREN_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			8:
 				_draw_kenney_aura(Vector2(0.0, 18.0), 24.0, Color(1.0, 0.56, 0.22, 0.30 + 0.10 * sin(t * 6.0)), false)
@@ -592,21 +592,21 @@ func _draw() -> void:
 					var cd_idx := idx % RUN_FRAMES
 					var src := Rect2(float(cd_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_CHIHUO_DANLING_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_texture_rect_region(TEX_CHIHUO_DANLING_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			9:
 				if TEX_WUDU_ZHANGCHAN_SHEET != null:
 					var wz_idx := idx % RUN_FRAMES
 					var src := Rect2(float(wz_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_WUDU_ZHANGCHAN_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_texture_rect_region(TEX_WUDU_ZHANGCHAN_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			10:
 				if TEX_CANJIAN_JIANKUI_SHEET != null:
 					var cj_idx := idx % RUN_FRAMES
 					var src := Rect2(float(cj_idx) * 128.0, 0.0, 128.0, 128.0)
 					draw_set_transform(Vector2(roundf(off.x), roundf(18.0 + off.y)), rot, sc)
-					draw_texture_rect_region(TEX_CANJIAN_JIANKUI_SHEET, Rect2(-48.0, -74.0, 96.0, 96.0), src, tint)
+					draw_texture_rect_region(TEX_CANJIAN_JIANKUI_SHEET, Rect2(-56.0, -89.0, 112.0, 112.0), src, tint)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			_:
 				if TEX_FOX_SHEET != null:
@@ -679,14 +679,14 @@ func _draw() -> void:
 				elite_sheet = TEX_ELITE_YINSHA_SHEET
 				elite_frames = RUN_FRAMES
 				elite_frame_px = 160.0
-				draw_rect = Rect2(-60.0, -80.0, 120.0, 120.0)
+				draw_rect = Rect2(-66.0, -92.0, 132.0, 132.0)
 			12:
 				elite_col = Color(0.88, 0.74, 0.34, aura_a)
 				elite_tex = TEX_ELITE_SHIDUN
 				elite_sheet = TEX_ELITE_SHIDUN_SHEET
 				elite_frames = RUN_FRAMES
 				elite_frame_px = 160.0
-				draw_rect = Rect2(-60.0, -80.0, 120.0, 120.0)
+				draw_rect = Rect2(-66.0, -92.0, 132.0, 132.0)
 			_:
 				elite_col = Color(0.96, 0.44, 0.24, aura_a)
 				elite_tex = TEX_ELITE_FOX
@@ -763,7 +763,7 @@ func _draw() -> void:
 				var col := idx % RUN_FRAMES
 				draw_set_transform(Vector2(roundf(off.x), roundf(36.0 + off.y)), rot, sc)
 				var src := Rect2(float(col) * 224.0, 0.0, 224.0, 224.0)
-				draw_texture_rect_region(boss_sheet, Rect2(-100.0, -168.0, 200.0, 200.0), src, boss_tint)
+				draw_texture_rect_region(boss_sheet, Rect2(-135.0, -233.0, 270.0, 270.0), src, boss_tint)
 				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		elif TEX_WOLF_SHEET != null:
 			var col := idx % RUN_FRAMES

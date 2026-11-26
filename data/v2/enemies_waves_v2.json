@@ -565,6 +565,7 @@
   "boss_variants": [
     {
       "id": "boss_bagua_danlu",
+      "type": "cauldron",
       "name": "成精八卦丹炉",
       "species": 3,
       "sprite": "res://assets/sprites/enemy_bagua_danlu.png",
@@ -573,6 +574,7 @@
     },
     {
       "id": "boss_tongjia_shiwang",
+      "type": "corpse",
       "name": "铜甲尸王",
       "species": 4,
       "sprite": "res://assets/sprites/enemy_tongjia_shiwang.png",
@@ -581,6 +583,7 @@
     },
     {
       "id": "boss_huapi_huandao",
+      "type": "fox",
       "name": "画皮狐妖",
       "species": 5,
       "sprite": "res://assets/sprites/enemy_huapi_huandao.png",
@@ -589,6 +592,7 @@
     },
     {
       "id": "boss_wanjian_mozun",
+      "type": "swordmaster",
       "name": "万剑魔尊",
       "species": 6,
       "sprite": "res://assets/sprites/enemy_wanjian_mozun.png",
