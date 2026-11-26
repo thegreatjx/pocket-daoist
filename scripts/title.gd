@@ -167,8 +167,8 @@ class ElementAuraLayer extends Node2D:
 
 
 class HeroStageView extends Control:
-	const TARGET_HERO_HEIGHT := 348.0
-	const LOTUS_WIDTH := 248.0
+	const TARGET_HERO_HEIGHT := 346.0
+	const LOTUS_WIDTH := 304.0
 
 	var lotus_node: Node2D = null
 	var lotus_sprite: Sprite2D = null
@@ -233,7 +233,7 @@ class HeroStageView extends Control:
 		_switch_tween = null
 
 	func _reposition() -> void:
-		_base_lotus_pos = Vector2(roundf(size.x * 0.5), roundf(size.y * 0.81))
+		_base_lotus_pos = Vector2(roundf(size.x * 0.5), roundf(size.y * 0.77))
 		if lotus_node != null:
 			lotus_node.position = _base_lotus_pos
 
@@ -256,8 +256,10 @@ class HeroStageView extends Control:
 		var foot_arr: Array = cfg.get("foot_anchor", [256.0, 484.0])
 		var fx := float(foot_arr[0]) if foot_arr.size() >= 2 else 256.0
 		var fy := float(foot_arr[1]) if foot_arr.size() >= 2 else 484.0
-		var body_h := maxf(180.0, fy - 34.0)
-		var sc := TARGET_HERO_HEIGHT / body_h
+		var top_y := float(cfg.get("showcase_top_y", 34.0))
+		var target_h := float(cfg.get("showcase_height", TARGET_HERO_HEIGHT))
+		var body_h := maxf(180.0, fy - top_y)
+		var sc := target_h / body_h
 		var target_scale := Vector2(sc, sc)
 
 		if not animate or not _has_hero:
