@@ -35,3 +35,4 @@ vs_analysis/
 
 # 本地工作树与临时参考图
 worktrees/
+exports/
