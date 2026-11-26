@@ -36,6 +36,9 @@ func _ready() -> void:
 		if "v2_combat" in player and player.v2_combat != null:
 			player.v2_combat.v2_loadout_changed.connect(_refresh_hud_loadout)
 			player.v2_combat.realm_slot_unlocked.connect(_on_realm_slot_unlocked)
+			if ui != null and ui.has_method("update_gold"):
+				player.v2_combat.gold_changed.connect(ui.update_gold)
+				ui.update_gold(player.v2_combat.run_gold)
 
 	if spawner != null and spawner.has_signal("wave_completed"):
 		spawner.wave_completed.connect(_on_wave_completed)
@@ -122,9 +125,13 @@ func _on_run_finished(victory: bool) -> void:
 		var ch: Dictionary = stage_director.current_chapter()
 		stone_mult = float(ch.get("stone_mult", 1.0))
 	var curse_pct := 0.0
-	if player != null and "v2_combat" in player and player.v2_combat != null and player.v2_combat.has_method("get_curse_pct"):
-		curse_pct = float(player.v2_combat.get_curse_pct())
-	var stones_earned := Stats.calc_run_stones(ui.game_time, kill_count, victory, stone_mult, curse_pct)
+	var run_stones := 0
+	if player != null and "v2_combat" in player and player.v2_combat != null:
+		run_stones = maxi(0, int(player.v2_combat.run_gold))
+		if player.v2_combat.has_method("get_curse_pct"):
+			curse_pct = float(player.v2_combat.get_curse_pct())
+	var clear_bonus := Stats.calc_victory_bonus_stones(stone_mult, curse_pct) if victory else 0
+	var stones_earned := run_stones + clear_bonus
 	Stats.add_spirit_stones(stones_earned)
 	var is_record = Stats.record_run(ui.game_time, player.level, kill_count)
 	var run_reactions := 0
@@ -147,7 +154,7 @@ func _on_run_finished(victory: bool) -> void:
 	if game_over_ui:
 		if victory:
 			var has_next := Stats.selected_stage_id < ChapterData.count()
-			game_over_ui.show_victory(ui.game_time, player.level, kill_count, is_record, stones_earned, has_next)
+			game_over_ui.show_victory(ui.game_time, player.level, kill_count, is_record, stones_earned, has_next, run_stones, clear_bonus)
 		else:
 			game_over_ui.show_summary(ui.game_time, player.level, kill_count, is_record, stones_earned)
 
@@ -188,9 +195,10 @@ func _show_next_modal() -> void:
 			if not GameFlow.request_upgrade():
 				return
 		pending_chests -= 1
-		var rewards: Array[Dictionary] = upgrade_mgr.roll_v2_chest_rewards(player)
+		var bundle: Dictionary = upgrade_mgr.roll_v2_chest_bundle(player)
+		var rewards: Array = bundle.get("rewards", [])
 		_refresh_hud_loadout()
-		chest_ui.show_rewards(rewards)
+		chest_ui.show_rewards(rewards, int(bundle.get("stones", 0)), int(bundle.get("tier", 0)))
 		return
 
 	if pending_level_ups > 0 and upgrade_ui != null:

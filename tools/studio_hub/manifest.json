@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 17:34:25",
+    "generated_at": "2026-11-26 17:57:12",
     "active_media_count": 227,
     "used_media_count": 220,
     "orphan_media_count": 7,
@@ -9,7 +9,7 @@
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 2,
-    "ui_bypass_files": 5
+    "ui_bypass_files": 4
   },
   "project": {
     "name": "百宝小道修 · Pocket Daoist",
@@ -194,8 +194,8 @@
       "id": "ISS-009",
       "severity": "warning",
       "code": "UI_THEME_BYPASS",
-      "title": "5 个 UI 脚本绕过 XianxiaUITheme 私写 25 处 StyleBoxFlat.new()",
-      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(14), v2_shop_ui.gd(5), chest_ui.gd(2), upgrade_ui.gd(2), v2_codex_panel.gd(2)。请在 UI 规范板核对。",
+      "title": "4 个 UI 脚本绕过 XianxiaUITheme 私写 23 处 StyleBoxFlat.new()",
+      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(14), v2_shop_ui.gd(5), upgrade_ui.gd(2), v2_codex_panel.gd(2)。请在 UI 规范板核对。",
       "file": "scripts/ui/xianxia_ui_theme.gd",
       "entity_id": "ui_theme_bypass",
       "tab": "uikit",
@@ -2326,7 +2326,7 @@
         "unlocks_at_level": 1,
         "weight": 20,
         "value": 5.0,
-        "desc": "获得5枚局内灵石",
+        "desc": "获得 5 枚灵石",
         "icon": "res://assets/sprites/pickup_spirit_pouch.png"
       },
       {
@@ -6575,6 +6575,8 @@
       "spritesheet": null,
       "used_by": [
         "data/v2/pickups_v2.json",
+        "scripts/chest_ui.gd",
+        "scripts/ui.gd",
         "scripts/v2/v2_shop_ui.gd",
         "scripts/world_pickup.gd"
       ],
@@ -8459,6 +8461,7 @@
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
+        "scripts/chest_ui.gd",
         "scripts/v2/v2_vfx_factory.gd",
         "scripts/world_pickup.gd"
       ],
@@ -9000,6 +9003,7 @@
       "duration_sec": null,
       "spritesheet": null,
       "used_by": [
+        "scripts/chest_ui.gd",
         "scripts/v2/v2_vfx_factory.gd"
       ],
       "status": "used",
@@ -9296,12 +9300,6 @@
       "status": "partial_bypass"
     },
     {
-      "file": "scripts/chest_ui.gd",
-      "stylebox_new": 2,
-      "theme_calls": 5,
-      "status": "partial_bypass"
-    },
-    {
       "file": "scripts/upgrade_ui.gd",
       "stylebox_new": 2,
       "theme_calls": 13,
@@ -9312,6 +9310,12 @@
       "stylebox_new": 2,
       "theme_calls": 6,
       "status": "partial_bypass"
+    },
+    {
+      "file": "scripts/chest_ui.gd",
+      "stylebox_new": 0,
+      "theme_calls": 19,
+      "status": "compliant"
     },
     {
       "file": "scripts/debug_sandbox_main.gd",
@@ -9346,7 +9350,7 @@
     {
       "file": "scripts/ui.gd",
       "stylebox_new": 0,
-      "theme_calls": 77,
+      "theme_calls": 79,
       "status": "compliant"
     },
     {

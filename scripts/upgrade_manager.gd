@@ -572,46 +572,159 @@ func apply_v2_upgrade(choice_id: String, player: Node) -> void:
 		"v2_stat:dodge_dash":
 			v2.add_realm_bonus("dodge_pct", 0.04)
 			v2.add_realm_bonus("dash_cooldown_pct", -0.08)
+		"limit:heal":
+			if player.has_method("heal"):
+				player.heal(35.0)
+			v2.add_run_gold(12)
 		_:
 			apply_upgrade(choice_id, player)
 
 func roll_v2_chest_rewards(player: Node) -> Array[Dictionary]:
+	var bundle := roll_v2_chest_bundle(player)
+	var out: Array[Dictionary] = []
+	for r in bundle.get("rewards", []):
+		if r is Dictionary:
+			out.append(r)
+	return out
+
+func roll_v2_chest_bundle(player: Node) -> Dictionary:
 	if player == null or not ("v2_combat" in player) or player.v2_combat == null:
 		var legacy_rewards: Array[Dictionary] = roll_chest_rewards(player)
 		if legacy_rewards.is_empty():
 			legacy_rewards.append(_chest_guarantee_reward(player))
-		return legacy_rewards
-	var v2: V2CombatController = player.v2_combat
-	var rewards: Array[Dictionary] = []
+		return {"stones": 0, "tier": maxi(1, legacy_rewards.size()), "rewards": legacy_rewards}
 
-	var roll := randf()
-	var cnt := 3 if roll > 0.65 else 2
-	var upgraded_any := false
-	for _i in range(cnt):
-		if _i == 0 and v2.orbit_rig != null and not v2.orbit_rig.slots.is_empty():
-			var upgradable := []
-			for s in v2.orbit_rig.slots:
-				if not bool(s["is_fusion"]) and int(s["tier"]) < OrbitWeaponRig.MAX_WEAPON_TIER:
-					upgradable.append(s)
-			if not upgradable.is_empty():
-				var pick_s: Dictionary = upgradable[randi() % upgradable.size()]
-				var wid := String(pick_s["id"])
-				var t := int(pick_s["tier"])
-				if v2.upgrade_weapon(wid, 1):
-					upgraded_any = true
-					var w: Dictionary = v2.loader.weapons_by_id[wid]
-					var next_tier := mini(t + 1, OrbitWeaponRig.MAX_WEAPON_TIER)
-					rewards.append({
-						"is_evo": false,
-						"title": "%s 淬炼" % String(w["name"]),
-						"subtitle": "天机奇缘 · 法宝淬炼",
-						"desc": "法宝原地淬炼，提升至 %s！" % V2_TIER_NAMES[next_tier],
-						"icon": String(w["icon"]),
-					})
-					continue
-	if rewards.is_empty() or not upgraded_any:
+	var v2: V2CombatController = player.v2_combat
+	var luck := v2.get_luck()
+	var p5 := clampf(0.10 * luck, 0.08, 0.32)
+	var p3 := clampf(0.32 * luck, 0.25, 0.55)
+	var r := randf()
+	var tier := 5 if r < p5 else (3 if r < p5 + p3 else 1)
+
+	var base_stones := randi_range(20, 30)
+	if tier == 3:
+		base_stones = randi_range(45, 65)
+	elif tier >= 5:
+		base_stones = randi_range(90, 125)
+	var stones_gained := v2.add_run_gold(base_stones)
+
+	var rewards: Array[Dictionary] = []
+	var guaranteed := false
+	for i in range(tier):
+		var reward := _roll_single_v2_chest_reward(v2, i == 0)
+		if reward.is_empty():
+			if not guaranteed:
+				guaranteed = true
+				stones_gained += v2.add_run_gold(15)
+				rewards.append(_chest_guarantee_reward(player))
+			break
+		rewards.append(reward)
+
+	if rewards.is_empty():
 		rewards.append(_chest_guarantee_reward(player))
-	return rewards
+
+	return {
+		"stones": stones_gained,
+		"tier": tier,
+		"rewards": rewards,
+	}
+
+func _roll_single_v2_chest_reward(v2: V2CombatController, prefer_upgrade: bool) -> Dictionary:
+	if v2 == null or v2.loader == null:
+		return {}
+
+	var upgradable_weapons: Array[Dictionary] = []
+	var new_weapons: Array[String] = []
+	if v2.orbit_rig != null:
+		for s in v2.orbit_rig.slots:
+			if not bool(s.get("is_fusion", false)) and int(s.get("tier", 1)) < OrbitWeaponRig.MAX_WEAPON_TIER:
+				upgradable_weapons.append(s)
+		if v2.orbit_rig.has_free_slot():
+			for wid_raw in v2.loader.weapons_by_id.keys():
+				var wid := String(wid_raw)
+				if banished_ids.has("v2_wpn:" + wid):
+					continue
+				if v2.orbit_rig.get_weapon_tier(wid) == 0 and v2.can_add_weapon(wid, 1):
+					new_weapons.append(wid)
+
+	if prefer_upgrade and not upgradable_weapons.is_empty():
+		var pick_u: Dictionary = upgradable_weapons[randi() % upgradable_weapons.size()]
+		var res := _apply_chest_weapon_upgrade(v2, String(pick_u["id"]), int(pick_u["tier"]))
+		if not res.is_empty():
+			return res
+
+	var available_items: Array[String] = []
+	for iid_raw in v2.loader.items_by_id.keys():
+		var iid := String(iid_raw)
+		if banished_ids.has("v2_item:" + iid):
+			continue
+		if v2.can_add_item(iid):
+			available_items.append(iid)
+
+	var pool: Array[Dictionary] = []
+	if not upgradable_weapons.is_empty():
+		pool.append({"kind": "upgrade_weapon", "weight": 45})
+	if not new_weapons.is_empty():
+		pool.append({"kind": "new_weapon", "weight": 30})
+	if not available_items.is_empty():
+		pool.append({"kind": "item", "weight": 35})
+
+	if pool.is_empty():
+		return {}
+
+	var total_w := 0
+	for p_entry in pool:
+		total_w += int(p_entry["weight"])
+	var roll := randi() % maxi(1, total_w)
+	var acc := 0
+	var chosen_kind := String(pool[0]["kind"])
+	for p_entry in pool:
+		acc += int(p_entry["weight"])
+		if roll < acc:
+			chosen_kind = String(p_entry["kind"])
+			break
+
+	match chosen_kind:
+		"upgrade_weapon":
+			var pick_u: Dictionary = upgradable_weapons[randi() % upgradable_weapons.size()]
+			return _apply_chest_weapon_upgrade(v2, String(pick_u["id"]), int(pick_u["tier"]))
+		"new_weapon":
+			var wid: String = new_weapons[randi() % new_weapons.size()]
+			if v2.add_weapon(wid, 1):
+				var w: Dictionary = v2.loader.weapons_by_id[wid]
+				var elem := String(w.get("element", "none"))
+				return {
+					"is_evo": false,
+					"title": String(w.get("name", wid)),
+					"subtitle": "天机赐宝 · 新获法宝",
+					"desc": "%s · Lv.1 入手，立即参战！" % String(V2_ELEM_NAMES.get(elem, "器道奇宝")),
+					"icon": String(w.get("icon", "")),
+				}
+		"item":
+			var iid: String = available_items[randi() % available_items.size()]
+			if v2.add_item(iid):
+				var it: Dictionary = v2.loader.items_by_id[iid]
+				return {
+					"is_evo": false,
+					"title": String(it.get("name", iid)),
+					"subtitle": "天机奇物 · 随身加持",
+					"desc": String(it.get("desc", "")),
+					"icon": String(V2ShopUI.ITEM_ICONS.get(iid, "res://assets/icons/relic_insight.png")),
+				}
+	return {}
+
+func _apply_chest_weapon_upgrade(v2: V2CombatController, wid: String, cur_tier: int) -> Dictionary:
+	if not v2.upgrade_weapon(wid, 1):
+		return {}
+	var w: Dictionary = v2.loader.weapons_by_id.get(wid, {})
+	var next_tier := mini(cur_tier + 1, OrbitWeaponRig.MAX_WEAPON_TIER)
+	return {
+		"is_evo": false,
+		"title": "%s 淬炼" % String(w.get("name", wid)),
+		"subtitle": "天机奇缘 · 法宝淬炼",
+		"desc": "法宝原地淬炼，提升至 %s！" % V2_TIER_NAMES[next_tier],
+		"icon": String(w.get("icon", "")),
+	}
 
 func _chest_guarantee_reward(player: Node) -> Dictionary:
 	var v2: V2CombatController = null

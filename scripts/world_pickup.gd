@@ -173,7 +173,7 @@ func _collect(player: Node) -> void:
 			if "v2_combat" in player and player.v2_combat != null:
 				gained = int(player.v2_combat.add_run_gold(raw_gold))
 			Sfx.play_gem_pickup()
-			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 局内灵石 +%d" % gained)
+			get_tree().call_group("ui", "show_banner", "拾得【灵石锦囊】· 灵石 +%d" % gained)
 			_popup_text(player, "灵石 +%d" % gained, Color(1.0, 0.86, 0.36))
 		"qiankun_bag":
 			_collect_qiankun_bag(player)
@@ -190,6 +190,8 @@ func _collect(player: Node) -> void:
 			if player.has_method("gain_exp"):
 				player.gain_exp(35.0)
 			Sfx.play_gem_pickup()
+			get_tree().call_group("ui", "show_banner", "拾得【蕴灵丹】· 修为 +35")
+			_popup_text(player, "修为 +35", Color(0.36, 0.98, 0.78))
 	queue_free()
 
 func _collect_qiankun_bag(player: Node) -> void:

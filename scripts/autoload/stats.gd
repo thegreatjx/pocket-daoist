@@ -148,6 +148,10 @@ func calc_run_stones(time_sec: float, kills: int, victory: bool, stone_mult: flo
 	var curse_mult := 1.0 + maxf(0.0, curse_pct) * 1.5
 	return maxi(5, int(round(float(base) * stone_mult * curse_mult)))
 
+func calc_victory_bonus_stones(stone_mult: float = 1.0, curse_pct: float = 0.0) -> int:
+	var curse_mult := 1.0 + maxf(0.0, curse_pct) * 1.5
+	return maxi(0, int(round(60.0 * stone_mult * curse_mult)))
+
 func add_spirit_stones(amount: int) -> void:
 	if amount <= 0:
 		return

@@ -30,6 +30,9 @@ var _chapter_label: Label = null
 var _chapter_bar: ProgressBar = null
 var _chapter_name: String = ""
 var _gold_label: Label = null
+var _gold_row: HBoxContainer = null
+var _gold_shown: int = 0
+var _gold_tween: Tween = null
 var _weapon_row: HBoxContainer = null
 var _passive_row: HBoxContainer = null
 var _edge_indicator: Control = null
@@ -305,11 +308,11 @@ func _setup_top_right_hud() -> void:
 	tr_plate.anchor_left = 1.0
 	tr_plate.anchor_right = 1.0
 	tr_plate.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	tr_plate.offset_left = -162.0
+	tr_plate.offset_left = -176.0
 	tr_plate.offset_right = -14.0
 	tr_plate.offset_top = 12.0
-	tr_plate.offset_bottom = 60.0
-	tr_plate.custom_minimum_size = Vector2(148, 48)
+	tr_plate.offset_bottom = 68.0
+	tr_plate.custom_minimum_size = Vector2(162, 56)
 	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 10)
 	tr_st.content_margin_left = 18
 	tr_st.content_margin_right = 18
@@ -334,6 +337,32 @@ func _setup_top_right_hud() -> void:
 		kill_label.add_theme_font_size_override("font_size", 18)
 		kill_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.62))
 		XianxiaUITheme.apply_text_outline(kill_label, 3)
+
+	_gold_row = HBoxContainer.new()
+	_gold_row.name = "GoldRow"
+	_gold_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_gold_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gold_row.add_theme_constant_override("separation", 5)
+	vb.add_child(_gold_row)
+
+	var gold_icon := TextureRect.new()
+	gold_icon.custom_minimum_size = Vector2(18, 18)
+	gold_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	gold_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	gold_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://assets/sprites/pickup_spirit_pouch.png"):
+		gold_icon.texture = load("res://assets/sprites/pickup_spirit_pouch.png")
+	_gold_row.add_child(gold_icon)
+
+	_gold_label = Label.new()
+	_gold_label.name = "GoldLabel"
+	_gold_label.text = "灵石 0"
+	_gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_gold_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_gold_label.add_theme_font_size_override("font_size", 16)
+	_gold_label.add_theme_color_override("font_color", XianxiaUITheme.COL_GOLD_BRIGHT)
+	XianxiaUITheme.apply_text_outline(_gold_label, 3)
+	_gold_row.add_child(_gold_label)
 
 	_tr_div = ColorRect.new()
 	_tr_div.custom_minimum_size = Vector2(0, 1)
@@ -375,6 +404,8 @@ func _sync_initial_player_hud() -> void:
 		update_health(float(p.current_health), float(p.max_health))
 	if "current_exp" in p and "exp_to_next_level" in p and "level" in p:
 		update_exp(float(p.current_exp), float(p.exp_to_next_level), int(p.level))
+	if "v2_combat" in p and p.v2_combat != null:
+		update_gold(int(p.v2_combat.run_gold))
 
 func _exit_tree() -> void:
 	if _banner_tween != null and _banner_tween.is_valid():
@@ -386,6 +417,9 @@ func _exit_tree() -> void:
 	if _boss_trail_tween != null and _boss_trail_tween.is_valid():
 		_boss_trail_tween.kill()
 		_boss_trail_tween = null
+	if _gold_tween != null and _gold_tween.is_valid():
+		_gold_tween.kill()
+		_gold_tween = null
 
 func _setup_hint() -> void:
 	if hint_label == null:
@@ -485,6 +519,14 @@ func update_health(curr: float, max_h: float) -> void:
 func update_gold(gold: int) -> void:
 	if _gold_label != null:
 		_gold_label.text = "灵石 %d" % gold
+	if gold > _gold_shown and _gold_row != null and is_inside_tree():
+		if _gold_tween != null and _gold_tween.is_valid():
+			_gold_tween.kill()
+		_gold_row.pivot_offset = _gold_row.size * 0.5
+		_gold_row.scale = Vector2(1.16, 1.16)
+		_gold_tween = create_tween()
+		_gold_tween.tween_property(_gold_row, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_gold_shown = gold
 
 func update_exp(curr: float, max_e: float, level: int) -> void:
 	var safe_max := maxf(1.0, max_e)

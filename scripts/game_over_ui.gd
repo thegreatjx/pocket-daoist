@@ -89,7 +89,7 @@ func show_summary(survive_time: float, level: int, kills: int, is_record: bool =
 		_victory_row.visible = false
 	_render_data(survive_time, level, kills, is_record, stones_earned)
 
-func show_victory(survive_time: float, level: int, kills: int, is_record: bool = false, stones_earned: int = 0, has_next_stage: bool = false) -> void:
+func show_victory(survive_time: float, level: int, kills: int, is_record: bool = false, stones_earned: int = 0, has_next_stage: bool = false, run_stones: int = -1, clear_bonus: int = 0) -> void:
 	if title_label != null:
 		title_label.text = "✦ 秘境荡平 · 证道大捷 ✦"
 		title_label.modulate = Color.WHITE
@@ -100,12 +100,16 @@ func show_victory(survive_time: float, level: int, kills: int, is_record: bool =
 		_victory_row.visible = true
 		if _next_stage_btn != null:
 			_next_stage_btn.visible = has_next_stage
-	_render_data(survive_time, level, kills, is_record, stones_earned)
+	_render_data(survive_time, level, kills, is_record, stones_earned, run_stones, clear_bonus)
 
-func _render_data(survive_time: float, level: int, kills: int, is_record: bool = false, stones_earned: int = 0) -> void:
+func _render_data(survive_time: float, level: int, kills: int, is_record: bool = false, stones_earned: int = 0, run_stones: int = -1, clear_bonus: int = 0) -> void:
 	var txt := "修行时长：%s\n最终境界：Lv.%d\n诛灭妖魔：%d" % [Stats.format_time(survive_time), level, kills]
-	if stones_earned > 0:
-		txt += "\n获得灵石：+%d（总计 %d）" % [stones_earned, Stats.spirit_stones]
+	if clear_bonus > 0 and run_stones >= 0:
+		txt += "\n本局灵石：+%d（拾取 %d + 通关奖励 %d · 宗门总计 %d）" % [stones_earned, run_stones, clear_bonus, Stats.spirit_stones]
+	elif stones_earned > 0:
+		txt += "\n本局灵石：+%d（宗门总计 %d）" % [stones_earned, Stats.spirit_stones]
+	else:
+		txt += "\n本局灵石：+0（宗门总计 %d）" % Stats.spirit_stones
 	stats_label.text = txt
 	record_label.visible = is_record
 	best_label.text = Stats.summary_text()

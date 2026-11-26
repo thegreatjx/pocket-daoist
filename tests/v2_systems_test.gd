@@ -1780,6 +1780,7 @@ func _test_batch8a_chest_never_empty() -> void:
 			all_max = false
 	_check("b8a_four_slots_all_lv8", all_max, str(cc.orbit_rig.slots))
 
+	var gold_before_chest: int = cc.run_gold
 	var roll_ok := true
 	var first_reward: Dictionary = {}
 	for _i in range(20):
@@ -1790,23 +1791,23 @@ func _test_batch8a_chest_never_empty() -> void:
 		if first_reward.is_empty():
 			first_reward = rewards[0]
 	_check("b8a_full_loadout_chest_never_empty", roll_ok and not first_reward.is_empty(), str(first_reward))
+	_check("b8a_chest_grants_run_gold", cc.run_gold > gold_before_chest, "gold %d -> %d" % [gold_before_chest, cc.run_gold])
 	_check(
 		"b8a_reward_card_fields",
 		String(first_reward.get("title", "")) != "" and String(first_reward.get("desc", "")) != "" and String(first_reward.get("icon", "")) != "",
 		str(first_reward)
 	)
-	var guarantee_titles := ["道心淬炼", "九转还魂丹", "天机洗髓"]
-	var probe_rewards: Array[Dictionary] = um.roll_v2_chest_rewards(p)
-	var has_guarantee := false
-	for r in probe_rewards:
-		if guarantee_titles.has(String(r.get("title", ""))):
-			has_guarantee = true
-	_check("b8a_no_upgrade_guarantee_card", has_guarantee, str(probe_rewards))
 
 	var saved_items: Dictionary = cc.loader.items_by_id
 	cc.loader.items_by_id = {}
+	var guarantee_titles := ["道心淬炼", "九转还魂丹", "天机洗髓"]
 	var fallback_rewards: Array[Dictionary] = um.roll_v2_chest_rewards(p)
 	cc.loader.items_by_id = saved_items
+	var has_guarantee := false
+	for r in fallback_rewards:
+		if guarantee_titles.has(String(r.get("title", ""))):
+			has_guarantee = true
+	_check("b8a_no_upgrade_guarantee_card", has_guarantee, str(fallback_rewards))
 	_check(
 		"b8a_no_item_pool_still_has_card",
 		not fallback_rewards.is_empty() and String(fallback_rewards[0].get("title", "")) != "",
@@ -1837,12 +1838,18 @@ func _test_batch8a_chest_never_empty() -> void:
 
 	var chest_ui := (load("res://scenes/chest_ui.tscn") as PackedScene).instantiate() as ChestUI
 	add_child(chest_ui)
-	chest_ui.show_rewards([])
+	chest_ui.show_rewards([], 25, 1)
 	var box := chest_ui.get_node("Panel/VBox/RewardBox") as HBoxContainer
 	_check(
 		"b8a_chest_ui_empty_input_fallback_visible",
 		chest_ui.visible and box.get_child_count() == 1 and (box.get_child(0) as Control).visible,
 		"cards=%d" % box.get_child_count()
+	)
+	chest_ui.skip_animation()
+	_check(
+		"b8a_chest_ui_skip_to_ready",
+		chest_ui.anim_state == ChestUI.AnimState.READY and is_equal_approx((box.get_child(0) as Control).modulate.a, 1.0),
+		"state=%d" % int(chest_ui.anim_state)
 	)
 	chest_ui.queue_free()
 

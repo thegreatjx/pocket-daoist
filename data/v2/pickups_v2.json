@@ -16,7 +16,7 @@
       "unlocks_at_level": 1,
       "weight": 20,
       "value": 5.0,
-      "desc": "获得5枚局内灵石",
+      "desc": "获得 5 枚灵石",
       "icon": "res://assets/sprites/pickup_spirit_pouch.png"
     },
     {
