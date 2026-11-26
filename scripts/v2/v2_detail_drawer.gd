@@ -410,7 +410,7 @@ func _render_header_badges(detail: Dictionary, accent: Color) -> void:
 		_badge_row.add_child(_make_pill(lv_txt, Color(1.0, 1.0, 1.0, 0.10), Color(0.75, 0.85, 0.80, 0.35), Color(0.88, 0.95, 0.91), 12))
 	elif kind == "item":
 		var rarity := int(detail.get("rarity", 1))
-		var r_label := "奇珍秘宝" if rarity <= 1 else ("稀有秘宝" if rarity == 2 else "绝品秘宝")
+		var r_label := "凡品奇物" if rarity <= 1 else ("稀有奇物" if rarity == 2 else "绝品奇物")
 		_badge_row.add_child(_make_pill(r_label, Color(accent.r, accent.g, accent.b, 0.28), accent, Color(1.0, 0.97, 0.90), 12))
 		if bool(detail.get("has_tradeoff", false)):
 			_badge_row.add_child(_make_pill("高收益 · 权衡", Color(0.76, 0.24, 0.14, 0.28), Color(0.95, 0.52, 0.38), Color(1.0, 0.88, 0.82), 12))
@@ -733,9 +733,9 @@ func _render_item_left(detail: Dictionary) -> void:
 		var n_lbl := Label.new()
 		n_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		if max_st == 1:
-			n_lbl.text = "同款秘宝限持 1 件，购入后立即作用于本局属性。"
+			n_lbl.text = "同款奇物限持 1 件，购入后立即作用于本局属性。"
 		else:
-			n_lbl.text = "同款秘宝最多叠加 %d 件；若含代偿词条，请结合当前气血与容错权衡。" % max_st if bool(detail.get("has_tradeoff", false)) else "同款秘宝最多叠加 %d 件，购入后立即作用于本局属性。" % max_st
+			n_lbl.text = "同款奇物最多叠加 %d 件；若含代偿词条，请结合当前气血与容错权衡。" % max_st if bool(detail.get("has_tradeoff", false)) else "同款奇物最多叠加 %d 件，购入后立即作用于本局属性。" % max_st
 		n_lbl.add_theme_font_size_override("font_size", 13)
 		n_lbl.add_theme_color_override("font_color", COL_INK_SUB)
 		note_box.add_child(n_lbl)
@@ -1247,7 +1247,7 @@ static func build_item_detail(v2: V2CombatController, item_id: String) -> Dictio
 		return {}
 	var it: Dictionary = v2.loader.items_by_id[item_id]
 	var rarity := int(it.get("rarity", 1))
-	var r_label := "奇珍秘宝" if rarity <= 1 else ("稀有秘宝" if rarity == 2 else "绝品秘宝")
+	var r_label := "凡品奇物" if rarity <= 1 else ("稀有奇物" if rarity == 2 else "绝品奇物")
 	var has_tradeoff := V2CombatController.item_has_tradeoff(it)
 	var mod_rows: Array[Dictionary] = []
 	var mods: Dictionary = it.get("mods", {})

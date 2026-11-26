@@ -537,7 +537,7 @@ func _build_offer_card(idx: int, offer: Dictionary) -> Control:
 	elif kind == "item" and _v2.loader.items_by_id.has(item_id):
 		var it: Dictionary = _v2.loader.items_by_id[item_id]
 		var rarity := int(it.get("rarity", 1))
-		var r_name := "奇珍秘宝" if rarity <= 1 else ("稀有秘宝" if rarity == 2 else "绝品秘宝")
+		var r_name := "凡品奇物" if rarity <= 1 else ("稀有奇物" if rarity == 2 else "绝品奇物")
 		if V2CombatController.item_has_tradeoff(it):
 			r_name += " · 权衡"
 		tag = "【%s】" % r_name

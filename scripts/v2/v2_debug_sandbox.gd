@@ -5,7 +5,7 @@ signal closed
 
 enum DockState { EXPANDED, COLLAPSED }
 
-const TAB_TITLES := ["靶场", "法宝", "秘宝", "反应"]
+const TAB_TITLES := ["靶场", "法宝", "奇物", "反应"]
 const PANEL_WIDTH := 436.0
 const COLLAPSED_WIDTH := 216.0
 const RIGHT_MARGIN := 14.0
@@ -292,9 +292,9 @@ func _build_items_arcana_tab(parent: Control) -> Control:
 	var quick_bar := HBoxContainer.new()
 	quick_bar.add_theme_constant_override("separation", 6)
 	body.add_child(quick_bar)
-	_add_action_btn(quick_bar, "清空秘宝", "cinnabar", _on_clear_items)
+	_add_action_btn(quick_bar, "清空奇物", "cinnabar", _on_clear_items)
 
-	body.add_child(_make_section_label("一、全部秘宝"))
+	body.add_child(_make_section_label("一、全部奇物"))
 	var i_box := VBoxContainer.new()
 	i_box.add_theme_constant_override("separation", 5)
 	body.add_child(i_box)

@@ -408,7 +408,7 @@ func get_v2_level_choices(player: Node, count: int = 3) -> Array[Dictionary]:
 			var cap := maxi(1, int(it.get("max_stacks", 1)))
 			item_candidates.append({
 				"id": "v2_item:" + item_id,
-				"tag": "【秘宝】",
+				"tag": "【奇物】",
 				"title": String(it.get("name", item_id)),
 				"desc": String(it.get("desc", "")),
 				"level": cur_cnt,
