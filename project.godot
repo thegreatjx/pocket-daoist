@@ -15,9 +15,11 @@ config/icon="res://icon.png"
 
 [autoload]
 
-; 顺序有依赖：Settings 必须先于 Music（Music 读取音乐音量设置），
+; 顺序有依赖：SingleInstance 必须最先跑（主场景加载前定能否开新实例），
+; Settings 必须先于 Music（Music 读取音乐音量设置），
 ; GameFlow 必须先于场景脚本（各界面调用它变更流程状态）。
 ; project.godot 只认 ";" 作为注释符，用 "#" 会被当成语法错误并破坏本段解析。
+SingleInstance="*res://scripts/autoload/single_instance.gd"
 CombatGrid="*res://scripts/autoload/combat_grid.gd"
 ObjectPools="*res://scripts/autoload/object_pools.gd"
 Settings="*res://scripts/autoload/settings.gd"
