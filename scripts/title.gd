@@ -530,8 +530,11 @@ func _build_stage_selector() -> void:
 	hbox.add_theme_constant_override("separation", 8)
 	card.add_child(hbox)
 
+	var stage_choices := ChapterData.count() > 1
+
 	var prev_btn := Button.new()
 	prev_btn.text = "◀"
+	prev_btn.visible = stage_choices
 	prev_btn.custom_minimum_size = Vector2(32, 44)
 	prev_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	prev_btn.focus_mode = Control.FOCUS_NONE
@@ -580,6 +583,7 @@ func _build_stage_selector() -> void:
 
 	var next_btn := Button.new()
 	next_btn.text = "▶"
+	next_btn.visible = stage_choices
 	next_btn.custom_minimum_size = Vector2(32, 44)
 	next_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	next_btn.focus_mode = Control.FOCUS_NONE

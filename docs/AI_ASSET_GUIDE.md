@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 11:38:01）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 11:43:02）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -65,7 +65,7 @@
 - `fusion_thunder_frost_domain` (九霄雷冰天域, 合体) -> 当前复用 `res://assets/v2/weapons/wpn_thunder_talisman.png`
 - `fusion_venom_zen_bell` (镇岳枯荣梵钟, 合体) -> 当前复用 `res://assets/v2/weapons/wpn_gold_bell.png`
 
-### 推图关卡与地砖（5 关）
+### 推图关卡与地砖（1 关）
 - 第 1 关 `青冥古林` | Boss `苍鬃狼王` (`wolf`) | 地砖 `res://assets/v2/map_ch1/tile_grass_512.png` | 已配地标
 
 ### 怪物与精英精灵表（`scripts/enemy_visual.gd`）

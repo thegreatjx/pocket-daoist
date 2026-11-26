@@ -1,6 +1,7 @@
 # 《百宝小道修 (Pocket Daoist)》V2 架构与现状说明书
 
 > 适用仓库：`game` (`D:\AI_workspace\game`，Godot 4.7 GL Compatibility)
+> **当前实际实现状态见 [`PROJECT_STATE.md`](PROJECT_STATE.md)**；本文保留架构概览，涉及关卡数量、道韵、超武合体的描述以那份为准。
 > 当前定稿范式：《土豆兄弟》4 槽法宝与波次间商店 + 《吸血鬼幸存者》大地图割草/经验聚合/宝箱与多 Boss 调度 + 修仙 7 组五行元素反应
 
 ## 1. 当前核心模块与数据清单
@@ -10,7 +11,7 @@
   - `weapons_v2.json`：8 件基础法宝 × `Lv.1–Lv.8` 原地淬炼数值，**最多装备 4 件法宝**（当前已禁用双满级法宝合体/超武融合）。
   - `reactions_v2.json`：7 组五行元素反应 + `2.4s` 单怪内置冷却（首领 `1.6s`）。
   - `items_v2.json`：16 件带正负权衡词条的秘宝与商店经济配置。
-  - `stages_v2.json` & `enemies_waves_v2.json`：5 大推图关卡、10 波呼吸式波次与精英/首领配置。
+  - `stages_v2.json` & `enemies_waves_v2.json`：**1 个已实装关卡**（青冥古林，10 波）、9 种杂兵原型与 7 种精英变体。
   - `pickups_v2.json` & `achievements_v2.json`：青瓷罐 6 类掉落物与 24 条成就配置（当前已禁用天道道韵）。
 - **核心脚本（`scripts/v2/`）**：
   - `v2_data_loader.gd`：加载并校验 `data/v2/*.json`。

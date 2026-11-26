@@ -38,7 +38,7 @@ func _ready() -> void:
 	_test_t5_batch3a_arcana_limit_break()
 	_test_t5_batch3b_jar_drops()
 	_test_t5_batch3c_achievements()
-	_test_batch4_ch2_to_ch5_maps()
+	_test_batch4_ch1_map()
 	_test_batch5_seven_elite_variants()
 	_test_batch8a_chest_never_empty()
 	await _test_batch9_pickup_and_freeze()
@@ -926,7 +926,7 @@ func _test_t2d_codex_and_t2_e2e(loader: V2DataLoader) -> void:
 	p2.queue_free()
 
 func _test_t3_stages_waves_and_enemies(loader: V2DataLoader) -> void:
-	check("t3_stages_count_5", loader.stages.size() == 5 and ChapterData.count() == 5, "stages=%d ch=%d" % [loader.stages.size(), ChapterData.count()])
+	check("t3_stages_count_1", loader.stages.size() == 1 and ChapterData.count() == 1, "stages=%d ch=%d" % [loader.stages.size(), ChapterData.count()])
 	var all_chs := ChapterData.all()
 	var copy_probe := all_chs[0]
 	copy_probe["duration"] = 1.0
@@ -1552,30 +1552,16 @@ func _test_t5_batch3c_achievements() -> void:
 	Stats.total_fusions = old_tf
 	Stats.total_jars_broken = old_tj
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp_path))
-func _test_batch4_ch2_to_ch5_maps() -> void:
+func _test_batch4_ch1_map() -> void:
 	var raw := FileAccess.get_file_as_string("res://data/v2/stages_v2.json")
 	var parsed: Variant = JSON.parse_string(raw)
 	_check("b4_stages_json_valid", parsed is Dictionary, "")
 	var stages: Array = (parsed as Dictionary).get("stages", [])
-	_check("b4_five_stages", stages.size() == 5, "got=%d" % stages.size())
-	var expected := [
-		"res://assets/v2/map_ch1/tile_grass_512.png",
-		"res://assets/terrain/tile_ch2_sunset_blossom_512.png",
-		"res://assets/terrain/tile_ch3_nether_altar_512.png",
-		"res://assets/terrain/tile_ch4_crimson_wasteland_512.png",
-		"res://assets/terrain/tile_ch5_cloud_immortal_512.png",
-	]
-	var all_ok := true
-	for i in range(expected.size()):
-		var p: String = expected[i]
-		var st_tile := String((stages[i] as Dictionary).get("floor_tile", ""))
-		var tex := load(p) as Texture2D
-		if st_tile != p or tex == null:
-			all_ok = false
-	_check("b4_all_5_floor_tiles_load", all_ok, "")
-	var bg_src := FileAccess.get_file_as_string("res://scripts/background.gd")
-	var bg_refs := bg_src.contains("tile_ch2_sunset_blossom_512.png") and bg_src.contains("tile_ch5_cloud_immortal_512.png")
-	_check("b4_background_refs_hybrid_tiles", bg_refs, "")
+	_check("b4_single_stage", stages.size() == 1, "got=%d" % stages.size())
+	var expected := "res://assets/v2/map_ch1/tile_grass_512.png"
+	var st_tile := String((stages[0] as Dictionary).get("floor_tile", ""))
+	var tex := load(expected) as Texture2D
+	_check("b4_ch1_floor_tile_loads", st_tile == expected and tex != null, st_tile)
 
 func _test_batch5_seven_elite_variants() -> void:
 	var raw := FileAccess.get_file_as_string("res://data/v2/enemies_waves_v2.json")

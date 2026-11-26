@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 11:38:01",
+    "generated_at": "2026-11-26 11:43:02",
     "active_media_count": 182,
     "used_media_count": 176,
     "orphan_media_count": 6,
@@ -8239,19 +8239,17 @@
         {
           "from": "stages_v2",
           "to": "map_arena_v2",
-          "label": "chapter 1/5",
-          "valid": false,
-          "notes": [
-            "第 2~5 关缺少 map_arena_v2 地标配置"
-          ]
+          "label": "chapter 1/1",
+          "valid": true,
+          "notes": []
         },
         {
           "from": "stages_v2",
           "to": "story_gd",
-          "label": "5关 vs 6章",
+          "label": "关卡 ↔ 剧情",
           "valid": false,
           "notes": [
-            "story.gd 为 6 章旧结构"
+            "剧情章节数 (6) 与 V2 关卡数 (1) 不一致"
           ]
         },
         {

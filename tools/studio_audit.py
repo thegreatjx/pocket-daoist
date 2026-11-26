@@ -709,19 +709,21 @@ def validate_project(
         )
 
     map_chapters = {i + 1: ch for i, ch in enumerate(data["map_arena_v2"].get("chapters", []))}
-    missing_stage_maps = [st for st in data["stages_v2"].get("stages", []) if st["id"] not in map_chapters]
+    stages_all = data["stages_v2"].get("stages", [])
+    missing_stage_maps = [st for st in stages_all if st["id"] not in map_chapters]
     if missing_stage_maps:
+        missing_ids = ", ".join(str(st["id"]) for st in missing_stage_maps)
         add_issue(
             "gap",
             "MISSING_ART_SLOT",
-            f"第 2~5 关缺少地图地标与掩体配置 ({len(missing_stage_maps)}/5 关空缺)",
-            "data/v2/map_arena_v2.json 仅配置了第 1 章（青岚山林），第 2~5 关的中心锚点、掩体柱与 4 个交互地标全空。",
+            f"第 {missing_ids} 关缺少地图地标与掩体配置 ({len(missing_stage_maps)}/{len(stages_all)} 关空缺)",
+            f"data/v2/map_arena_v2.json 未配置第 {missing_ids} 关的中心锚点、掩体柱与 4 个交互地标。",
             file="data/v2/map_arena_v2.json",
-            entity_id="map_ch2_to_ch5",
+            entity_id=f"map_missing_{missing_ids.replace(', ', '_')}",
             tab="progression",
             prompt_hint={
                 "kind": "stage_maps",
-                "title": "补齐第 2~5 关地图地标与掩体贴图",
+                "title": f"补齐第 {missing_ids} 关地图地标与掩体贴图",
                 "targets": [f"关卡 {st['id']} · {st['name']}：中心锚点 + 掩体柱 + 4 个主题地标 (assets/v2/map_ch{st['id']}/)" for st in missing_stage_maps],
                 "spec": "参考 assets/v2/map_ch1/ 的 6 个 PNG 规格与 data/v2/map_arena_v2.json 结构，保持俯视角 2.5D 国风水墨 Q 版一致。",
             },
@@ -906,10 +908,17 @@ def build_data_graph(data: dict[str, Any], issues: list[dict[str, Any]]) -> dict
     ]
 
     arcana_broken = broken_by_file.get("data/v2/arcana_v2.json", [])
+    stages_all = data["stages_v2"].get("stages", [])
+    map_chapters = {i + 1: ch for i, ch in enumerate(data["map_arena_v2"].get("chapters", []))}
+    missing_stage_maps = [st for st in stages_all if st["id"] not in map_chapters]
+    map_edge_notes: list[str] = []
+    if missing_stage_maps:
+        map_edge_notes.append("第 " + "、".join(str(st["id"]) for st in missing_stage_maps) + " 关缺少 map_arena_v2 地标配置")
+    story_issues = [iss for iss in issues if iss["code"] == "STORY_STAGE_MISMATCH"]
     edges = [
         {"from": "stages_v2", "to": "enemies_waves_v2", "label": "waves.pool", "valid": True, "notes": []},
-        {"from": "stages_v2", "to": "map_arena_v2", "label": "chapter 1/5", "valid": False, "notes": ["第 2~5 关缺少 map_arena_v2 地标配置"]},
-        {"from": "stages_v2", "to": "story_gd", "label": "5关 vs 6章", "valid": False, "notes": ["story.gd 为 6 章旧结构"]},
+        {"from": "stages_v2", "to": "map_arena_v2", "label": f"chapter {len(map_chapters)}/{len(stages_all)}", "valid": len(missing_stage_maps) == 0, "notes": map_edge_notes},
+        {"from": "stages_v2", "to": "story_gd", "label": "关卡 ↔ 剧情", "valid": len(story_issues) == 0, "notes": [iss["title"] for iss in story_issues]},
         {"from": "enemies_waves_v2", "to": "enemy_visual_gd", "label": "species 0..6", "valid": True, "notes": ["靠整数 species 映射贴图，存在撞皮"]},
         {"from": "characters_v2", "to": "weapons_v2", "label": "v2_start_weapon", "valid": True, "notes": []},
         {"from": "weapons_v2", "to": "reactions_v2", "label": "element", "valid": True, "notes": []},
@@ -1049,7 +1058,7 @@ def render_ai_asset_guide(manifest: dict[str, Any]) -> str:
     for f in manifest["entities"]["fusions"]:
         lines.append(f"- `{f['id']}` ({f['name']}, 合体) -> 当前复用 `{f.get('icon', '')}`")
 
-    lines += ["", "### 推图关卡与地砖（5 关）"]
+    lines += ["", f"### 推图关卡与地砖（{len(manifest['progression_stages'])} 关）"]
     for st in manifest["progression_stages"]:
         map_tag = "已配地标" if st["map_arena"]["configured"] else "**缺 map_arena_v2 地标**"
         lines.append(f"- 第 {st['id']} 关 `{st['name']}` | Boss `{st['boss_name']}` (`{st['boss_type']}`) | 地砖 `{st['floor_tile']}` | {map_tag}")

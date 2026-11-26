@@ -1,5 +1,7 @@
 # 《吸血鬼幸存者》深度对标与《百宝小道修》(Pocket Daoist)系统设计优化报告（历史方案归档）
 
+> ⚠️ **历史归档（2026-11-26）**：本文是早期方案推演，与当前实现不一致（例如文中 5 关、超武合体、道韵均未上线）。现行状态见 [`PROJECT_STATE.md`](PROJECT_STATE.md)。
+
 > 注：本文档记录早期架构推演。当前版本已收口为 **4 法宝槽位、8 法宝 Lv.1–Lv.8 原地淬炼、7 组五行反应**，并**已禁用双法宝合体（超武融合）与天道道韵**；现行完整规格见 `docs/游戏设计规划.md` 与 `data/v2/*.json`。
 > 参考基准：`vs_analysis/report/吸血鬼幸存者-设计解剖.md`、`vs_analysis/report/吸血鬼幸存者-行为与表现解剖.md`
 > 审计范围：`docs/`、`data/v2/`、`scripts/` 与 `scripts/v2/` 现网代码（Godot 4.7 · GL Compatibility）
