@@ -28,7 +28,7 @@
 | **S2 形象闸门** | 3 张候选 | 人工 + 86px 同屏对照图 | 选定 1 张 → `master.png` | **你点头才进 S3**，不许自动往下跑 |
 | **S3 生视频** | `master.png` | `prepare_i2v_input.py` → `tools/comfyui_wan_i2v.py` | `raw_idle/frame_*.png` 49 帧 | 无变脸、无转身、无镜头移动、绿底纯净 |
 | **S4 抠像对齐** | 原始帧 | `video2dsprite.py clean` → `register_clip.py apply` | `clean_*/` + `reg_*/frames` + `registration.json` | 边缘无绿边、脚底基准线稳定 |
-| **S5 打包入库** | 对齐帧 | `engine_export.py package` | `assets/v2/hero/anim/hero_<id>_idle-atlas-00.png` + `.json` | `verify` 通过；`characters_v2.json` 登记路径；`studio_audit.py --strict` 无新增告警 |
+| **S5 打包入库** | 对齐帧 | `engine_export.py package` | `assets/v2/hero/anim/hero_<id>_idle-atlas-00.png` + `.json` | `verify` 通过；**fps 必须为 24（管线已自检拦截，手动导出必须显式传 `--fps 24`）**；`characters_v2.json` 登记路径；`studio_audit.py --strict` 无新增告警 |
 
 ### 具体命令
 

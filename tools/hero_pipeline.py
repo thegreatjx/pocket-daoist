@@ -156,6 +156,11 @@ def main() -> None:
         pkg = os.path.join(ROOT, args.out_dir)
 
     meta = json.load(open(os.path.join(pkg, f"{name}.json"), encoding="utf-8"))
+    export_fps = float(meta.get("fps", 0.0))
+    if export_fps != 24.0:
+        raise SystemExit(
+            "hero_pipeline: 导出帧率为 %s，必须 24 fps（hero_motion_rig 的步频锚点按 24 设计）。"
+            "检查 --fps / --selection 参数后重新打包。" % export_fps)
     print(json.dumps({
         "atlas": os.path.join(pkg, meta["fallback"]["pages"][0]["file"]),
         "meta": os.path.join(pkg, f"{name}.json"),
