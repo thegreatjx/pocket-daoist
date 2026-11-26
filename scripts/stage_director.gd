@@ -69,6 +69,22 @@ func chapter_time_remaining() -> float:
 		return 0.0
 	return maxf(0.0, float(chapter.get("duration", 480.0)) - chapter_elapsed)
 
+func get_next_boss_info() -> Dictionary:
+	if not running or finished:
+		return {}
+	if endless_mode:
+		if not _boss_spawned:
+			return {"label": "无尽首领", "remaining": maxf(0.0, _endless_timer), "active": false}
+		return {"label": "首领激战", "remaining": 0.0, "active": true}
+	if _boss_plan_index < _boss_plan.size():
+		var plan: Dictionary = _boss_plan[_boss_plan_index]
+		var rem := maxf(0.0, float(plan.get("at", 0.0)) - chapter_elapsed)
+		var lbl := "首领" if bool(plan.get("final", false)) else "小首领"
+		return {"label": lbl, "remaining": rem, "active": false}
+	if not _pending_bosses.is_empty():
+		return {"label": "首领激战", "remaining": 0.0, "active": true}
+	return {}
+
 func notify_boss_killed(boss_name: String = "") -> void:
 	if finished:
 		return

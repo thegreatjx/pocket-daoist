@@ -973,12 +973,22 @@ func _refresh_character_ui(animate_switch: bool = false) -> void:
 		_char_skill_lbl.text = "身法 · %s" % str(c.get("active_name", "御剑瞬步"))
 
 	var base_hp := float(c.get("max_health", 120.0))
-	var hp_mods: Dictionary = c.get("trait_mods", {})
-	var final_hp := base_hp + float(hp_mods.get("max_hp", 0.0))
+	var t_mods: Dictionary = c.get("trait_mods", {})
+	var final_hp := base_hp + float(t_mods.get("max_hp", 0.0))
 	_stat_hp_lbl.text = str(roundi(final_hp))
 	_stat_hp_lbl.tooltip_text = "气血 %d" % roundi(final_hp) if is_equal_approx(base_hp, final_hp) else "基础 %d，命格 %+d" % [roundi(base_hp), roundi(final_hp - base_hp)]
-	_stat_spd_lbl.text = str(int(c.get("speed", 190.0)))
-	_stat_crit_lbl.text = "%d%%" % roundi(float(c.get("crit_chance", 0.12)) * 100.0)
+
+	var base_spd := float(c.get("speed", 190.0))
+	var spd_pct := float(t_mods.get("move_speed_pct", 0.0))
+	var final_spd := base_spd * maxf(0.5, 1.0 + spd_pct)
+	_stat_spd_lbl.text = str(roundi(final_spd))
+	_stat_spd_lbl.tooltip_text = "移速 %d" % roundi(final_spd) if is_zero_approx(spd_pct) else "基础 %d，命格 %+d%%" % [roundi(base_spd), roundi(spd_pct * 100.0)]
+
+	var base_crit := float(c.get("crit_chance", 0.12))
+	var crit_mod := float(t_mods.get("crit_chance", 0.0))
+	var final_crit := clampf(base_crit + crit_mod, 0.0, 0.85)
+	_stat_crit_lbl.text = "%d%%" % roundi(final_crit * 100.0)
+	_stat_crit_lbl.tooltip_text = "暴击 %d%%" % roundi(final_crit * 100.0) if is_zero_approx(crit_mod) else "基础 %d%%，命格 %+d%%" % [roundi(base_crit * 100.0), roundi(crit_mod * 100.0)]
 	if _char_trait_lbl != null:
 		_char_trait_lbl.text = "命格：%s" % str(c.get("trait_summary", "均衡全能"))
 

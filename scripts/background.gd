@@ -386,24 +386,14 @@ func _draw() -> void:
 		var y := start_y
 		while y <= end_y:
 			var tile_rect := Rect2(x, y, _tile_size, _tile_size)
-			var gx := int(floor(x / _tile_size))
-			var gy := int(floor(y / _tile_size))
-			var h := int(absi(gx * 73856093)) ^ int(absi(gy * 19349663))
-			var macro_wave := sin(float(gx) * 0.45 + float(gy) * 0.35) * 0.025
-			var jitter := 0.96 + float(h % 7) * 0.006 + macro_wave
 			var biome_tint: Color
 			if _chapter_id == 1:
-				biome_tint = Color(
-					clampf(CH1_FLOOR_TINT.r * jitter, 0.0, 1.0),
-					clampf(CH1_FLOOR_TINT.g * (jitter + macro_wave * 0.35), 0.0, 1.0),
-					clampf(CH1_FLOOR_TINT.b * (jitter - macro_wave * 0.25), 0.0, 1.0),
-					1.0
-				)
+				biome_tint = CH1_FLOOR_TINT
 			else:
 				biome_tint = Color(
-					clampf(_ground_color.r * jitter, 0.22, 0.44),
-					clampf(_ground_color.g * (jitter + macro_wave * 0.35), 0.22, 0.44),
-					clampf(_ground_color.b * (jitter - macro_wave * 0.25), 0.22, 0.44),
+					clampf(_ground_color.r, 0.22, 0.44),
+					clampf(_ground_color.g, 0.22, 0.44),
+					clampf(_ground_color.b, 0.22, 0.44),
 					1.0
 				)
 			if ARENA_RECT.intersects(tile_rect):

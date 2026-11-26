@@ -4,12 +4,22 @@ extends Node2D
 signal weapon_fired(slot_index: int, weapon_data: Dictionary, tier_stats: Dictionary, origin: Vector2, target_pos: Vector2)
 signal loadout_changed(slots: Array)
 
+enum SummonState {
+	HIDDEN,
+	MATERIALIZE,
+	CAST_RECOIL,
+	DISSIPATE,
+}
+
 const MAX_WEAPON_TIER := 8
 const FUSION_TIER := 9
 const RECOIL_DURATION := 0.10
 const RECOIL_DISTANCE := 25.0
 const WINDUP_LEAD_SEC := 0.085
 const WINDUP_PULL_DISTANCE := 9.0
+const MATERIALIZE_SEC := 0.10
+const CAST_RECOIL_SEC := 0.12
+const DISSIPATE_SEC := 0.22
 
 @export var max_slots: int = 4
 @export var orbit_radius_x: float = 54.0
@@ -24,6 +34,7 @@ var starter_weapon_id: String = ""
 var _hover_time: float = 0.0
 var _facing: float = 1.0
 var _hurt_scatter: float = 0.0
+var _starter_cast_rings: Array[Dictionary] = []
 
 func trigger_hurt_scatter(strength: float = 1.0) -> void:
 	_hurt_scatter = maxf(_hurt_scatter, clampf(strength, 0.3, 1.5))
@@ -44,16 +55,28 @@ func set_unlocked_slots(count: int) -> void:
 func get_unlocked_slots() -> int:
 	return clampi(unlocked_slots, 1, max_slots)
 
+func is_starter_slot(slot: Dictionary) -> bool:
+	return not bool(slot.get("is_fusion", false)) and not starter_weapon_id.is_empty() and String(slot.get("id", "")) == starter_weapon_id
+
+func _set_summon_state(slot: Dictionary, next_state: int) -> void:
+	slot["summon_state"] = next_state
+	slot["summon_timer"] = 0.0
+
 func set_starter_weapon(weapon_id: String) -> void:
 	starter_weapon_id = weapon_id
 	for slot in slots:
-		if bool(slot.get("is_fusion", false)):
+		if not is_starter_slot(slot):
 			continue
-		if String(slot.get("id", "")) != starter_weapon_id:
-			continue
+		_set_summon_state(slot, SummonState.HIDDEN)
 		var sp := slot.get("sprite") as Sprite2D
 		if sp != null and is_instance_valid(sp):
 			sp.visible = false
+			var seal := sp.get_node_or_null("SummonSeal") as Sprite2D
+			if seal != null:
+				seal.visible = false
+			var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
+			if max_fx != null:
+				max_fx.emitting = false
 
 func has_free_slot() -> bool:
 	return slots.size() < get_unlocked_slots()
@@ -103,7 +126,7 @@ func add_weapon(weapon_id: String, tier: int = 1) -> bool:
 		if ResourceLoader.exists(icon_path):
 			sp.texture = load(icon_path)
 		sp.scale = Vector2(weapon_sprite_scale, weapon_sprite_scale)
-		if weapon_id == starter_weapon_id:
+		if summon_on_cast_mode or weapon_id == starter_weapon_id:
 			sp.visible = false
 		add_child(sp)
 		var seal := V2VfxFactory.make_sprite(V2VfxFactory.TEX_MAGIC_04, 240.0, Color(0.96, 0.86, 0.46, 0.78), true)
@@ -120,13 +143,13 @@ func add_weapon(weapon_id: String, tier: int = 1) -> bool:
 			"recoil": Vector2.ZERO,
 			"recoil_peak": Vector2.ZERO,
 			"recoil_elapsed": RECOIL_DURATION,
-			"cast_vis": 0.0,
+			"summon_state": SummonState.HIDDEN,
+			"summon_timer": 0.0,
 			"cast_dir": Vector2.RIGHT,
 		}
 		slots.append(slot_data)
 		_sync_max_tier_visual(slot_data)
 
-	_settle_fusions()
 	loadout_changed.emit(slots)
 	return true
 
@@ -136,7 +159,6 @@ func upgrade_weapon(weapon_id: String, step: int = 1) -> bool:
 	var idx := find_weapon_slot(weapon_id)
 	slots[idx]["tier"] = mini(MAX_WEAPON_TIER, int(slots[idx]["tier"]) + maxi(1, step))
 	_sync_max_tier_visual(slots[idx])
-	_settle_fusions()
 	loadout_changed.emit(slots)
 	return true
 
@@ -150,116 +172,6 @@ func sell_weapon(slot_index: int) -> Dictionary:
 	slots.remove_at(slot_index)
 	loadout_changed.emit(slots)
 	return removed
-
-func _settle_fusions() -> void:
-	return
-
-func _try_fuse_once() -> bool:
-	for recipe in loader.fusion_recipes:
-		var req_tier: int = int(recipe.get("required_tier", MAX_WEAPON_TIER))
-		var ing: Array = recipe["ingredients"]
-		var idx_a: int = _find_slot(String(ing[0]), req_tier)
-		var idx_b: int = _find_slot(String(ing[1]), req_tier)
-		if idx_a != -1 and idx_b != -1 and idx_a != idx_b:
-			var remove_first: int = maxi(idx_a, idx_b)
-			var keep_idx: int = mini(idx_a, idx_b)
-			var sp_rem: Sprite2D = slots[remove_first]["sprite"] as Sprite2D
-			if sp_rem != null and is_instance_valid(sp_rem):
-				sp_rem.queue_free()
-			slots.remove_at(remove_first)
-			_convert_slot_to_fusion(keep_idx, recipe)
-			return true
-	return false
-
-func _convert_slot_to_fusion(slot_idx: int, recipe: Dictionary) -> void:
-	slots[slot_idx]["id"] = String(recipe["id"])
-	slots[slot_idx]["is_fusion"] = true
-	slots[slot_idx]["tier"] = FUSION_TIER
-	_apply_fusion_visual(slots[slot_idx], recipe)
-
-func _apply_fusion_visual(slot: Dictionary, recipe: Dictionary) -> void:
-	var sp_keep: Sprite2D = slot["sprite"] as Sprite2D
-	if sp_keep == null or not is_instance_valid(sp_keep):
-		return
-	var max_fx := sp_keep.get_node_or_null("MaxTierParticles")
-	if max_fx != null:
-		max_fx.queue_free()
-	for extra_name in ["MaxTierAura", "MaxTierTrail"]:
-		var extra_fx := sp_keep.get_node_or_null(extra_name)
-		if extra_fx != null:
-			extra_fx.queue_free()
-
-	var icon_path: String = String(recipe.get("icon", ""))
-	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-		sp_keep.texture = load(icon_path)
-	sp_keep.scale = Vector2(weapon_sprite_scale * 1.18, weapon_sprite_scale * 1.18)
-	sp_keep.modulate = Color(1.25, 1.15, 0.95, 1.0)
-
-	var fid := String(recipe.get("id", ""))
-	var aura_col := _fusion_aura_color(recipe)
-	if sp_keep.get_node_or_null("FusionAura") == null:
-		var aura_tex := V2VfxFactory.TEX_MAGIC_05
-		var accent := Color(1.0, 0.90, 0.45, 1.0)
-		var petals := 6.0
-		if fid == "fusion_thunder_frost_domain":
-			aura_tex = V2VfxFactory.TEX_MAGIC_03
-			accent = Color(0.75, 0.95, 1.0, 1.0)
-			petals = 8.0
-		elif fid == "fusion_venom_zen_bell":
-			aura_tex = V2VfxFactory.TEX_MAGIC_02
-			accent = Color(0.98, 0.84, 0.35, 1.0)
-			petals = 8.0
-		var aura := V2VfxFactory.make_shader_sprite(aura_tex, V2VfxFactory.SHADER_BAGUA_DOMAIN_WAVE, {
-			"primary_color": Color(aura_col.r, aura_col.g, aura_col.b, 0.95),
-			"accent_color": accent,
-			"petal_count": petals,
-			"spin_speed": 1.6,
-			"alpha_limit": 0.48,
-			"is_wave": 0.0,
-		}, 196.0)
-		aura.name = "FusionAura"
-		aura.z_index = -1
-		sp_keep.add_child(aura)
-
-	if sp_keep.get_node_or_null("FusionParticles") == null:
-		var p_tex := V2VfxFactory.TEX_FLAME_03
-		var p_col := Color(1.0, 0.56, 0.16, 0.85)
-		var p_add := true
-		if fid == "fusion_thunder_frost_domain":
-			p_tex = V2VfxFactory.TEX_SPARK_05
-			p_col = Color(0.55, 0.84, 1.0, 0.90)
-		elif fid == "fusion_venom_zen_bell":
-			p_tex = V2VfxFactory.TEX_SMOKE_07
-			p_col = Color(0.24, 0.88, 0.60, 0.55)
-			p_add = false
-		var fp := V2VfxFactory.make_gpu_particles(p_tex, {
-			"amount": 8,
-			"lifetime": 0.48,
-			"one_shot": false,
-			"local_coords": true,
-			"shape": "ring",
-			"shape_radius": 74.0,
-			"vel_min": 8.0,
-			"vel_max": 24.0,
-			"scale_min": 0.08,
-			"scale_max": 0.15,
-			"additive": p_add,
-			"color_start": p_col,
-			"color_end": Color(p_col.r, p_col.g, p_col.b, 0.0),
-		})
-		fp.name = "FusionParticles"
-		fp.z_index = -1
-		sp_keep.add_child(fp)
-
-	var sec_path: String = String(recipe.get("secondary_icon", ""))
-	if not sec_path.is_empty() and ResourceLoader.exists(sec_path) and sp_keep.get_node_or_null("FusionSecondary") == null:
-		var sec := Sprite2D.new()
-		sec.name = "FusionSecondary"
-		sec.texture = load(sec_path)
-		sec.scale = Vector2(0.62, 0.62)
-		sec.position = Vector2(-65.0, -45.0)
-		sec.z_index = -1
-		sp_keep.add_child(sec)
 
 func _sync_max_tier_visual(slot: Dictionary) -> void:
 	if bool(slot.get("is_fusion", false)) or int(slot.get("tier", 1)) < MAX_WEAPON_TIER:
@@ -363,35 +275,6 @@ func _sync_max_tier_visual(slot: Dictionary) -> void:
 	trail.z_index = -1
 	sp.add_child(trail)
 
-func _fusion_aura_color(recipe: Dictionary) -> Color:
-	var profile: Dictionary = recipe.get("vfx_profile", {})
-	var hex: String = String(profile.get("trail_color", profile.get("bolt_color", profile.get("wave_color", "#F59E0B"))))
-	var c := Color.from_string(hex, Color(0.96, 0.62, 0.04, 1.0))
-	c.a = 0.32
-	return c
-
-func _find_fusion_match(weapon_id: String, tier: int) -> Dictionary:
-	for recipe in loader.fusion_recipes:
-		var req_tier: int = int(recipe.get("required_tier", MAX_WEAPON_TIER))
-		if tier < req_tier:
-			continue
-		var ing: Array = recipe["ingredients"]
-		if String(ing[0]) == weapon_id:
-			var p_idx: int = _find_slot(String(ing[1]), req_tier)
-			if p_idx != -1:
-				return {"recipe": recipe, "partner_idx": p_idx}
-		elif String(ing[1]) == weapon_id:
-			var p_idx: int = _find_slot(String(ing[0]), req_tier)
-			if p_idx != -1:
-				return {"recipe": recipe, "partner_idx": p_idx}
-	return {}
-
-func _find_slot(weapon_id: String, req_tier: int) -> int:
-	for i in range(slots.size()):
-		if not bool(slots[i]["is_fusion"]) and String(slots[i]["id"]) == weapon_id and int(slots[i]["tier"]) >= req_tier:
-			return i
-	return -1
-
 func trigger_slot_recoil(slot_index: int, shot_dir: Vector2, strength: float = 1.0) -> void:
 	if slot_index < 0 or slot_index >= slots.size():
 		return
@@ -406,7 +289,6 @@ func _apply_slot_transform(i: int, slot: Dictionary, count: int, delta: float) -
 	var sp: Sprite2D = slot["sprite"]
 	var is_f: bool = bool(slot["is_fusion"])
 	var base_sc: float = weapon_sprite_scale * (1.15 if is_f else 1.0)
-	var cast_vis: float = float(slot.get("cast_vis", 0.0))
 	var rec_t: float = clampf(float(slot.get("recoil_elapsed", RECOIL_DURATION)), 0.0, RECOIL_DURATION)
 	var recoil_sq := Vector2.ONE
 	if rec_t < RECOIL_DURATION:
@@ -428,70 +310,80 @@ func _apply_slot_transform(i: int, slot: Dictionary, count: int, delta: float) -
 		scatter_vec = Vector2(cos(ang_s), sin(ang_s)) * (18.0 * _hurt_scatter) + jitter_s
 
 	if summon_on_cast_mode:
-		if i == 0:
-			sp.visible = true
-			var poise := Vector2(-_facing * 34.0, -44.0 + sin(_hover_time * 3.0) * 2.5)
-			sp.position = poise + rec_vec + windup_vec + scatter_vec
-			sp.z_index = 2 if cast_vis > 0.05 else -1
-			var target_rot: float = -0.45 * _facing
-			if cast_vis > 0.0:
-				var cd_dir: Vector2 = slot.get("cast_dir", Vector2.RIGHT)
-				target_rot = clampf(cd_dir.x * 0.35, -0.45, 0.45)
-			elif windup_u > 0.0:
-				target_rot -= _facing * 0.16 * windup_u
-			sp.rotation = lerpf(sp.rotation, target_rot, minf(1.0, delta * 14.0))
-			sp.scale = Vector2(base_sc * recoil_sq.x * windup_sq.x, base_sc * recoil_sq.y * windup_sq.y)
-			sp.modulate = Color(1.18, 1.12, 0.98, 0.98) if cast_vis > 0.0 else (Color(0.85, 0.65, 0.65, 0.92) if _hurt_scatter > 0.25 else Color(1.0, 1.0, 1.0, 0.95))
-			var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
+		if is_starter_slot(slot):
+			sp.visible = false
+			sp.modulate.a = 0.0
+			var seal_s := sp.get_node_or_null("SummonSeal") as Sprite2D
+			if seal_s != null:
+				seal_s.visible = false
+			var max_fx_s := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
+			if max_fx_s != null:
+				max_fx_s.emitting = false
+			return
+
+		var s_state := int(slot.get("summon_state", SummonState.HIDDEN))
+		var s_timer := float(slot.get("summon_timer", 0.0))
+		var seal := sp.get_node_or_null("SummonSeal") as Sprite2D
+		var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
+		if s_state == SummonState.HIDDEN:
+			sp.visible = false
+			sp.modulate.a = 0.0
+			if seal != null:
+				seal.visible = false
 			if max_fx != null:
-				max_fx.emitting = true
-		else:
-			if cast_vis <= 0.0:
-				sp.visible = false
-				sp.modulate.a = 0.0
-				var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
-				if max_fx != null:
-					max_fx.emitting = false
-				var seal := sp.get_node_or_null("SummonSeal") as Sprite2D
+				max_fx.emitting = false
+			return
+
+		sp.visible = true
+		sp.z_index = 2
+		var cd_dir: Vector2 = slot.get("cast_dir", slot.get("windup_dir", Vector2.RIGHT))
+		var out_dir: Vector2 = cd_dir.normalized() if cd_dir.length_squared() > 0.001 else Vector2.RIGHT
+		var slot_ang_jit := (float((i % 2) * 2 - 1)) * 0.24
+		var anchor := out_dir.rotated(slot_ang_jit)
+		var base_pos := Vector2(anchor.x * 68.0, anchor.y * 56.0 - 34.0)
+		sp.rotation = clampf(out_dir.x * 0.22, -0.24, 0.24)
+
+		match s_state:
+			SummonState.MATERIALIZE:
+				var u := clampf(s_timer / MATERIALIZE_SEC, 0.0, 1.0)
+				var pop := lerpf(0.45, 1.14, u)
+				sp.position = base_pos + Vector2(0.0, lerpf(8.0, 0.0, u))
+				sp.scale = Vector2(base_sc * pop, base_sc * pop)
+				sp.modulate = Color(1.16, 1.12, 0.98, u)
 				if seal != null:
-					seal.visible = false
-			else:
-				sp.visible = true
-				var max_fx := sp.get_node_or_null("MaxTierParticles") as GPUParticles2D
+					seal.visible = true
+					seal.rotation += delta * 3.4
+					seal.modulate.a = u * 0.85
 				if max_fx != null:
 					max_fx.emitting = true
-				var p: float = 1.0 - clampf(cast_vis / 0.56, 0.0, 1.0)
-				var seal := sp.get_node_or_null("SummonSeal") as Sprite2D
+			SummonState.CAST_RECOIL:
+				var u := clampf(s_timer / CAST_RECOIL_SEC, 0.0, 1.0)
+				var pop := lerpf(1.14, 1.0, u)
+				sp.position = base_pos + rec_vec
+				sp.scale = Vector2(base_sc * pop * recoil_sq.x, base_sc * pop * recoil_sq.y)
+				sp.modulate = Color(1.22, 1.16, 1.0, 1.0)
 				if seal != null:
 					seal.visible = true
 					seal.rotation += delta * 2.8
-					seal.modulate.a = clampf(1.0 - p, 0.0, 0.85)
-				var cd_dir: Vector2 = slot.get("cast_dir", Vector2.RIGHT)
-				var out_dir: Vector2 = cd_dir.normalized() if cd_dir.length_squared() > 0.001 else Vector2.RIGHT
-				var slot_ang_jit := (float((i % 2) * 2 - 1)) * 0.24
-				var anchor := out_dir.rotated(slot_ang_jit)
-				sp.position = Vector2(anchor.x * 68.0, anchor.y * 56.0 - 34.0 - p * 10.0) + rec_vec
-				sp.z_index = 2
-				sp.rotation = clampf(out_dir.x * 0.22, -0.24, 0.24)
-				var pop: float = lerpf(0.65, 1.12, minf(1.0, p / 0.18)) if p < 0.18 else lerpf(1.12, 1.0, minf(1.0, (p - 0.18) / 0.2))
-				sp.scale = Vector2(base_sc * pop * recoil_sq.x, base_sc * pop * recoil_sq.y)
-				var alpha: float = clampf(p / 0.12, 0.0, 1.0) if p < 0.12 else (clampf((1.0 - p) / 0.32, 0.0, 1.0) if p > 0.68 else 1.0)
-				sp.modulate = Color(1.22, 1.16, 1.0, alpha)
+					seal.modulate.a = lerpf(0.85, 0.30, u)
+				if max_fx != null:
+					max_fx.emitting = true
+			SummonState.DISSIPATE:
+				var u := clampf(s_timer / DISSIPATE_SEC, 0.0, 1.0)
+				var fade_sc := lerpf(1.0, 0.78, u)
+				sp.position = base_pos + Vector2(0.0, -u * 14.0) + rec_vec
+				sp.scale = Vector2(base_sc * fade_sc, base_sc * fade_sc)
+				sp.modulate = Color(1.05, 1.05, 1.0, 1.0 - u)
+				if seal != null:
+					seal.visible = false
+				if max_fx != null:
+					max_fx.emitting = false
 	else:
 		sp.visible = true
 		var angle: float = TAU * float(i) / float(count) + _hover_time * 0.45
 		var rest_pos := Vector2(cos(angle) * orbit_radius_x, sin(angle) * orbit_radius_y - 18.0)
 		sp.position = rest_pos + Vector2(0, sin(_hover_time * 3.0 + float(i)) * 3.0) + rec_vec + windup_vec + scatter_vec
 		sp.scale = Vector2(base_sc * recoil_sq.x * windup_sq.x, base_sc * recoil_sq.y * windup_sq.y)
-
-	if is_f and sp.visible:
-		var sec := sp.get_node_or_null("FusionSecondary") as Sprite2D
-		if sec != null:
-			var sec_ang: float = _hover_time * 2.4 + float(i)
-			sec.position = Vector2(cos(sec_ang) * 72.0, sin(sec_ang) * 52.0)
-		var f_aura := sp.get_node_or_null("FusionAura") as Sprite2D
-		if f_aura != null:
-			f_aura.rotation += delta * 0.8
 
 	var max_aura := sp.get_node_or_null("MaxTierAura") as Sprite2D
 	if max_aura != null and sp.visible:
@@ -502,14 +394,26 @@ func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 	_hover_time += delta
 	if _hurt_scatter > 0.0:
 		_hurt_scatter = maxf(0.0, _hurt_scatter - delta * 3.6)
+	_step_starter_cast_rings(delta)
 	_update_facing()
 	var count: int = maxi(1, slots.size())
 	var windup_lead: float = WINDUP_LEAD_SEC * maxf(0.35, attack_speed_mult)
 	for i in range(slots.size()):
 		var slot: Dictionary = slots[i]
 		var sp: Sprite2D = slot["sprite"]
-		var cast_vis: float = maxf(0.0, float(slot.get("cast_vis", 0.0)) - delta)
-		slot["cast_vis"] = cast_vis
+		var is_starter := is_starter_slot(slot)
+		if summon_on_cast_mode and not is_starter:
+			var s_state := int(slot.get("summon_state", SummonState.HIDDEN))
+			if s_state != SummonState.HIDDEN:
+				var s_timer := float(slot.get("summon_timer", 0.0)) + delta
+				slot["summon_timer"] = s_timer
+				if s_state == SummonState.MATERIALIZE and s_timer >= MATERIALIZE_SEC + 0.14:
+					_set_summon_state(slot, SummonState.DISSIPATE)
+				elif s_state == SummonState.CAST_RECOIL and s_timer >= CAST_RECOIL_SEC:
+					_set_summon_state(slot, SummonState.DISSIPATE)
+				elif s_state == SummonState.DISSIPATE and s_timer >= DISSIPATE_SEC:
+					_set_summon_state(slot, SummonState.HIDDEN)
+
 		var rec_t: float = float(slot.get("recoil_elapsed", RECOIL_DURATION))
 		if rec_t < RECOIL_DURATION:
 			rec_t = minf(RECOIL_DURATION, rec_t + delta)
@@ -520,15 +424,19 @@ func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 			slot["recoil"] = Vector2.ZERO
 
 		var cd_before: float = float(slot["cd_left"])
-		if cd_before > 0.0 and cd_before <= windup_lead and not enemies.is_empty():
+		var mat_lead: float = maxf(windup_lead, MATERIALIZE_SEC * maxf(0.35, attack_speed_mult))
+		if cd_before > 0.0 and cd_before <= mat_lead and not enemies.is_empty():
 			var w_def_pre: Dictionary = _get_def(slot)
 			var stats_pre: Dictionary = _get_stats(slot, w_def_pre)
 			var max_r_pre: float = float(stats_pre.get("range", stats_pre.get("aoe_radius", 320.0)))
-			var origin_pre: Vector2 = global_position + Vector2(0.0, -24.0)
+			var origin_pre: Vector2 = global_position + Vector2(0.0, -18.0 if is_starter else -24.0)
 			var target_pre: Node2D = _find_nearest_enemy(origin_pre, enemies, max_r_pre)
 			if target_pre != null:
-				slot["windup_u"] = clampf(1.0 - cd_before / maxf(0.001, windup_lead), 0.0, 1.0)
+				slot["windup_u"] = clampf(1.0 - cd_before / maxf(0.001, mat_lead), 0.0, 1.0)
 				slot["windup_dir"] = (target_pre.global_position - origin_pre).normalized()
+				if summon_on_cast_mode and not is_starter and int(slot.get("summon_state", SummonState.HIDDEN)) == SummonState.HIDDEN:
+					slot["cast_dir"] = slot["windup_dir"]
+					_set_summon_state(slot, SummonState.MATERIALIZE)
 			else:
 				slot["windup_u"] = 0.0
 		else:
@@ -541,19 +449,56 @@ func tick(delta: float, enemies: Array, attack_speed_mult: float = 1.0) -> void:
 			var w_def: Dictionary = _get_def(slot)
 			var stats: Dictionary = _get_stats(slot, w_def)
 			var max_r: float = float(stats.get("range", stats.get("aoe_radius", 320.0)))
-			var origin_pos: Vector2 = global_position + Vector2(0.0, -24.0)
+			var origin_pos: Vector2 = global_position + Vector2(0.0, -18.0 if is_starter else -24.0)
 			var target: Node2D = _find_nearest_enemy(origin_pos, enemies, max_r)
 			if target != null:
 				var dir: Vector2 = (target.global_position - origin_pos).normalized()
 				slot["cast_dir"] = dir
 				slot["windup_u"] = 0.0
-				slot["cast_vis"] = 0.28 if i == 0 else 0.56
-				if not summon_on_cast_mode:
+				if summon_on_cast_mode and not is_starter:
+					_set_summon_state(slot, SummonState.CAST_RECOIL)
+				elif not summon_on_cast_mode:
 					sp.rotation = dir.angle()
 				trigger_slot_recoil(i, dir, 1.0)
 				_apply_slot_transform(i, slot, count, 0.0)
 				slot["cd_left"] = float(stats.get("cooldown", 1.0))
-				weapon_fired.emit(i, w_def, stats, origin_pos + dir * 24.0, target.global_position)
+				var emit_origin := origin_pos + dir * (14.0 if is_starter else 24.0)
+				if is_starter:
+					_spawn_starter_cast_glow(dir, w_def)
+				weapon_fired.emit(i, w_def, stats, emit_origin, target.global_position)
+
+func _spawn_starter_cast_glow(dir: Vector2, w_def: Dictionary) -> void:
+	var profile: Dictionary = w_def.get("vfx_profile", {})
+	var hex := String(profile.get("wave_color", profile.get("trail_color", profile.get("bolt_color", "#5CE0F5"))))
+	var col := Color.from_string(hex, Color(0.36, 0.88, 0.96))
+	_starter_cast_rings.append({
+		"offset": Vector2(0.0, -18.0) + dir * 10.0,
+		"life": 0.0,
+		"dur": 0.24,
+		"color": col,
+	})
+	queue_redraw()
+
+func _step_starter_cast_rings(delta: float) -> void:
+	if _starter_cast_rings.is_empty():
+		return
+	var alive: Array[Dictionary] = []
+	for ring in _starter_cast_rings:
+		var t := float(ring["life"]) + delta
+		if t < float(ring["dur"]):
+			ring["life"] = t
+			alive.append(ring)
+	_starter_cast_rings = alive
+	queue_redraw()
+
+func _draw() -> void:
+	for ring in _starter_cast_rings:
+		var u := clampf(float(ring["life"]) / maxf(0.01, float(ring["dur"])), 0.0, 1.0)
+		var col: Color = ring["color"]
+		var pos: Vector2 = ring["offset"]
+		var r := lerpf(10.0, 30.0, u)
+		draw_arc(pos, r, 0.0, TAU, 24, Color(col.r, col.g, col.b, (1.0 - u) * 0.72), 2.2, true)
+		draw_arc(pos, r * 0.65, 0.0, TAU, 18, Color(1.0, 0.96, 0.82, (1.0 - u) * 0.48), 1.3, true)
 
 func _update_facing() -> void:
 	var par := get_parent()

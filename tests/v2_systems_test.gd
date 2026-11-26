@@ -257,17 +257,18 @@ func _test_reaction_engine(loader: V2DataLoader) -> void:
 	var r3b: Dictionary = engine.apply_element_hit(101, "water", 2.5, 20.0)
 	check("reaction_icd_blocks_repeat", r2.is_empty() and r3.is_empty() and r3b.is_empty(), "r2=%s r3=%s r3b=%s" % [str(r2), str(r3), str(r3b)])
 
-	var r4: Dictionary = engine.apply_element_hit(101, "water", 3.55, 20.0)
+	var r4: Dictionary = engine.apply_element_hit(101, "water", 2.95, 20.0)
 	check("reaction_recovers_after_icd", String(r4.get("reaction_id", "")) == "react_vaporize", str(r4))
 
 	var boss_engine := ReactionEngine.new(loader)
 	boss_engine.apply_element_hit(102, "fire", 1.0, 20.0, 0.0, {}, true)
 	var b1: Dictionary = boss_engine.apply_element_hit(102, "water", 1.1, 20.0, 0.0, {}, true)
-	var b2: Dictionary = boss_engine.apply_element_hit(102, "fire", 2.0, 20.0, 0.0, {}, true)
-	var b3: Dictionary = boss_engine.apply_element_hit(102, "water", 2.75, 20.0, 0.0, {}, true)
+	var b2: Dictionary = boss_engine.apply_element_hit(102, "fire", 2.4, 20.0, 0.0, {}, true)
+	var b3: Dictionary = boss_engine.apply_element_hit(102, "water", 3.35, 20.0, 0.0, {}, true)
+	var expected_boss_dmg := 20.0 * 1.05 * float(loader.reaction_config.get("boss_damage_scale", 0.55))
 	check(
 		"reaction_boss_icd",
-		not b1.is_empty() and b2.is_empty() and String(b3.get("reaction_id", "")) == "react_vaporize",
+		not b1.is_empty() and is_equal_approx(float(b1.get("bonus_damage", 0.0)), expected_boss_dmg) and b2.is_empty() and String(b3.get("reaction_id", "")) == "react_vaporize",
 		"b1=%s b2=%s b3=%s" % [str(b1), str(b2), str(b3)]
 	)
 
@@ -617,7 +618,7 @@ func _test_t1_guards(loader: V2DataLoader) -> void:
 	rx_engine.configure_modifiers({"reaction_damage_pct": 10.0})
 	rx_engine.apply_element_hit(901, "fire", 1.0, 20.0)
 	var rx: Dictionary = rx_engine.apply_element_hit(901, "water", 1.1, 20.0)
-	var rx_cap := 20.0 * 1.05 * (1.0 + 3.5)
+	var rx_cap := 20.0 * 1.05 * (1.0 + ReactionEngine.MASTERY_CAP)
 	check(
 		"t1_reaction_damage_capped",
 		String(rx.get("reaction_id", "")) == "react_vaporize" and float(rx.get("bonus_damage", 0.0)) <= rx_cap + 0.001,

@@ -1,8 +1,10 @@
 {
   "schema_version": "2.0",
   "aura_duration_sec": 4.0,
-  "per_enemy_icd_sec": 2.4,
-  "boss_icd_sec": 1.6,
+  "per_enemy_icd_sec": 1.8,
+  "boss_icd_sec": 2.2,
+  "boss_damage_scale": 0.55,
+  "boss_cc_scale": 0.35,
   "global_vfx_cap_per_sec": 10,
   "reactions": [
     {

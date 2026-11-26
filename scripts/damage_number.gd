@@ -86,4 +86,4 @@ func _process(delta: float) -> void:
 		ObjectPools.release(self)
 
 func _format(value: float) -> String:
-	return str(roundi(value))
+	return str(maxi(1, roundi(value))) if value > 0.0 else "0"

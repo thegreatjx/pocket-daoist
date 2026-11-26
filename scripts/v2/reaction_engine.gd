@@ -1,10 +1,16 @@
 class_name ReactionEngine
 extends RefCounted
 
+const MASTERY_CAP := 1.5
+const MIN_ENEMY_ICD_SEC := 0.8
+const MIN_BOSS_ICD_SEC := 1.2
+
 var loader: V2DataLoader
 var _aura_dur: float = 3.5
 var _icd_sec: float = 1.8
-var _boss_icd_sec: float = 1.2
+var _boss_icd_sec: float = 2.2
+var _boss_damage_scale: float = 0.55
+var _boss_cc_scale: float = 0.35
 var _global_vfx_cap: int = 12
 var _modifiers: Dictionary = {}
 var _enemy_auras: Dictionary = {}
@@ -15,7 +21,9 @@ func _init(data_loader: V2DataLoader) -> void:
 	loader = data_loader
 	_aura_dur = float(loader.reaction_config.get("aura_duration_sec", 3.5))
 	_icd_sec = float(loader.reaction_config.get("per_enemy_icd_sec", 1.8))
-	_boss_icd_sec = float(loader.reaction_config.get("boss_icd_sec", 1.2))
+	_boss_icd_sec = float(loader.reaction_config.get("boss_icd_sec", 2.2))
+	_boss_damage_scale = clampf(float(loader.reaction_config.get("boss_damage_scale", 0.55)), 0.1, 1.0)
+	_boss_cc_scale = clampf(float(loader.reaction_config.get("boss_cc_scale", 0.35)), 0.1, 1.0)
 	_global_vfx_cap = int(loader.reaction_config.get("global_vfx_cap_per_sec", 12))
 
 func configure_modifiers(mods: Dictionary) -> void:
@@ -52,14 +60,17 @@ func apply_element_hit(
 				_enemy_auras[enemy_id] = auras
 				var base_icd: float = _boss_icd_sec if is_boss else _icd_sec
 				var icd_red: float = clampf(float(eff_mods.get("reaction_icd_reduction", 0.0)), 0.0, 0.45)
-				var eff_icd: float = maxf(0.70 if is_boss else 0.05, base_icd - icd_red)
+				var eff_icd: float = maxf(MIN_BOSS_ICD_SEC if is_boss else MIN_ENEMY_ICD_SEC, base_icd - icd_red)
 				_enemy_icd[enemy_id] = now_sec + eff_icd
 
-				var total_mastery: float = minf(3.5, mastery_bonus + float(eff_mods.get("reaction_damage_pct", 0.0)))
+				var total_mastery: float = minf(MASTERY_CAP, mastery_bonus + float(eff_mods.get("reaction_damage_pct", 0.0)))
 				var base_mult: float = float(rx.get("damage_mult", 1.5))
 				if rx_id == "react_shatter":
 					base_mult += float(eff_mods.get("shatter_mult_bonus", 0.0))
 				var mult: float = base_mult * (1.0 + total_mastery)
+				var bonus_dmg: float = base_damage * mult
+				if is_boss:
+					bonus_dmg *= _boss_damage_scale
 				var aoe_r: float = float(rx.get("aoe_radius", 0.0)) * (1.0 + float(eff_mods.get("reaction_radius_pct", 0.0)))
 				var chain_count: int = int(rx.get("chain_count", 0))
 				if chain_count > 0:
@@ -68,7 +79,8 @@ func apply_element_hit(
 				return {
 					"reaction_id": rx_id,
 					"name": String(rx["name"]),
-					"bonus_damage": base_damage * mult,
+					"bonus_damage": bonus_dmg,
+					"boss_cc_scale": _boss_cc_scale,
 					"aoe_radius": aoe_r,
 					"chain_count": chain_count,
 					"emit_vfx": _consume_vfx_budget(now_sec),

@@ -54,6 +54,23 @@ static func make_card_style(bg: Color, border: Color, border_w: int = 2, radius:
 	st.shadow_offset = Vector2(0, 3)
 	return st
 
+static func make_flat_box(bg: Color, border: Color = Color.TRANSPARENT, border_w: int = 0, radius: int = 4, pad: int = 0) -> StyleBoxFlat:
+	var st := StyleBoxFlat.new()
+	st.bg_color = bg
+	if border_w > 0:
+		st.border_color = border
+		st.set_border_width_all(border_w)
+	st.set_corner_radius_all(radius)
+	if pad > 0:
+		st.set_content_margin_all(pad)
+	return st
+
+static func style_overlay_bar(bar: ProgressBar, fill_color: Color, radius: int = 4) -> void:
+	if bar == null:
+		return
+	bar.add_theme_stylebox_override("background", StyleBoxEmpty.new())
+	bar.add_theme_stylebox_override("fill", make_flat_box(fill_color, Color.TRANSPARENT, 0, radius, 0))
+
 static func make_pill_style(bg: Color, border: Color, border_w: int = 1, radius: int = 12, pad_h: int = 10, pad_v: int = 3) -> StyleBoxFlat:
 	var st := StyleBoxFlat.new()
 	st.bg_color = bg

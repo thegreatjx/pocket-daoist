@@ -45,6 +45,8 @@ var _hp_trail_tween: Tween = null
 var _hp_ratio: float = 1.0
 var _pulse_time: float = 0.0
 var _loadout_box: VBoxContainer = null
+var _tr_div: ColorRect = null
+var _boss_cd_label: Label = null
 
 func _ready() -> void:
 	add_to_group("ui")
@@ -96,13 +98,7 @@ func _setup_top_left_hud() -> void:
 	var avatar_frame := PanelContainer.new()
 	avatar_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	avatar_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var af_st := StyleBoxFlat.new()
-	af_st.bg_color = XianxiaUITheme.COL_PLATE_DARK
-	af_st.border_color = XianxiaUITheme.COL_GOLD
-	af_st.set_border_width_all(2)
-	af_st.set_corner_radius_all(10)
-	af_st.set_content_margin_all(5)
-	avatar_frame.add_theme_stylebox_override("panel", af_st)
+	avatar_frame.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(XianxiaUITheme.COL_PLATE_DARK, XianxiaUITheme.COL_GOLD, 2, 10, 5))
 	avatar_wrap.add_child(avatar_frame)
 
 	_avatar_tex = TextureRect.new()
@@ -119,13 +115,7 @@ func _setup_top_left_hud() -> void:
 	lv_badge.offset_right = 2.0
 	lv_badge.offset_bottom = 2.0
 	lv_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var lv_st := StyleBoxFlat.new()
-	lv_st.bg_color = Color(0.07, 0.16, 0.14, 0.96)
-	lv_st.border_color = XianxiaUITheme.COL_GOLD_BRIGHT
-	lv_st.set_border_width_all(1)
-	lv_st.set_corner_radius_all(5)
-	lv_st.set_content_margin_all(2)
-	lv_badge.add_theme_stylebox_override("panel", lv_st)
+	lv_badge.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(Color(0.07, 0.16, 0.14, 0.96), XianxiaUITheme.COL_GOLD_BRIGHT, 1, 5, 2))
 	avatar_wrap.add_child(lv_badge)
 
 	_lv_badge_lbl = Label.new()
@@ -163,12 +153,7 @@ func _setup_top_left_hud() -> void:
 	var hp_frame := Panel.new()
 	hp_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hp_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hpf_st := StyleBoxFlat.new()
-	hpf_st.bg_color = Color(0.05, 0.10, 0.09, 0.95)
-	hpf_st.border_color = XianxiaUITheme.COL_GOLD
-	hpf_st.set_border_width_all(1)
-	hpf_st.set_corner_radius_all(5)
-	hp_frame.add_theme_stylebox_override("panel", hpf_st)
+	hp_frame.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(Color(0.05, 0.10, 0.09, 0.95), XianxiaUITheme.COL_GOLD, 1, 5))
 	hp_box.add_child(hp_frame)
 
 	_hp_trail_bar = ProgressBar.new()
@@ -180,7 +165,7 @@ func _setup_top_left_hud() -> void:
 	_hp_trail_bar.show_percentage = false
 	_hp_trail_bar.value = 100.0
 	_hp_trail_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_overlay_bar(_hp_trail_bar, XianxiaUITheme.COL_HP_TRAIL, 4)
+	XianxiaUITheme.style_overlay_bar(_hp_trail_bar, XianxiaUITheme.COL_HP_TRAIL, 4)
 	hp_box.add_child(_hp_trail_bar)
 
 	if hp_bar != null:
@@ -192,7 +177,7 @@ func _setup_top_left_hud() -> void:
 		hp_bar.offset_bottom = -1.0
 		hp_bar.show_percentage = false
 		hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_style_overlay_bar(hp_bar, XianxiaUITheme.COL_HP_FILL, 4)
+		XianxiaUITheme.style_overlay_bar(hp_bar, XianxiaUITheme.COL_HP_FILL, 4)
 
 	var hp_shine := ColorRect.new()
 	hp_shine.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -223,12 +208,7 @@ func _setup_top_left_hud() -> void:
 	var exp_frame := Panel.new()
 	exp_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	exp_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var exf_st := StyleBoxFlat.new()
-	exf_st.bg_color = Color(0.05, 0.11, 0.10, 0.95)
-	exf_st.border_color = XianxiaUITheme.COL_JADE
-	exf_st.set_border_width_all(1)
-	exf_st.set_corner_radius_all(4)
-	exp_frame.add_theme_stylebox_override("panel", exf_st)
+	exp_frame.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(Color(0.05, 0.11, 0.10, 0.95), XianxiaUITheme.COL_JADE, 1, 4))
 	exp_box.add_child(exp_frame)
 
 	if exp_bar != null:
@@ -240,7 +220,7 @@ func _setup_top_left_hud() -> void:
 		exp_bar.offset_bottom = -1.0
 		exp_bar.show_percentage = false
 		exp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_style_overlay_bar(exp_bar, XianxiaUITheme.COL_EXP_FILL, 3)
+		XianxiaUITheme.style_overlay_bar(exp_bar, XianxiaUITheme.COL_EXP_FILL, 3)
 
 	_exp_text_label = Label.new()
 	_exp_text_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -322,14 +302,15 @@ func _setup_top_right_hud() -> void:
 	tr_plate.anchors_preset = Control.PRESET_TOP_RIGHT
 	tr_plate.anchor_left = 1.0
 	tr_plate.anchor_right = 1.0
-	tr_plate.offset_left = -146.0
+	tr_plate.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	tr_plate.offset_left = -162.0
 	tr_plate.offset_right = -14.0
 	tr_plate.offset_top = 12.0
-	tr_plate.offset_bottom = 68.0
-	tr_plate.custom_minimum_size = Vector2(132, 56)
-	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 12)
-	tr_st.content_margin_left = 20
-	tr_st.content_margin_right = 20
+	tr_plate.offset_bottom = 60.0
+	tr_plate.custom_minimum_size = Vector2(148, 48)
+	var tr_st := XianxiaUITheme.make_hud_plate(XianxiaUITheme.COL_PLATE_BG, XianxiaUITheme.COL_GOLD, 9, 10)
+	tr_st.content_margin_left = 18
+	tr_st.content_margin_right = 18
 	tr_plate.add_theme_stylebox_override("panel", tr_st)
 	XianxiaUITheme.attach_ornaments(tr_plate, XianxiaUITheme.COL_GOLD, 9.0, 4.0)
 	hud.add_child(tr_plate)
@@ -352,20 +333,23 @@ func _setup_top_right_hud() -> void:
 		kill_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.62))
 		XianxiaUITheme.apply_text_outline(kill_label, 3)
 
-	var div := ColorRect.new()
-	div.custom_minimum_size = Vector2(0, 1)
-	div.color = Color(0.88, 0.70, 0.30, 0.38)
-	div.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vb.add_child(div)
+	_tr_div = ColorRect.new()
+	_tr_div.custom_minimum_size = Vector2(0, 1)
+	_tr_div.color = Color(0.88, 0.70, 0.30, 0.38)
+	_tr_div.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tr_div.visible = false
+	vb.add_child(_tr_div)
 
-func _style_overlay_bar(bar: ProgressBar, fill_color: Color, radius: int) -> void:
-	if bar == null:
-		return
-	bar.add_theme_stylebox_override("background", StyleBoxEmpty.new())
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = fill_color
-	fill.set_corner_radius_all(radius)
-	bar.add_theme_stylebox_override("fill", fill)
+	_boss_cd_label = Label.new()
+	_boss_cd_label.name = "BossCountdownLabel"
+	_boss_cd_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_boss_cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_cd_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_boss_cd_label.add_theme_font_size_override("font_size", 12)
+	_boss_cd_label.add_theme_color_override("font_color", Color(0.76, 0.94, 0.86))
+	XianxiaUITheme.apply_text_outline(_boss_cd_label, 2)
+	_boss_cd_label.visible = false
+	vb.add_child(_boss_cd_label)
 
 func _sync_avatar(char_id: String) -> void:
 	if _avatar_tex == null or char_id == _avatar_char_id:
@@ -424,6 +408,7 @@ func _process(delta: float) -> void:
 	var seconds = int(game_time) % 60
 	timer_label.text = "%02d:%02d" % [minutes, seconds]
 	_update_kill_count()
+	_update_boss_countdown()
 	_update_buff_status()
 	if hp_bar != null:
 		if _hp_ratio > 0.0 and _hp_ratio <= 0.30:
@@ -443,6 +428,37 @@ func _update_kill_count() -> void:
 	if kills != kill_count_shown:
 		kill_count_shown = kills
 		kill_label.text = "诛魔 %d" % kills
+
+func _update_boss_countdown() -> void:
+	if _boss_cd_label == null or _tr_div == null:
+		return
+	var mgrs = get_tree().get_nodes_in_group("game_manager")
+	if mgrs.is_empty():
+		_tr_div.visible = false
+		_boss_cd_label.visible = false
+		return
+	var gm: Node = mgrs[0]
+	var sd: Variant = gm.get("stage_director") if ("stage_director" in gm) else null
+	if sd == null or not is_instance_valid(sd) or not sd.has_method("get_next_boss_info"):
+		_tr_div.visible = false
+		_boss_cd_label.visible = false
+		return
+	var info: Dictionary = sd.call("get_next_boss_info")
+	if info.is_empty():
+		_tr_div.visible = false
+		_boss_cd_label.visible = false
+		return
+	_tr_div.visible = true
+	_boss_cd_label.visible = true
+	if bool(info.get("active", false)):
+		_boss_cd_label.text = String(info.get("label", "首领激战"))
+		_boss_cd_label.add_theme_color_override("font_color", Color(1.0, 0.56, 0.42))
+	else:
+		var rem := ceili(float(info.get("remaining", 0.0)))
+		var mm := rem / 60
+		var ss := rem % 60
+		_boss_cd_label.text = "%s %02d:%02d" % [String(info.get("label", "小首领")), mm, ss]
+		_boss_cd_label.add_theme_color_override("font_color", XianxiaUITheme.COL_GOLD_BRIGHT if rem <= 15 else Color(0.76, 0.94, 0.86))
 
 func update_health(curr: float, max_h: float) -> void:
 	var safe_max := maxf(1.0, max_h)
@@ -595,12 +611,7 @@ func _setup_boss_bar() -> void:
 	var frame := Panel.new()
 	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var fst := StyleBoxFlat.new()
-	fst.bg_color = Color(0.06, 0.10, 0.09, 0.96)
-	fst.border_color = XianxiaUITheme.COL_GOLD
-	fst.set_border_width_all(1)
-	fst.set_corner_radius_all(5)
-	frame.add_theme_stylebox_override("panel", fst)
+	frame.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(Color(0.06, 0.10, 0.09, 0.96), XianxiaUITheme.COL_GOLD, 1, 5))
 	bar_wrap.add_child(frame)
 
 	_boss_hp_trail = ProgressBar.new()
@@ -611,7 +622,7 @@ func _setup_boss_bar() -> void:
 	_boss_hp_trail.offset_bottom = -1.0
 	_boss_hp_trail.show_percentage = false
 	_boss_hp_trail.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_overlay_bar(_boss_hp_trail, XianxiaUITheme.COL_HP_TRAIL, 4)
+	XianxiaUITheme.style_overlay_bar(_boss_hp_trail, XianxiaUITheme.COL_HP_TRAIL, 4)
 	bar_wrap.add_child(_boss_hp_trail)
 
 	_boss_hp_bar = ProgressBar.new()
@@ -623,7 +634,7 @@ func _setup_boss_bar() -> void:
 	_boss_hp_bar.offset_bottom = -1.0
 	_boss_hp_bar.show_percentage = false
 	_boss_hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_overlay_bar(_boss_hp_bar, Color(0.86, 0.21, 0.16, 1.0), 4)
+	XianxiaUITheme.style_overlay_bar(_boss_hp_bar, Color(0.86, 0.21, 0.16, 1.0), 4)
 	bar_wrap.add_child(_boss_hp_bar)
 
 	_boss_hp_label = Label.new()
@@ -811,16 +822,9 @@ func _make_empty_slot(is_weapon: bool, label_text: String = "", locked: bool = f
 	var p := Panel.new()
 	p.custom_minimum_size = Vector2(40, 40)
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var st := StyleBoxFlat.new()
-	if locked:
-		st.bg_color = Color(0.05, 0.12, 0.11, 0.58)
-		st.border_color = Color(0.26, 0.38, 0.34, 0.45)
-	else:
-		st.bg_color = Color(0.07, 0.17, 0.15, 0.56)
-		st.border_color = Color(0.42, 0.72, 0.64, 0.52) if is_weapon else Color(0.86, 0.70, 0.34, 0.48)
-	st.set_border_width_all(1)
-	st.set_corner_radius_all(6)
-	p.add_theme_stylebox_override("panel", st)
+	var bg := Color(0.05, 0.12, 0.11, 0.58) if locked else Color(0.07, 0.17, 0.15, 0.56)
+	var border := Color(0.26, 0.38, 0.34, 0.45) if locked else (Color(0.42, 0.72, 0.64, 0.52) if is_weapon else Color(0.86, 0.70, 0.34, 0.48))
+	p.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(bg, border, 1, 6))
 	if label_text != "":
 		var lbl := Label.new()
 		lbl.text = label_text
@@ -842,20 +846,15 @@ func _make_slot_cell(data: Dictionary, is_weapon: bool) -> Control:
 	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.tooltip_text = str(data.get("name", ""))
 
-	var st := StyleBoxFlat.new()
+	var slot_bg := XianxiaUITheme.COL_PLATE_BG
+	var slot_border := XianxiaUITheme.COL_GOLD_BRIGHT if is_maxed else (Color(0.32, 0.86, 0.72, 0.92) if is_weapon else XianxiaUITheme.COL_GOLD)
 	if is_evo:
-		st.bg_color = Color(0.44, 0.15, 0.10, 0.94)
-		st.border_color = XianxiaUITheme.COL_GOLD_BRIGHT
+		slot_bg = Color(0.44, 0.15, 0.10, 0.94)
+		slot_border = XianxiaUITheme.COL_GOLD_BRIGHT
 	elif ready_evo:
-		st.bg_color = Color(0.28, 0.22, 0.08, 0.94)
-		st.border_color = XianxiaUITheme.COL_GOLD_BRIGHT
-	else:
-		st.bg_color = XianxiaUITheme.COL_PLATE_BG
-		st.border_color = XianxiaUITheme.COL_GOLD_BRIGHT if is_maxed else (Color(0.32, 0.86, 0.72, 0.92) if is_weapon else XianxiaUITheme.COL_GOLD)
-	st.set_border_width_all(2 if (is_evo or ready_evo or is_maxed) else 1)
-	st.set_corner_radius_all(6)
-	st.set_content_margin_all(2)
-	slot.add_theme_stylebox_override("panel", st)
+		slot_bg = Color(0.28, 0.22, 0.08, 0.94)
+		slot_border = XianxiaUITheme.COL_GOLD_BRIGHT
+	slot.add_theme_stylebox_override("panel", XianxiaUITheme.make_flat_box(slot_bg, slot_border, 2 if (is_evo or ready_evo or is_maxed) else 1, 6, 2))
 
 	var stack := Control.new()
 	stack.custom_minimum_size = Vector2(36, 36)
@@ -884,12 +883,7 @@ func _make_slot_cell(data: Dictionary, is_weapon: bool) -> Control:
 	badge.offset_right = 1.0
 	badge.offset_bottom = 1.0
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bst := StyleBoxFlat.new()
-	bst.bg_color = Color(0.05, 0.11, 0.10, 0.88)
-	bst.set_corner_radius_all(3)
-	bst.content_margin_left = 2
-	bst.content_margin_right = 2
-	badge.add_theme_stylebox_override("panel", bst)
+	badge.add_theme_stylebox_override("panel", XianxiaUITheme.make_pill_style(Color(0.05, 0.11, 0.10, 0.88), Color.TRANSPARENT, 0, 3, 2, 0))
 	stack.add_child(badge)
 
 	var lv_lbl := Label.new()
@@ -960,6 +954,11 @@ class EdgeIndicator extends Control:
 		if tree == null:
 			return
 		var has_targets := (not tree.get_nodes_in_group("chests").is_empty()) or (not tree.get_nodes_in_group("bosses").is_empty()) or (not tree.get_nodes_in_group("elite_enemies").is_empty())
+		if not has_targets:
+			for lc in tree.get_nodes_in_group("landmarks_controller"):
+				if is_instance_valid(lc) and lc.has_method("has_active_spirit_array") and bool(lc.call("has_active_spirit_array")):
+					has_targets = true
+					break
 		if has_targets or _had_markers:
 			queue_redraw()
 
@@ -1010,6 +1009,17 @@ class EdgeIndicator extends Control:
 			if not inner_rect.has_point(elite_sp):
 				drew_any = true
 				_draw_edge_marker(vp_size, elite_sp, "精英", Color(0.82, 0.54, 0.98, pulse), Color(0.24, 0.10, 0.32, 0.95))
+
+		for lc in tree.get_nodes_in_group("landmarks_controller"):
+			if not is_instance_valid(lc) or not lc.has_method("has_active_spirit_array"):
+				continue
+			if not bool(lc.call("has_active_spirit_array")):
+				continue
+			var arr_world: Vector2 = lc.call("get_active_spirit_array_pos")
+			var arr_sp: Vector2 = canvas_xform * arr_world
+			if not inner_rect.has_point(arr_sp):
+				drew_any = true
+				_draw_edge_marker(vp_size, arr_sp, "聚灵", Color(0.28, 0.94, 0.78, pulse), Color(0.06, 0.24, 0.20, 0.95))
 		_had_markers = drew_any
 
 	func _draw_edge_marker(vp_size: Vector2, target_screen: Vector2, label_text: String, fill_col: Color, rim_col: Color) -> void:

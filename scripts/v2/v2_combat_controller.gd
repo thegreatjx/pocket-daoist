@@ -92,9 +92,10 @@ func setup_for_player(p: Player) -> void:
 
 	reaction_engine = ReactionEngine.new(loader)
 
-	audio_mgr = ThrottledAudioManager.new()
-	audio_mgr.name = "ThrottledAudioManager"
-	add_child(audio_mgr)
+	if not has_node("/root/Sfx"):
+		audio_mgr = ThrottledAudioManager.new()
+		audio_mgr.name = "ThrottledAudioManager"
+		add_child(audio_mgr)
 	_preload_cues()
 
 	orbit_rig = OrbitWeaponRig.new()
@@ -109,8 +110,8 @@ func setup_for_player(p: Player) -> void:
 	var start_wpn := str(char_cfg.get("v2_start_weapon", "wpn_jade_sword"))
 	unlocked_weapon_slots = calc_unlocked_slots(int(player.level), 0)
 	orbit_rig.set_unlocked_slots(unlocked_weapon_slots)
-	orbit_rig.add_weapon(start_wpn, 1)
 	orbit_rig.set_starter_weapon(start_wpn)
+	orbit_rig.add_weapon(start_wpn, 1)
 	if not player.leveled_up.is_connected(_on_player_leveled_up):
 		player.leveled_up.connect(_on_player_leveled_up)
 	recompute_player_stats()
@@ -219,10 +220,13 @@ func _preload_cues() -> void:
 				_streams[cue_id] = st
 
 func play_v2_cue(cue_id: String, category: String = "default_hit", pitch: float = 1.0) -> void:
-	if audio_mgr == null:
-		return
 	var st: AudioStream = _streams.get(cue_id, null) as AudioStream
-	if st != null:
+	if st == null:
+		return
+	if has_node("/root/Sfx"):
+		get_node("/root/Sfx").call("play_cue", cue_id, st, category, pitch)
+		return
+	if audio_mgr != null:
 		audio_mgr.play_cue(cue_id, st, category, pitch)
 
 func _on_orbit_loadout_changed(_slots: Array) -> void:
@@ -252,11 +256,6 @@ func _physics_process(delta: float) -> void:
 		if _shot_hit_counts.size() > 64:
 			_shot_hit_counts.clear()
 
-	if has_arcana("arcana_void_magnet"):
-		_void_magnet_timer += delta
-		if _void_magnet_timer >= 90.0:
-			_void_magnet_timer = 0.0
-			trigger_void_magnet()
 	var candidates := CombatGrid.query(player.global_position, 520.0)
 	var alive: Array = []
 	for e in candidates:
@@ -266,8 +265,7 @@ func _physics_process(delta: float) -> void:
 
 func _raw_attack_speed_mult() -> float:
 	var limit_haste := float(player.limit_haste_bonus) if player != null else 0.0
-	var empty_spd := float(get_empty_slot_count()) * 0.06 if has_arcana("arcana_solitary_dao") else 0.0
-	return maxf(0.4, 1.0 + float(item_mods.get("attack_speed_pct", 0.0)) + limit_haste * 0.05 + empty_spd)
+	return maxf(0.4, 1.0 + float(item_mods.get("attack_speed_pct", 0.0)) + limit_haste * 0.05)
 
 func get_attack_speed_mult() -> float:
 	return minf(2.4, _raw_attack_speed_mult())
@@ -276,9 +274,7 @@ func get_damage_mult() -> float:
 	var sect_might := float(player.sect_might_mult) if player != null else 1.0
 	var limit_might := float(player.limit_might_bonus) if player != null else 0.0
 	var spd_overflow := maxf(0.0, _raw_attack_speed_mult() - 2.4) * 0.35
-	var empty_dmg := float(get_empty_slot_count()) * 0.14 if has_arcana("arcana_solitary_dao") else 0.0
-	var revival_dmg := float(revival_stacks) * 0.08 if has_arcana("arcana_samsara") else 0.0
-	var raw := (1.0 + float(item_mods.get("damage_pct", 0.0)) + spd_overflow + empty_dmg + revival_dmg) * sect_might * (1.0 + limit_might)
+	var raw := (1.0 + float(item_mods.get("damage_pct", 0.0)) + spd_overflow) * sect_might * (1.0 + limit_might)
 	var is_endless := false
 	if is_inside_tree() and get_tree() != null:
 		var gm = get_tree().get_first_node_in_group("game_manager")
@@ -408,8 +404,7 @@ func recompute_player_stats() -> void:
 	if player == null or not is_instance_valid(player):
 		return
 
-	var revival_hp_mult := 1.0 + (float(revival_stacks) * 0.15 if has_arcana("arcana_samsara") else 0.0)
-	var target_max_hp := maxf(40.0, (player.base_max_health + float(item_mods.get("max_hp", 0.0))) * revival_hp_mult)
+	var target_max_hp := maxf(40.0, player.base_max_health + float(item_mods.get("max_hp", 0.0)))
 	if not is_equal_approx(player.max_health, target_max_hp):
 		var diff := target_max_hp - player.max_health
 		player.max_health = target_max_hp
@@ -419,8 +414,7 @@ func recompute_player_stats() -> void:
 			player.current_health = minf(player.max_health, player.current_health)
 		player.emit_signal("health_changed", player.current_health, player.max_health)
 
-	var revival_armor := float(revival_stacks) * 2.0 if has_arcana("arcana_samsara") else 0.0
-	player.armor = maxf(0.0, float(item_mods.get("armor", 0.0)) + revival_armor)
+	player.armor = maxf(0.0, float(item_mods.get("armor", 0.0)))
 	player.dodge_chance = clampf(float(item_mods.get("dodge_pct", 0.0)), 0.0, 0.55)
 	player.speed = player.base_speed * player.stage_speed_mult * maxf(0.5, 1.0 + float(item_mods.get("move_speed_pct", 0.0)))
 	player.magnet_radius = player.base_magnet_radius * maxf(0.5, 1.0 + float(item_mods.get("pickup_radius_pct", 0.0)))
@@ -646,7 +640,6 @@ func has_item(item_id: String) -> bool:
 
 func on_xp_orb_collected() -> void:
 	play_v2_cue("xp_orb", "xp_orb")
-	Sfx.play_count += 1
 	if has_item("item_magnet_gourd"):
 		_orb_counter += 1
 		if _orb_counter >= 25:
@@ -720,21 +713,6 @@ func _on_weapon_fired(slot_idx: int, w_def: Dictionary, stats: Dictionary, origi
 						"color": col,
 						"awakened": false,
 					})
-			if has_arcana("arcana_mirror_blade") and is_arcana_applicable_to_weapon("arcana_mirror_blade", fired_wid):
-				_enqueue_salvo({
-					"kind": "afterimage_boomerang",
-					"delay": SALVO_STAGGER_SEC,
-					"slot_idx": slot_idx,
-					"origin": origin,
-					"dir": dir.rotated(-0.14),
-					"damage": base_dmg * 0.45,
-					"proj_speed": proj_spd,
-					"range": rng,
-					"pierce": pierce,
-					"elem": elem,
-					"color": col,
-					"awakened": false,
-				})
 			if perk == "afterimage_double_slash":
 				_enqueue_salvo({
 					"kind": "afterimage_boomerang",
@@ -1291,6 +1269,8 @@ func _execute_reaction(primary_enemy: Node, rx: Dictionary, trigger_scaled_base:
 		_reaction_pop_budget -= 1
 		_spawn_text_popup(center + Vector2(0.0, -34.0), "%s %d" % [rx_name, roundi(bonus_dmg)], rx_col)
 		_spawn_reaction_visual(rx_id, center, aoe_r if aoe_r > 0.0 else 65.0, rx_col, {"executed": executed_target})
+		if has_node("/root/HitFeel") and (bonus_dmg >= 15.0 or chains > 0 or aoe_r >= 80.0):
+			get_node("/root/HitFeel").call("on_reaction", true)
 		if player != null and is_instance_valid(player) and player.has_method("shake_camera") and player.shake_amount < 3.5:
 			player.shake_camera(1.8)
 
@@ -1316,13 +1296,14 @@ func _execute_reaction(primary_enemy: Node, rx: Dictionary, trigger_scaled_base:
 	if heal_player_val > 0.0 and player != null and is_instance_valid(player) and player.current_health < player.max_health:
 		player.heal(heal_player_val)
 
+	var boss_cc_scale := float(rx.get("boss_cc_scale", 0.35))
 	for e in targets:
 		if not is_instance_valid(e) or bool(e.get("is_dead")):
 			continue
 		if shred > 0.0 and e.has_method("apply_armor_shred"):
 			e.apply_armor_shred(shred, debuff_dur)
 		if root_dur > 0.0 and e.has_method("apply_stun"):
-			e.apply_stun(0.35 if bool(e.get("is_boss")) else root_dur)
+			e.apply_stun(root_dur * boss_cc_scale if bool(e.get("is_boss")) else root_dur)
 		if burn_mult > 0.0 and e.has_method("apply_dot"):
 			e.apply_dot(trigger_scaled_base * burn_mult * get_dot_mult(), debuff_dur, false, "fire")
 		if not spread_elem.is_empty() and e != primary_enemy:
@@ -1651,9 +1632,7 @@ func get_arcana_weapon_damage_mult(_weapon_id: String) -> float:
 	return 1.0
 
 func on_player_revived() -> void:
-	if has_arcana("arcana_samsara"):
-		revival_stacks += 1
-		recompute_player_stats()
+	return
 
 func trigger_void_magnet() -> void:
 	if player == null or not is_instance_valid(player) or not is_inside_tree() or get_tree() == null:

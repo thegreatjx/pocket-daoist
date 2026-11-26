@@ -4,7 +4,9 @@ const HIT_MARK_SCENE := "res://scenes/hit_mark.tscn"
 const MAX_HIT_MARKS := 40
 
 const STOP_BY_TIER := [0.0, 0.045, 0.060]
-const KILL_STOP_BY_TIER := [0.020, 0.090, 0.180]
+const KILL_STOP_BY_TIER := [0.0, 0.065, 0.160]
+const REACTION_STOP_SEC := 0.035
+const SLOWMO_TIME_SCALE := 0.08
 const CRIT_STOP_BONUS := 0.0
 const STOP_MIN_INTERVAL_MS := 140.0
 const STOP_MAX_MS := 220.0
@@ -56,7 +58,19 @@ func on_hit(world_pos: Vector2, dir: Vector2, element: String, is_crit: bool, ti
 	if lethal or is_crit or safe_tier > 0:
 		_spawn_mark(world_pos, dir, element, is_crit, safe_tier, lethal, parent)
 
+func on_reaction(is_major: bool = true) -> void:
+	if not is_major:
+		return
+	_apply_time_stop(REACTION_STOP_SEC, SLOWMO_TIME_SCALE)
+
 func _try_stop(lethal: bool, is_crit: bool, tier: int) -> void:
+	var duration: float = (KILL_STOP_BY_TIER[tier] if lethal else STOP_BY_TIER[tier]) + (CRIT_STOP_BONUS if is_crit else 0.0)
+	if duration <= 0.0:
+		return
+	var target_scale := 0.0 if (lethal and tier >= 2) else SLOWMO_TIME_SCALE
+	_apply_time_stop(duration, target_scale)
+
+func _apply_time_stop(duration: float, target_scale: float) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	if not Settings.get_bool("video/hitstop"):
@@ -66,9 +80,6 @@ func _try_stop(lethal: bool, is_crit: bool, tier: int) -> void:
 	var now := float(Time.get_ticks_msec())
 	if now < _next_stop_ms:
 		return
-	var duration: float = (KILL_STOP_BY_TIER[tier] if lethal else STOP_BY_TIER[tier]) + (CRIT_STOP_BONUS if is_crit else 0.0)
-	if duration <= 0.0:
-		return
 	var ms := minf(duration * 1000.0, STOP_MAX_MS)
 	if ms <= STOP_BUDGET_EXEMPT_MS:
 		if ms > _stop_budget_ms:
@@ -76,7 +87,7 @@ func _try_stop(lethal: bool, is_crit: bool, tier: int) -> void:
 		_stop_budget_ms -= ms
 	_stop_until_ms = maxf(_stop_until_ms, now + ms)
 	_next_stop_ms = now + STOP_MIN_INTERVAL_MS
-	Engine.time_scale = 0.0
+	Engine.time_scale = target_scale
 	_stop_token += 1
 	var token := _stop_token
 	get_tree().create_timer(ms / 1000.0, true, false, true).timeout.connect(func() -> void:

@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 13:03:21",
+    "generated_at": "2026-11-26 13:33:25",
     "active_media_count": 202,
     "used_media_count": 192,
     "orphan_media_count": 10,
@@ -9,7 +9,7 @@
     "error_count": 3,
     "gap_count": 4,
     "warning_count": 3,
-    "ui_bypass_files": 6
+    "ui_bypass_files": 5
   },
   "project": {
     "name": "百宝小道修 · Pocket Daoist",
@@ -214,8 +214,8 @@
       "id": "ISS-010",
       "severity": "warning",
       "code": "UI_THEME_BYPASS",
-      "title": "6 个 UI 脚本绕过 XianxiaUITheme 私写 34 处 StyleBoxFlat.new()",
-      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(14), ui.gd(9), v2_shop_ui.gd(5), chest_ui.gd(2), upgrade_ui.gd(2)。请在 UI 规范板核对。",
+      "title": "5 个 UI 脚本绕过 XianxiaUITheme 私写 25 处 StyleBoxFlat.new()",
+      "detail": "易导致弹窗与按钮样式分裂。主要脚本：v2_detail_drawer.gd(14), v2_shop_ui.gd(5), chest_ui.gd(2), upgrade_ui.gd(2), v2_codex_panel.gd(2)。请在 UI 规范板核对。",
       "file": "scripts/ui/xianxia_ui_theme.gd",
       "entity_id": "ui_theme_bypass",
       "tab": "uikit",
@@ -8394,7 +8394,7 @@
   "ui_compliance": [
     {
       "file": "scripts/ui/xianxia_ui_theme.gd",
-      "stylebox_new": 14,
+      "stylebox_new": 15,
       "theme_calls": 1,
       "status": "theme_source"
     },
@@ -8402,12 +8402,6 @@
       "file": "scripts/v2/v2_detail_drawer.gd",
       "stylebox_new": 14,
       "theme_calls": 2,
-      "status": "partial_bypass"
-    },
-    {
-      "file": "scripts/ui.gd",
-      "stylebox_new": 9,
-      "theme_calls": 60,
       "status": "partial_bypass"
     },
     {
@@ -8462,6 +8456,12 @@
       "file": "scripts/title.gd",
       "stylebox_new": 0,
       "theme_calls": 91,
+      "status": "compliant"
+    },
+    {
+      "file": "scripts/ui.gd",
+      "stylebox_new": 0,
+      "theme_calls": 75,
       "status": "compliant"
     },
     {
