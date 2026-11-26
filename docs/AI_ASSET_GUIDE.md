@@ -1,6 +1,6 @@
 # 《百宝小道修 · Pocket Daoist》AI 美术与架构协作速查手册
 
-> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 17:17:25）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
+> 由 `python tools/studio_audit.py` 自动生成（2026-11-26 17:24:00）。派活给 Codex / Claude / Antigravity 前请附带或先读本文件，严禁绕过现有规范另起炉灶。
 
 ## 1. 强制工作流
 1. **UI 必须走唯一主题**：使用 `scripts/ui/xianxia_ui_theme.gd`（`XianxiaUITheme`），禁止在业务脚本里手写 `StyleBoxFlat.new()`。
@@ -41,7 +41,7 @@
 | `GAP` (MISSING_ART_SLOT) | 商店宝物缺少独立图标 (16/16) | `data/v2/items_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 天道道韵缺少独立图标 (8/8) | `data/v2/arcana_v2.json` |
 | `GAP` (MISSING_ART_SLOT) | 部分怪物原型共用同一套 species 贴图 (2 组撞皮) | `data/v2/enemies_waves_v2.json` |
-| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 8 个未引用媒体文件（含多版本残留） | `assets/` |
+| `WARNING` (ORPHAN_ASSET) | 活跃目录存在 7 个未引用媒体文件（含多版本残留） | `assets/` |
 | `WARNING` (UI_THEME_BYPASS) | 5 个 UI 脚本绕过 XianxiaUITheme 私写 25 处 StyleBoxFlat.new() | `scripts/ui/xianxia_ui_theme.gd` |
 
 ## 4. 已有核心资产速查表（直接复用，勿重复生成）

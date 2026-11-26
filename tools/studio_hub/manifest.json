@@ -1,11 +1,11 @@
 {
   "summary": {
-    "generated_at": "2026-11-26 17:17:25",
-    "active_media_count": 221,
+    "generated_at": "2026-11-26 17:24:00",
+    "active_media_count": 220,
     "used_media_count": 213,
-    "orphan_media_count": 8,
+    "orphan_media_count": 7,
     "legacy_count": 50,
-    "usage_rate_pct": 96.4,
+    "usage_rate_pct": 96.8,
     "error_count": 4,
     "gap_count": 3,
     "warning_count": 2,
@@ -183,8 +183,8 @@
       "id": "ISS-008",
       "severity": "warning",
       "code": "ORPHAN_ASSET",
-      "title": "活跃目录存在 8 个未引用媒体文件（含多版本残留）",
-      "detail": "assets/ 非归档目录中有 8 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(7), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
+      "title": "活跃目录存在 7 个未引用媒体文件（含多版本残留）",
+      "detail": "assets/ 非归档目录中有 7 个 PNG/JPG/WAV/OGG 未被任何代码、场景或 JSON 引用。高频聚类：hero(6), pickup(1)。建议确认后移入 assets/_legacy_unused/。",
       "file": "assets/",
       "entity_id": "orphan_assets",
       "tab": "assets",
@@ -7309,24 +7309,6 @@
         "scripts/data/character_data.gd"
       ],
       "status": "used",
-      "cluster": "hero"
-    },
-    {
-      "path": "assets/v2/heroes/hero_sword_qwen_new.png",
-      "res_path": "res://assets/v2/heroes/hero_sword_qwen_new.png",
-      "name": "hero_sword_qwen_new.png",
-      "category": "heroes",
-      "ext": ".png",
-      "is_media": true,
-      "is_image": true,
-      "is_audio": false,
-      "size_bytes": 618650,
-      "width": 1024,
-      "height": 1024,
-      "duration_sec": null,
-      "spritesheet": null,
-      "used_by": [],
-      "status": "orphan",
       "cluster": "hero"
     },
     {
